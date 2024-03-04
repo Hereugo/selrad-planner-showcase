@@ -72,9 +72,9 @@
            </li>
         </ul>
         <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
-         {% comment %} Filter section  {% endcomment %}
         <div class="space-y-2 w-full">
-          <h3 class="mb-2 font-bold text-gray-900 text-center">Фильтры</h3>       
+          <h3 class="mb-2 font-bold text-gray-900 text-center">Фильтры</h3> 
+
           <form class="flex items-center w-full">   
               <label for="simple-search" class="sr-only">Search</label>
               <div class="relative w-full">
@@ -87,6 +87,7 @@
                   <span class="sr-only">Поиск</span>
               </button>
           </form>
+
           <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
           <div date-rangepicker class="flex items-center flex-col w-full"> 
             <div class="relative w-full">
@@ -107,6 +108,34 @@
               <input name="end" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Конец даты">
             </div>
           </div>
+          <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
+          
+          <div class="space-y-2">
+            <h4 class="mb-3 font-bold text-gray-900 text-center">Показать поля</h4>
+            <div class="flex items-center">
+              <input type="checkbox" id="hide-2" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
+              <label for="hide-2" class="ms-2 text-gray-800">Дата</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="hide-1" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
+              <label for="hide-1" class="ms-2 text-gray-800">Клиент</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="hide-2" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
+              <label for="hide-2" class="ms-2 text-gray-800">Работа</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="hide-3" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
+              <label for="hide-3" class="ms-2 text-gray-800">Менеджер</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="hide-3" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
+              <label for="hide-3" class="ms-2 text-gray-800">Сумма отгрузки</label>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="hide-3" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
+              <label for="hide-3" class="ms-2 text-gray-800">Кол-во коробок</label>
+            </div> 
         </div>
       </div>
   </aside>

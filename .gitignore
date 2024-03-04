@@ -254,3 +254,6 @@ Thumbs.db
 
 # cache
 CACHE/
+
+# static
+static/
