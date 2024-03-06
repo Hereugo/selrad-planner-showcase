@@ -2,18 +2,53 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
+
+
+    # WORKLIST = (
+    #     ('shipment', 'отгрузка'),
+    #     ('layout', 'выкладка'),
+    #     ('photo', 'фото'),
+    #     ('refund', 'возврат'),
+    #     ('other', 'прочее')
+    # ) 
+class Worklist(models.Model):
+    """Model Worklist"""
+    name = models.CharField(
+        verbose_name='Название работы',
+        help_text='Введите название работы',
+        max_length=255,
+    )
+    description = models.TextField(
+        verbose_name='Описание работы',
+        help_text='Введите описание работы',
+        blank=True,
+    )
+    created_at = models.DateTimeField(
+        verbose_name='Дата создания',
+        auto_now_add=True,
+        editable=False,
+    )
+    updated_at = models.DateTimeField(
+        verbose_name='Дата обновления',
+        editable=False,
+    )
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        """Save the model instance. Update the updated_at field."""
+        self.updated_at = timezone.now()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Список задач для выполнения'
+        verbose_name_plural = 'Списки задач для выполнения'
+        ordering = ('-created_at',)
+
+
 class Plan(models.Model):
     """Model Plan"""
-
-    # TODO: Check for proper translations and find better words that are applicable
-    # in our case.
-    WORKLIST = (
-        ('shipment', 'отгрузка'),
-        ('layout', 'выкладка'),
-        ('photo', 'фото'),
-        ('refund', 'возврат'),
-        ('other', 'прочее')
-    ) 
 
     uuid = models.UUIDField(
         verbose_name='UUID',
@@ -28,12 +63,12 @@ class Plan(models.Model):
         verbose_name='Время назначения',
         help_text='Выберите время назначения',
     )
-    # TODO: Change to make possible to select multiple values.
-    worklist = models.CharField(
-        choices=WORKLIST,
+    worklist = models.ManyToManyField(
+        'Worklist',
         verbose_name='Список задач для выполнения',
         help_text='Выберите список задач для выполнения',
-        max_length=255,
+        through='PlanWorklist',
+        related_name='plans',
     )
     shipment_cost = models.DecimalField(
         verbose_name='Сумма отгрузки',
@@ -73,7 +108,7 @@ class Plan(models.Model):
         verbose_name='Клиент',
         help_text='Выберите клиента',
         related_name='plans',
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         null=True,
     )
 
@@ -96,20 +131,20 @@ class Plan(models.Model):
     class Meta:
         verbose_name = 'План'
         verbose_name_plural = 'Планы'
-        ordering = ['-assigned_date', '-created_at']
+        ordering = ['assigned_date', '-created_at']
 
 
 class PlanManager(models.Model):
     """Model PlanManager"""
     manager = models.ForeignKey(
         'managers.Manager',
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         verbose_name='Менеджер',
         help_text='Выберите менеджера'
     )
     plan = models.ForeignKey(
         'Plan',
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         verbose_name='План',
         help_text='Выберите план'
     )
@@ -118,3 +153,40 @@ class PlanManager(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        verbose_name = 'Менеджер плана'
+        verbose_name_plural = 'Менеджеры плана'
+        ordering = ('plan', 'manager')
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=['manager', 'plan'],
+        #         name='unique_manager_plan'
+        #     )
+        # ]
+
+
+class PlanWorklist(models.Model):
+    """Model PlanWorklist"""
+    worklist = models.ForeignKey(
+        'Worklist',
+        on_delete=models.CASCADE,
+        verbose_name='Список задач для выполнения',
+        help_text='Выберите список задач для выполнения'
+    )
+    plan = models.ForeignKey(
+        'Plan',
+        on_delete=models.DO_NOTHING,
+        verbose_name='План',
+        help_text='Выберите план'
+    )
+
+    class Meta:
+        verbose_name = 'Список задач для выполнения'
+        verbose_name_plural = 'Списки задач для выполнения'
+        ordering = ('plan', 'worklist')
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=['worklist', 'plan'],
+        #         name='unique_worklist_plan'
+        #     )
+        # ]

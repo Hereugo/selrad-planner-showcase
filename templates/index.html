@@ -39,15 +39,17 @@
                      {{ plan.client }}
                   </td>
                   <td class="px-6 py-4">
-                     {{ plan.worklist }}
+                    {% for work in plan.worklist.all %}
+                        <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gray-700 rounded-full">
+                           {{ work }}
+                        </span>
+                    {% endfor %}
                   </td>
                   <td class="px-6 py-4">
-                     {% comment %} TODO: Change to pill version {% endcomment %}
                      {% for manager in plan.managers.all %}
-                        {% comment %} <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gray-600 rounded-full">
+                        <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gray-700 rounded-full">
                            {{ manager }}
-                        </span> {% endcomment %}
-                        {{ manager }}
+                        </span>
                      {% endfor %}
                   </td>
                   <td class="px-6 py-4">
@@ -58,7 +60,7 @@
                   </td> 
                   <td class="px-6 py-4">
                      {% comment %} TODO: On click show popup modal with filled out data {% endcomment %}
-                     <button type="button" data-modal-target="crud-plan-modal" data-modal-toggle="crud-plan-modal" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</a>
+                        <a data-plan="{{plan.pk}}" data-modal-target="crud-plan-modal" data-modal-toggle="crud-plan-modal" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</a>
                   </td>
                </tr>
             {% endfor %}

@@ -7,7 +7,6 @@ class PlanForm(forms.ModelForm):
         model = Plan
         fields = (
             'assigned_date',
-            'worklist', 
             'shipment_cost',
             'comment',
         )

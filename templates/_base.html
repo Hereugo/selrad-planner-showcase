@@ -38,11 +38,12 @@
                 </button>
             </div>
             <!-- Modal body -->
-            <form class="p-4 md:p-5" method="POST">
+            <form class="p-4 md:p-5" action="plans/create" method="POST">
                 {% csrf_token %}
-                <div class="grid gap-4 mb-4 grid-cols-1">
-                    <div class="col-span-1">
-                        <label for="assigned_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Дата</label>                        
+                <input type='text' name='uuid' hidden>
+                <div class="grid gap-4 mb-4 grid-cols-2">
+                    <div class="col-span-2">
+                        <label for="assigned_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Дата</label>  
                         <div class="relative max-w-sm">
                           <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
                             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -52,40 +53,42 @@
                           <input datepicker type="text" id="assigned_date" name="assigned_date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Выберите дату" required>
                         </div>
                     </div>
-                    <div class="col-span-1 sm:col-span-1">
+                    <div class="col-span-2">
                         <label for="client" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Клиент</label>
                         <select id="client" name="client" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                             <option selected value="" disabled>Выберите клиента</option>
                             {% for client in clients %}
-                              <option value="{{ client.id }}">{{ client.name}}</option>
+                              <option value="{{ client.id }}">{{ client.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    {% comment %} TODO: Multiple selection {% endcomment %}
-                    <div class="col-span-1 sm:col-span-1">
-                        <label for="managers" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Менеджер</label>
-                        <select id="managers" name="managers" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-                            <option selected value="" disabled>Выберите менеджера</option>
-                            {% for manager in managers %}
-                              <option value="{{ manager.id }}">{{ manager }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="col-span-1 sm:col-span-2">
+                      <label for="managers" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Менеджер</label>
+                      <div class="space-y-2">
+                        {% for manager in managers %}
+                          <div class="flex items-center">
+                            <input type="checkbox" id="hide-2" name="manager_{{ manager.id }}" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
+                            <label for="hide-2" class="ms-2 text-gray-800">{{ manager }}</label>
+                          </div>
+                        {% endfor %}
+                      </div>
                     </div>
-                    {% comment %} TODO: Multiple selection {% endcomment %}
-                    <div class="col-span-1 sm:col-span-1">
-                      <label for="worklist" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Работа</label>
-                      <select id="worklist" name="worklist" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                          <option selected value="" disabled>Выберите работу</option>
-                          {% for work in worklist %}
-                            <option value="{{ work.0 }}">{{ work.1 }}</option>
-                          {% endfor %}
-                      </select>
+                    <div class="col-span-1 sm:col-span-2">
+                      <label for="worklist" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Выберите роботу</label>
+                      <div class="space-y-2">
+                        {% for work in worklist %}
+                          <div class="flex items-center">
+                            <input type="checkbox" id="hide-2" name="worklist_{{ work.id }}" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
+                            <label for="hide-2" class="ms-2 text-gray-800">{{ work.name }}</label>
+                          </div>
+                        {% endfor %}
+                      </div>
                     </div>
-                    <div class="col-span-2 sm:col-span-1">
+                    <div class="col-span-2 sm:col-span-2">
                       <label for="shipment_cost" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Сумма отгрузки</label>
                       <input type="number" name="shipment_cost" id="shipment_cost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="100" min="0" max="1000000" required>
                     </div> 
-                    <div class="col-span-1">
+                    <div class="col-span-2">
                         <label for="comment" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Комментарии</label>
                         <textarea id="comment" name="comment" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Дополнительные комментарии"></textarea>                    
                     </div>
@@ -122,7 +125,7 @@
   </nav>
   
   <aside id="logo-sidebar" class="fixed top-0 left-0 z-30 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0" aria-label="Sidebar">
-     <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
+     <div class="h-full px-4 pb-4 overflow-y-auto bg-white">
         <button data-modal-target="crud-plan-modal" data-modal-toggle="crud-plan-modal" type="button" class="flex items-center w-full text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm p-2 group">
           <svg class="w-6 h-6 text-gray-400 transition duration-75 group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"/>
@@ -151,7 +154,7 @@
            </li>
         </ul>
         <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
-        <div class="space-y-2 w-full">
+        <div class="space-y-3 w-full">
           <h3 class="mb-2 font-bold text-gray-900 text-center">Фильтры</h3> 
 
           {% comment %} TODO: Search functionality on text in table {% endcomment %}
@@ -169,10 +172,11 @@
               </button>
           </form>
 
-          <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
+          <div class="border-t border-gray-200 dark:border-gray-700"></div>
          
           {% comment %} TODO: Filter on date range {% endcomment %}
-          <div date-rangepicker class="flex items-center flex-col w-full"> 
+          <div date-rangepicker class="flex items-center flex-col w-full">
+            {% comment %} <h4 class="mb-4 font-bold text-gray-900 text-center">Дата</h4>  {% endcomment %}
             <div class="relative w-full">
               <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                   <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -192,11 +196,11 @@
             </div>
           </div>
 
-          <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
+          <div class="border-t border-gray-200 dark:border-gray-700"></div>
           
           {% comment %} TODO: Toggle on/off columns in table {% endcomment %}
           <div class="space-y-2">
-            <h4 class="mb-3 font-bold text-gray-900 text-center">Показать поля</h4>
+            <h4 class="mb-4 font-bold text-gray-900 text-center">Показать поля</h4>
             <div class="flex items-center">
               <input type="checkbox" id="hide-2" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
               <label for="hide-2" class="ms-2 text-gray-800">Дата</label>
@@ -230,6 +234,78 @@
     {% endblock content %}
   </div>
 
+
+    <script>
+        function fillModal(data) {
+            // For managers, worklist there inputs are checkboxes and are named as manager{{ id }} and worklist_{{ id }}
+            // for this we change data to solve this issue
+            if (data.hasOwnProperty('managers')) {
+                data = {
+                    ...data,
+                    ...data.managers.reduce((acc, id) => {
+                        acc[`manager_${id}`] = true;
+                        return acc;
+                    }, {}),
+                }
+                delete data.managers;
+            }
+            if (data.hasOwnProperty('worklist')) {
+                data = {
+                    ...data,
+                    ...data.worklist.reduce((acc, id) => {
+                        acc[`worklist_${id}`] = true;
+                        return acc;
+                    }, {}),
+                }
+                delete data.worklist;
+            }
+            // console.log("Filling modal with data: ", data);
+        
+            let modalForm = document.querySelector('#crud-plan-modal form');
+            
+            // Clear the form
+            for (const formElement of modalForm.querySelectorAll('[name]')) {
+                if (formElement.type === 'hidden') continue;
+                if (formElement.type === 'checkbox') {
+                    formElement.checked = false;
+                } else {
+                    formElement.value = '';
+                }
+            }        
+
+            // Fill the form with data
+            for (const [key, value] of Object.entries(data)) {
+                let tag = modalForm.querySelector(`[name="${key}"]`);
+                // console.log(tag);
+                if (tag) {
+                    if (tag.type === 'checkbox') {
+                        tag.checked = value;
+                    } else {
+                        tag.value = value;
+                    }
+                }
+            }
+        }           
+
+        let modalButtons = document.querySelectorAll('[data-modal-target="crud-plan-modal"]');
+        for (const btn of modalButtons) {
+            btn.addEventListener('click', (e) => {
+                let planId = e.target.dataset.plan || -1;
+                if (planId != -1) {
+                    let query = `plans/${planId}`;
+                    fetch(query).then((response) => {
+                        return response.json();
+                    })
+                    .then(fillModal)
+                    .catch((error) => {
+                        console.error("Error fetching plan: ", error);
+                    });
+                } else {
+                    fillModal({});
+                }
+            });
+        }
+    </script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/datepicker.min.js"></script>
