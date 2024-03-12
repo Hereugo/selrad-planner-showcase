@@ -1,16 +1,11 @@
 import uuid
+from math import ceil
+
 from django.db import models
 from django.utils import timezone
+from django.urls import reverse
 
 
-
-    # WORKLIST = (
-    #     ('shipment', 'отгрузка'),
-    #     ('layout', 'выкладка'),
-    #     ('photo', 'фото'),
-    #     ('refund', 'возврат'),
-    #     ('other', 'прочее')
-    # ) 
 class Worklist(models.Model):
     """Model Worklist"""
     name = models.CharField(
@@ -112,14 +107,16 @@ class Plan(models.Model):
         null=True,
     )
 
+    def get_absolute_url(self):
+        return reverse('plans')
+
     @property
     def box_count(self):
         """The box count, calculated from the shipment cost."""
-        # TODO implement the box count calculation
-        return -1
+        return ceil(self.shipment_cost / 100_000)
 
     def __str__(self):
-        return f'{self.assigned_date} - {self.is_completed} - {self.managers}' 
+        return f'{self.assigned_date} - {self.is_completed}' 
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""

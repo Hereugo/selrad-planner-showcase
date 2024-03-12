@@ -1,0 +1,81 @@
+<form
+    hx-post="/plans/create"
+    hx-target="#plans"
+    class="p-4 md:p-5"
+>
+    {% csrf_token %}
+    <input type='text' name='uuid' hidden value="{{ plan.uuid }}">
+    <div class="grid gap-4 mb-4 grid-cols-2">
+        <div class="col-span-2">
+        <label for="assigned_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Дата</label>
+        <div class="relative max-w-sm">
+            <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
+            </svg>
+            </div>
+            <input datepicker type="text" id="assigned_date" name="assigned_date" value="{{ plan.assigned_date|date:'m/d/Y' }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Выберите дату" required>
+        </div>
+        </div>
+        <div class="col-span-2">
+        <label for="client" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Клиент</label>
+        <select id="client" name="client" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+            <option 
+                {% if not plan %} selected {% endif %}
+                value="" disabled>Выберите клиента</option>
+            {% for client in clients %}
+            <option 
+                value="{{ client.id }}"
+                {% if client == plan.client %} selected {% endif %}
+            >{{ client.name }}</option>
+            {% endfor %}
+        </select>
+        </div>
+        <div class="col-span-1 sm:col-span-2">
+        <label for="managers" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Менеджер</label>
+        <div class="space-y-2">
+            {% for manager in managers %}
+            <div class="flex items-center">
+            <input 
+                {% if manager in plan.managers.all %} checked {% endif %}
+                type="checkbox"
+                id="hide-2" 
+                name="manager_{{ manager.id }}"
+                class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
+            <label for="hide-2" class="ms-2 text-gray-800">{{ manager }}</label>
+            </div>
+            {% endfor %}
+        </div>
+        </div>
+        <div class="col-span-1 sm:col-span-2">
+        <label for="worklist" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Выберите роботу</label>
+        <div class="space-y-2">
+            {% for work in worklist %}
+            <div class="flex items-center">
+            <input 
+                {% if work in plan.worklist.all %} checked {% endif %}
+                type="checkbox" 
+                id="hide-2" 
+                name="worklist_{{ work.id }}" 
+                class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
+            <label for="hide-2" class="ms-2 text-gray-800">{{ work.name }}</label>
+            </div>
+            {% endfor %}
+        </div>
+        </div>
+        <div class="col-span-2 sm:col-span-2">
+        <label for="shipment_cost" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Сумма отгрузки</label>
+        <input type="number" name="shipment_cost" id="shipment_cost" value="{{ plan.shipment_cost }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="100" required>
+        </div>
+        <div class="col-span-2">
+        <label for="comment" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Комментарии</label>
+        <textarea id="comment" name="comment" value="{{ plan.comment }}" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Дополнительные комментарии"></textarea>
+        </div>
+    </div>
+    <button
+        type="submit"
+        class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+        <svg class="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+        Создать
+    </button>
+</form>

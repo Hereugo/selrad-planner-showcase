@@ -1,5 +1,3 @@
-<!-- templates/_base.html -->
-
 {% load compress %}
 {% load static %}
 
@@ -12,303 +10,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Планировщик</title>
 
-    <link rel="stylesheet" href="{% static 'src/output.css' %}">
-    {% comment %} {% compress css %}
       <link rel="stylesheet" href="{% static 'src/output.css' %}">
-    {% endcompress %} {% endcomment %}
+    <!-- {% compress css %} -->
+    <!--   <link rel="stylesheet" href="{% static 'src/output.css' %}"> -->
+    <!-- {% endcompress %} -->
 
+    <script src="node_modules/htmx.org/dist/htmx.min.js"></script>
+    <script src="node_modules/flowbite/dist/flowbite.min.js"></script>
+    <script src="node_modules/flowbite/dist/datepicker.min.js"></script>
+    <script src="node_modules/flowbite-datepicker/dist/js/datepicker.min.js"></script>
+    <script>
+      {% comment %} Hack to reload datepicker instances after htmx loads {% endcomment %}
+      function initDatepickers() {
+        document.querySelectorAll('[datepicker]').forEach(function (datepickerEl) {
+          new window.Datepicker(datepickerEl);
+        });
+      }
+    </script>
 </head>
 
 <body>
-  <!-- Main modal -->
-  <div id="crud-plan-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full w-50">
-    <div class="relative p-4 w-full max-w-md max-h-full">
-        <!-- Modal content -->
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <!-- Modal header -->
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                    Создать новый план
-                </h3>
-                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="crud-plan-modal">
-                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                    </svg>
-                    <span class="sr-only">Закрыть</span>
-                </button>
-            </div>
-            <!-- Modal body -->
-            <form class="p-4 md:p-5" action="plans/create" method="POST">
-                {% csrf_token %}
-                <input type='text' name='uuid' hidden>
-                <div class="grid gap-4 mb-4 grid-cols-2">
-                    <div class="col-span-2">
-                        <label for="assigned_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Дата</label>  
-                        <div class="relative max-w-sm">
-                          <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
-                            </svg>
-                          </div>
-                          <input datepicker type="text" id="assigned_date" name="assigned_date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Выберите дату" required>
-                        </div>
-                    </div>
-                    <div class="col-span-2">
-                        <label for="client" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Клиент</label>
-                        <select id="client" name="client" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-                            <option selected value="" disabled>Выберите клиента</option>
-                            {% for client in clients %}
-                              <option value="{{ client.id }}">{{ client.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-span-1 sm:col-span-2">
-                      <label for="managers" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Менеджер</label>
-                      <div class="space-y-2">
-                        {% for manager in managers %}
-                          <div class="flex items-center">
-                            <input type="checkbox" id="hide-2" name="manager_{{ manager.id }}" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
-                            <label for="hide-2" class="ms-2 text-gray-800">{{ manager }}</label>
-                          </div>
-                        {% endfor %}
-                      </div>
-                    </div>
-                    <div class="col-span-1 sm:col-span-2">
-                      <label for="worklist" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Выберите роботу</label>
-                      <div class="space-y-2">
-                        {% for work in worklist %}
-                          <div class="flex items-center">
-                            <input type="checkbox" id="hide-2" name="worklist_{{ work.id }}" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
-                            <label for="hide-2" class="ms-2 text-gray-800">{{ work.name }}</label>
-                          </div>
-                        {% endfor %}
-                      </div>
-                    </div>
-                    <div class="col-span-2 sm:col-span-2">
-                      <label for="shipment_cost" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Сумма отгрузки</label>
-                      <input type="number" name="shipment_cost" id="shipment_cost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="100" min="0" max="1000000" required>
-                    </div> 
-                    <div class="col-span-2">
-                        <label for="comment" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Комментарии</label>
-                        <textarea id="comment" name="comment" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Дополнительные комментарии"></textarea>                    
-                    </div>
-                </div>
-                <button type="submit" class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                    <svg class="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
-                    Создать
-                </button>
-            </form>
-        </div>
-    </div>
-  </div>
+  {% include "plan_modal.html" %}
 
-  <nav class="fixed top-0 z-40 w-full bg-white border-b border-gray-200">
-    <div class="px-3 py-3 lg:px-5 lg:pl-3">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center justify-start rtl:justify-end">
-          <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar" type="button" class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
-              <span class="sr-only">Open sidebar</span>
-              <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                 <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
-              </svg>
-           </button>
-          <a href="/" class="flex items-center ms-2 md:me-24 group">
-            {% comment %} <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 me-3" alt="FlowBite Logo" /> {% endcomment %}
-            <svg class="w-6 h-6 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-              <path fill-rule="evenodd" d="M5 5c.6 0 1-.4 1-1a1 1 0 1 1 2 0c0 .6.4 1 1 1h1c.6 0 1-.4 1-1a1 1 0 1 1 2 0c0 .6.4 1 1 1h1c.6 0 1-.4 1-1a1 1 0 1 1 2 0c0 .6.4 1 1 1a2 2 0 0 1 2 2v1c0 .6-.4 1-1 1H4a1 1 0 0 1-1-1V7c0-1.1.9-2 2-2ZM3 19v-7c0-.6.4-1 1-1h16c.6 0 1 .4 1 1v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm6-6c0-.6-.4-1-1-1a1 1 0 1 0 0 2c.6 0 1-.4 1-1Zm2 0a1 1 0 1 1 2 0c0 .6-.4 1-1 1a1 1 0 0 1-1-1Zm6 0c0-.6-.4-1-1-1a1 1 0 1 0 0 2c.6 0 1-.4 1-1ZM7 17a1 1 0 1 1 2 0c0 .6-.4 1-1 1a1 1 0 0 1-1-1Zm6 0c0-.6-.4-1-1-1a1 1 0 1 0 0 2c.6 0 1-.4 1-1Zm2 0a1 1 0 1 1 2 0c0 .6-.4 1-1 1a1 1 0 0 1-1-1Z" clip-rule="evenodd"/>
-            </svg>  
-            <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap ms-3">Планировщик</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </nav>
-  
-  <aside id="logo-sidebar" class="fixed top-0 left-0 z-30 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0" aria-label="Sidebar">
-     <div class="h-full px-4 pb-4 overflow-y-auto bg-white">
-        <button data-modal-target="crud-plan-modal" data-modal-toggle="crud-plan-modal" type="button" class="flex items-center w-full text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm p-2 group">
-          <svg class="w-6 h-6 text-gray-400 transition duration-75 group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"/>
-          </svg>
-          <span class="ms-3">Создать план</span>
-        </button>
-        <div class="border-t border-gray-200 my-4"></div>
-        <ul class="space-y-2 font-medium">
-           <li>
-              {% comment %} TODO: Work on creating an excelsheet file {% endcomment %}
-              <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
-                <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4c0 .6.4 1 1 1h14c.6 0 1-.4 1-1v-4c0-.6-.4-1-1-1h-2m-1-5-4 5-4-5m9 8h0"/>
-                </svg>
-                 <span class="flex-1 ms-3 whitespace-nowrap">Скачать эксель</span>
-              </a>
-           </li>
-          <li>
-              {% comment %} TODO: Work on sending out whatsapp messages {% endcomment %}
-              <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 4a2.6 2.6 0 0 0-2 .9 6.2 6.2 0 0 0-1.8 6 12 12 0 0 0 3.4 5.5 12 12 0 0 0 5.6 3.4 6.2 6.2 0 0 0 6.6-2.7 2.6 2.6 0 0 0-.7-3L18 12.9a2.7 2.7 0 0 0-3.8 0l-.6.6a.8.8 0 0 1-1.1 0l-1.9-1.8a.8.8 0 0 1 0-1.2l.6-.6a2.7 2.7 0 0 0 0-3.8L10 4.9A2.6 2.6 0 0 0 8 4Z"/>
-                </svg>              
-                 <span class="flex-1 ms-3 whitespace-nowrap">Oтчет</span>
-              </a>
-           </li>
-        </ul>
-        <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
-        <div class="space-y-3 w-full">
-          <h3 class="mb-2 font-bold text-gray-900 text-center">Фильтры</h3> 
+  {% include "nav.html" %}
 
-          {% comment %} TODO: Search functionality on text in table {% endcomment %}
-          <form class="flex items-center w-full">
-              {% csrf_token %}
-              <label for="simple-search" class="sr-only">Search</label>
-              <div class="relative w-full">
-                <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 block w-full p-2.5" placeholder="Поиск"/>
-              </div>
-              <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-700 dark:hover:bg-gray-800 dark:focus:ring-gray-800">
-                  <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                  </svg>
-                  <span class="sr-only">Поиск</span>
-              </button>
-          </form>
-
-          <div class="border-t border-gray-200 dark:border-gray-700"></div>
-         
-          {% comment %} TODO: Filter on date range {% endcomment %}
-          <div date-rangepicker class="flex items-center flex-col w-full">
-            {% comment %} <h4 class="mb-4 font-bold text-gray-900 text-center">Дата</h4>  {% endcomment %}
-            <div class="relative w-full">
-              <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                  <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
-                  </svg>
-              </div>
-              <input name="start" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Начало даты">
-            </div>
-            <span class="my-2 text-gray-500 text-sm">по</span>
-            <div class="relative w-full">
-              <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                  <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
-                  </svg>
-              </div>
-              <input name="end" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Конец даты">
-            </div>
-          </div>
-
-          <div class="border-t border-gray-200 dark:border-gray-700"></div>
-          
-          {% comment %} TODO: Toggle on/off columns in table {% endcomment %}
-          <div class="space-y-2">
-            <h4 class="mb-4 font-bold text-gray-900 text-center">Показать поля</h4>
-            <div class="flex items-center">
-              <input type="checkbox" id="hide-2" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
-              <label for="hide-2" class="ms-2 text-gray-800">Дата</label>
-            </div>
-            <div class="flex items-center">
-              <input type="checkbox" id="hide-1" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
-              <label for="hide-1" class="ms-2 text-gray-800">Клиент</label>
-            </div>
-            <div class="flex items-center">
-              <input type="checkbox" id="hide-2" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
-              <label for="hide-2" class="ms-2 text-gray-800">Работа</label>
-            </div>
-            <div class="flex items-center">
-              <input type="checkbox" id="hide-3" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
-              <label for="hide-3" class="ms-2 text-gray-800">Менеджер</label>
-            </div>
-            <div class="flex items-center">
-              <input type="checkbox" id="hide-3" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
-              <label for="hide-3" class="ms-2 text-gray-800">Сумма отгрузки</label>
-            </div>
-            <div class="flex items-center">
-              <input type="checkbox" id="hide-3" class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
-              <label for="hide-3" class="ms-2 text-gray-800">Кол-во коробок</label>
-            </div> 
-        </div>
-      </div>
-  </aside>
-  
   <div class="p-4 sm:ml-64">
     {% block content %}
     {% endblock content %}
   </div>
-
-
-    <script>
-        function fillModal(data) {
-            // For managers, worklist there inputs are checkboxes and are named as manager{{ id }} and worklist_{{ id }}
-            // for this we change data to solve this issue
-            if (data.hasOwnProperty('managers')) {
-                data = {
-                    ...data,
-                    ...data.managers.reduce((acc, id) => {
-                        acc[`manager_${id}`] = true;
-                        return acc;
-                    }, {}),
-                }
-                delete data.managers;
-            }
-            if (data.hasOwnProperty('worklist')) {
-                data = {
-                    ...data,
-                    ...data.worklist.reduce((acc, id) => {
-                        acc[`worklist_${id}`] = true;
-                        return acc;
-                    }, {}),
-                }
-                delete data.worklist;
-            }
-            // console.log("Filling modal with data: ", data);
-        
-            let modalForm = document.querySelector('#crud-plan-modal form');
-            
-            // Clear the form
-            for (const formElement of modalForm.querySelectorAll('[name]')) {
-                if (formElement.type === 'hidden') continue;
-                if (formElement.type === 'checkbox') {
-                    formElement.checked = false;
-                } else {
-                    formElement.value = '';
-                }
-            }        
-
-            // Fill the form with data
-            for (const [key, value] of Object.entries(data)) {
-                let tag = modalForm.querySelector(`[name="${key}"]`);
-                // console.log(tag);
-                if (tag) {
-                    if (tag.type === 'checkbox') {
-                        tag.checked = value;
-                    } else {
-                        tag.value = value;
-                    }
-                }
-            }
-        }           
-
-        let modalButtons = document.querySelectorAll('[data-modal-target="crud-plan-modal"]');
-        for (const btn of modalButtons) {
-            btn.addEventListener('click', (e) => {
-                let planId = e.target.dataset.plan || -1;
-                if (planId != -1) {
-                    let query = `plans/${planId}`;
-                    fetch(query).then((response) => {
-                        return response.json();
-                    })
-                    .then(fillModal)
-                    .catch((error) => {
-                        console.error("Error fetching plan: ", error);
-                    });
-                } else {
-                    fillModal({});
-                }
-            });
-        }
-    </script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/datepicker.min.js"></script>
 </body>
 
 </html>

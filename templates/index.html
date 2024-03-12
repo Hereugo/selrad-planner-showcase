@@ -1,101 +1,12 @@
 {% extends "_base.html" %}
 
 {% block content %}
-<div class="p-4 border-2 border-gray-200 rounded-lg mt-14">
-   <div class="relative overflow-x-auto sm:rounded-lg">
-      <table class="w-full text-sm text-left rtl:text-right text-gray-500">
-         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-            <tr>
-               <th scope="col" class="px-6 py-3">
-                  Дата
-               </th>
-               <th scope="col" class="px-6 py-3">
-                  Клиент
-               </th>
-               <th scope="col" class="px-6 py-3">
-                  Работа
-               </th>
-               <th scope="col" class="px-6 py-3">
-                  Менеджер
-               </th>
-               <th scope="col" class="px-6 py-3">
-                  Сумма отгрузки (₸)
-               </th>
-               <th scope="col" class="px-6 py-3">
-                  Кол-во коробок
-               </th>
-               <th scope="col" class="px-6 py-3">
-                  Действия
-               </th>
-            </tr>
-         </thead>
-         <tbody>
-            {% for plan in page_obj %}
-               <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                     {{ plan.assigned_date }}
-                  </th>
-                  <td class="px-6 py-4">
-                     {{ plan.client }}
-                  </td>
-                  <td class="px-6 py-4">
-                    {% for work in plan.worklist.all %}
-                        <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gray-700 rounded-full">
-                           {{ work }}
-                        </span>
-                    {% endfor %}
-                  </td>
-                  <td class="px-6 py-4">
-                     {% for manager in plan.managers.all %}
-                        <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gray-700 rounded-full">
-                           {{ manager }}
-                        </span>
-                     {% endfor %}
-                  </td>
-                  <td class="px-6 py-4">
-                     {{ plan.shipment_cost }}
-                  </td>
-                  <td class="px-6 py-4">
-                     {{ plan.box_count }}
-                  </td> 
-                  <td class="px-6 py-4">
-                     {% comment %} TODO: On click show popup modal with filled out data {% endcomment %}
-                        <a data-plan="{{plan.pk}}" data-modal-target="crud-plan-modal" data-modal-toggle="crud-plan-modal" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</a>
-                  </td>
-               </tr>
-            {% endfor %}
-         </tbody>
-      </table>
-      <nav class="flex items-center flex-column flex-wrap md:flex-row justify-between pt-4" aria-label="Навигация">
-         <span class="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto">
-            Отображается <span class="font-semibold text-gray-900 dark:text-white">{{ page_obj.start_index}}-{{ page_obj.end_index }}</span> из <span class="font-semibold text-gray-900 dark:text-white">{{ page_obj.paginator.count }}</span>
-         </span>
-         {% if page_obj.paginator.num_pages > 1 %}
-            <ul class="inline-flex space-x-px rtl:space-x-reverse text-sm h-8">
-               {% if page_obj.has_previous %}
-                  <li>
-                     <a href="?page={{ page_obj.previous_page_number }}" class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Предыдущий</a>
-                  </li>
-               {% endif %}
-               {% for i in page_obj.paginator.page_range %}
-                  {% if page_obj.number == i %}
-                     <li>
-                        <a href="?page={{ i }}" aria-current="page" class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">{{ i }}</a>
-                     </li>
-                  {% else %}
-                     <li>
-                        <a href="?page={{ i }}" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">{{ i }}</a>
-                     </li>
-                  {% endif %}
-               {% endfor %}
-               {% if page_obj.has_next %}
-                  <li>
-                     <a href="?page={{ page_obj.next_page_number }}" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Следующий</a>
-                  </li>
-               {% endif %}
-            </ul>
-         {% endif %}
-      </nav>
-   </div>
+<div
+    hx-get="/plans"
+    hx-on::load="htmx:load: initModals()
+                 htmx:swap: FlowbiteInstances._instances.Modal['crud-plan-modal'].hide()"
+    hx-trigger="load"
+    id="plans"
+>
 </div>
-{% endblock content %}
+ {% endblock content %}
