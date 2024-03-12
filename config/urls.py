@@ -3,16 +3,18 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from plans.views import PlanListView, PlanCreateView, plan_show_modal, index
+from plans.views import PlanListView, plan_create, index
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('', index, name='index'),
     path('plans', PlanListView.as_view(), name='plans'),
-    path('plans/create', PlanCreateView.as_view(), name='plan_create'),
-    path('plans/modal', plan_show_modal, name='plan_show_modal_default'),
-    path('plans/modal/<uuid:pk>', plan_show_modal, name='plan_show_modal'),
+    
+    path('plans/create', plan_create, name='plan_create_default'),
+    path('plans/create/<uuid:pk>', plan_create, name='plan_create'),
 ]
 
 if settings.DEBUG:

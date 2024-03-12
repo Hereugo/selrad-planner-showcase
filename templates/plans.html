@@ -57,7 +57,7 @@
           </td>
           <td class="px-6 py-4">
             <button
-                hx-get="{% url 'plan_show_modal' plan.pk %}"
+                hx-get="{% url 'plan_create' plan.pk %}"
                 hx-target="#crud-plan-modal-form"
                 data-modal-target="crud-plan-modal" data-modal-toggle="crud-plan-modal"
                 type='button' class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</button>
@@ -74,19 +74,25 @@
       <ul class="inline-flex space-x-px rtl:space-x-reverse text-sm h-8">
         {% if page_obj.has_previous %}
         <li>
-          <a href="?page={{ page_obj.previous_page_number }}"
+          <a
+            hx-get="{% url 'plans' %}?page={{ page_obj.previous_page_number }}&{{ urlencode }}"
+            hx-target="#plans"
             class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Предыдущий</a>
         </li>
         {% endif %}
         {% for i in page_obj.paginator.page_range %}
         {% if page_obj.number == i %}
         <li>
-          <a href="?page={{ i }}"
+          <a
+            hx-get="{% url 'plans' %}?page={{ i }}&{{ urlencode }}"
+            hx-target="#plans"
             aria-current="page" class="flex items-center justify-center px-3 h-8 text-blue-600 border border-gray-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">{{ i }}</a>
         </li>
         {% else %}
         <li>
-          <a href="?page={{ i }}"
+          <a
+            hx-get="{% url 'plans' %}?page={{ i }}&{{ urlencode }}"
+            hx-target="#plans"
             class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">{{ i }}</a>
         </li>
         {% endif %}
@@ -94,7 +100,8 @@
         {% if page_obj.has_next %}
         <li>
           <a 
-            href="?page={{ page_obj.next_page_number }}"
+            hx-get="{% url 'plans' %}?page={{ page_obj.next_page_number }}&{{ urlencode }}"
+            hx-target="#plans"
             class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Следующий</a>
         </li>
         {% endif %}
