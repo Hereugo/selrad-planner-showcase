@@ -20,7 +20,7 @@
     <script src="node_modules/flowbite/dist/datepicker.min.js"></script>
     <script src="node_modules/flowbite-datepicker/dist/js/datepicker.min.js"></script>
     <script>
-      {% comment %} Hack to reload datepicker instances after htmx loads {% endcomment %}
+      {% comment %} FIXME: Hack to reload datepicker instances after htmx loads {% endcomment %}
       function initDatepickers() {
         document.querySelectorAll('[datepicker]').forEach(function (datepickerEl) {
           new window.Datepicker(datepickerEl);
@@ -39,5 +39,26 @@
     {% endblock content %}
   </div>
 </body>
+
+<script>
+    document.getElementById("excel-button").addEventListener("click", function downloadExcel(e) {
+        e.preventDefault();
+
+        const filters = document.getElementById('plans-info').dataset.filters || '';
+        const url = document.getElementById("excel-button").dataset.excelurl + '?' + filters;
+
+        fetch(url)
+          .then(response => response.blob())
+          .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'report.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          });
+    });
+</script>
 
 </html>

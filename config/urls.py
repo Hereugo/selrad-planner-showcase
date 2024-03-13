@@ -3,7 +3,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from plans.views import PlanListView, plan_create, index
+from plans.views import PlanListView, plan_create, index, plans_excel
 
 
 
@@ -12,9 +12,11 @@ urlpatterns = [
 
     path('', index, name='index'),
     path('plans', PlanListView.as_view(), name='plans'),
-    
+
     path('plans/create', plan_create, name='plan_create_default'),
     path('plans/create/<uuid:pk>', plan_create, name='plan_create'),
+
+    path('plans/excel', plans_excel, name='plans_excel')
 ]
 
 if settings.DEBUG:

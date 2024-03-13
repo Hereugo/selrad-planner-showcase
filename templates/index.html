@@ -2,7 +2,7 @@
 
 {% block content %}
 <div
-    hx-get="/plans?{{ urlencode }}"
+    hx-get="{% url 'plans' %}"
     hx-on::load="htmx:load: initModals()
                  htmx:swap: FlowbiteInstances._instances.Modal['crud-plan-modal'].hide()"
     hx-trigger="load"
@@ -10,3 +10,4 @@
 >
 </div>
  {% endblock content %}
+
