@@ -14,6 +14,20 @@ class Client(models.Model):
         verbose_name='Адрес клиента',
         help_text='Введите адрес клмента',
     )
+    lat = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        verbose_name='Широта',
+        help_text='Введите широту адреса',
+        default=0,
+    )
+    lon = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        verbose_name='Долгота',
+        help_text='Введите долгота адреса',
+        default=0,
+    )
     created_at = models.DateTimeField(
         verbose_name='Дата создания',
         auto_now_add=True,

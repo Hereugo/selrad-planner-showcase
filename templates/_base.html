@@ -27,6 +27,8 @@
         });
       }
     </script>
+    <!-- <script src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey={{ YANDEX_API_KEY }}" type="text/javascript"></script> -->
+    <script src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=51f19831-2995-4814-9cd4-a1ea4d316110" type="text/javascript"></script>
 </head>
 
 <body>
@@ -34,7 +36,7 @@
 
   {% include "nav.html" %}
 
-  <div class="p-4 sm:ml-64">
+  <div class="p-4 sm:ml-64 min-h-screen flex flex-col">
     {% block content %}
     {% endblock content %}
   </div>

@@ -1,0 +1,41 @@
+<div id="map" class="flex flex-grow">
+</div>
+{{ clients|json_script:"clients" }}
+<script type="text/javascript">
+  ymaps.ready(init);
+
+  function init() {
+    // Double JSON parse because upon rendering, the text is first in quotes
+    var clients = JSON.parse(JSON.parse(document.getElementById("clients").textContent));
+
+    var center = clients.reduce(
+      (acc, client) => [
+        acc[0] + parseFloat(client.fields.lat),
+        acc[1] + parseFloat(client.fields.lon),
+      ],
+      [0, 0],
+    );
+    center = [center[0] / clients.length, center[1] / clients.length];
+
+    var myMap = new ymaps.Map("map", {
+      center: center,
+      zoom: 12,
+    });
+
+    for (var i = 0; i < clients.length; i++) {
+      myMap.geoObjects.add(
+        new ymaps.Placemark(
+          [ parseFloat(clients[i].fields.lat), parseFloat(clients[i].fields.lon) ],
+          {
+            balloonContent: clients[i].fields.name,
+          },
+          {
+            iconColor: "blue",
+          },
+        ),
+      );
+    }
+
+    myMap.container.fitToViewport();
+  }
+</script>

@@ -8,6 +8,7 @@ from openpyxl.styles import Border, Side
 from django.views.generic import ListView
 from django.shortcuts import render, redirect
 from django.http import FileResponse
+from django.core import serializers
 
 from .filters import PlanFilter
 from .forms import PlanForm
@@ -61,6 +62,18 @@ def plan_create(request, pk=None):
         'worklist': worklist,
         'managers': managers
     })
+
+
+def plan_delete(request, pk):
+    # TODO: Delete plan
+    pass
+
+
+def plan_show_map(request, pk=None):
+    # TODO: Show map with the plan's address 
+    return render(request, 'map.html', {
+        'clients': serializers.serialize("json", Client.objects.all())
+    }) 
 
 
 def plans_excel(request):
