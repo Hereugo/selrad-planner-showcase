@@ -7,8 +7,8 @@ from .models import Plan
 class PlanFilter(FilterSet):
     search = CharFilter(method='my_custom_filter')
 
-    date_after = DateFilter(field_name='assigned_date',lookup_expr=('gt'))
-    date_before = DateFilter(field_name='assigned_date',lookup_expr=('lt'),) 
+    date_after = DateFilter(field_name='assigned_date',lookup_expr=('gte'))
+    date_before = DateFilter(field_name='assigned_date',lookup_expr=('lte'),) 
 
     def my_custom_filter(self, queryset, name, value):
         q = Plan.objects.annotate(

@@ -60,7 +60,7 @@ def plan_create(request, pk=None):
         form = PlanForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('plans', request)
+            return redirect('plans')
 
     plan = Plan.objects.filter(pk=pk).first()
     clients = Client.objects.all()

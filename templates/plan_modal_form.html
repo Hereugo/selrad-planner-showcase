@@ -1,5 +1,5 @@
 <form
-    hx-post="/plans/create"
+    hx-post="{% url 'plan_create_default' %}"
     hx-target="#plans"
     hx-swap="innerHTML"
     class="p-4 md:p-5"
@@ -80,4 +80,3 @@
     Создать
   </button>
 </form>
-
