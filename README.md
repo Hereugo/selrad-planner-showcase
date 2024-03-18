@@ -22,8 +22,26 @@ source .venv/bin/activate
 - Установите зависимости из файла requirements.txt
 
 ```
-cd backend
 pip install -r requirements.txt
+```
+
+- node
+
+```
+npm i
+```
+
+- сделать админку
+
+```
+python3 manage.py createsuperuser
+```
+
+- добавить базу
+
+```
+python3 manage.py loaddata data/worklist.json
+python3 manage.py import_clients_csv
 ```
 
 - В папке с файлом manage.py выполните команду:

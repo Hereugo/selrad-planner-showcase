@@ -1,5 +1,7 @@
 import io
 import re
+import json
+from urllib.parse import urlencode, quote_plus
 from itertools import groupby
 
 import openpyxl
@@ -20,6 +22,15 @@ from managers.models import Manager
 
 def index(request):
     return render(request, 'index.html')
+
+def aside_buttons(request):
+    # get reuqests query parameters
+    payload = json.loads(request.GET.get('filter_params', '{}'))
+
+    # convert filter to urlencoded string 
+    res = urlencode(payload, quote_via=quote_plus)
+
+    return render(request, 'aside_buttons.html', {'urlencode': res})
 
 
 class PlanListView(ListView):
@@ -70,9 +81,14 @@ def plan_delete(request, pk):
 
 
 def plan_show_map(request, pk=None):
-    # TODO: Show map with the plan's address 
+    queryset = Plan.objects.all()
+    queryset = PlanFilter(request.GET, queryset=queryset).qs
+
+    st = set(queryset.values_list('client__pk', flat=True))
+    queryset = Client.objects.filter(pk__in=st)
+
     return render(request, 'map.html', {
-        'clients': serializers.serialize("json", Client.objects.all())
+        'clients': serializers.serialize("json", queryset)
     }) 
 
 

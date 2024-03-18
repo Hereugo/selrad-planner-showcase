@@ -16,6 +16,8 @@
     <!-- {% endcompress %} -->
 
     <script src="node_modules/htmx.org/dist/htmx.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/debug.js"></script>
+   
     <script src="node_modules/flowbite/dist/flowbite.min.js"></script>
     <script src="node_modules/flowbite/dist/datepicker.min.js"></script>
     <script src="node_modules/flowbite-datepicker/dist/js/datepicker.min.js"></script>
@@ -27,40 +29,28 @@
         });
       }
     </script>
-    <!-- <script src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey={{ YANDEX_API_KEY }}" type="text/javascript"></script> -->
-    <script src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=51f19831-2995-4814-9cd4-a1ea4d316110" type="text/javascript"></script>
+    <script src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey={{ YANDEX_API_KEY }}" type="text/javascript"></script>
+    <script>
+    <!-- Function for handling nav filter params -->
+    // TODO: Refactor for sequrity reasons (XSS)
+    // https://htmx.org/attributes/hx-vals/
+      function formSerializer(id) {
+          let formData = new FormData(document.getElementById(id));
+          let processedData = JSON.stringify(Object.fromEntries(formData));
+          return processedData;
+      }
+    </script>
 </head>
 
 <body>
   {% include "plan_modal.html" %}
 
-  {% include "nav.html" %}
+    {% include "nav.html" %}
 
-  <div class="p-4 sm:ml-64 min-h-screen flex flex-col">
+<div class="p-4 sm:ml-64 mt-3 min-h-screen flex flex-col">
     {% block content %}
     {% endblock content %}
   </div>
+
 </body>
-
-<script>
-    document.getElementById("excel-button").addEventListener("click", function downloadExcel(e) {
-        e.preventDefault();
-
-        const filters = document.getElementById('plans-info').dataset.filters || '';
-        const url = document.getElementById("excel-button").dataset.excelurl + '?' + filters;
-
-        fetch(url)
-          .then(response => response.blob())
-          .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'report.xlsx';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-          });
-    });
-</script>
-
 </html>
