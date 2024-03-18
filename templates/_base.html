@@ -4,22 +4,24 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Планировщик</title>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Планировщик</title>
 
-      <link rel="stylesheet" href="{% static 'src/output.css' %}">
-    <!-- {% compress css %} -->
-    <!--   <link rel="stylesheet" href="{% static 'src/output.css' %}"> -->
-    <!-- {% endcompress %} -->
+        <link rel="stylesheet" href="{% static 'src/output.css' %}">
+        <!-- {% compress css %} -->
+        <!--   <link rel="stylesheet" href="{% static 'src/output.css' %}"> -->
+        <!-- {% endcompress %} -->
 
-    <script src="node_modules/htmx.org/dist/htmx.min.js"></script>
-    <script src="node_modules/flowbite/dist/flowbite.min.js"></script>
-    <script src="node_modules/flowbite/dist/datepicker.min.js"></script>
-    <script src="node_modules/flowbite-datepicker/dist/js/datepicker.min.js"></script>
-    <script>
+        <script src="node_modules/htmx.org/dist/htmx.min.js"></script>
+        <script src="node_modules/flowbite/dist/flowbite.min.js"></script>
+        <script src="node_modules/flowbite/dist/datepicker.min.js"></script>
+        <script
+            src="node_modules/flowbite-datepicker/dist/js/datepicker.min.js"></script>
+        <script src="node_modules/hull.js/dist/hull.js"></script>
+        <script>
       {% comment %} FIXME: Hack to reload datepicker instances after htmx loads {% endcomment %}
       function initDatepickers() {
         document.querySelectorAll('[datepicker]').forEach(function (datepickerEl) {
@@ -27,22 +29,24 @@
         });
       }
     </script>
-    <!-- <script src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey={{ YANDEX_API_KEY }}" type="text/javascript"></script> -->
-    <script src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=51f19831-2995-4814-9cd4-a1ea4d316110" type="text/javascript"></script>
-</head>
+        <!-- <script src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey={{ YANDEX_API_KEY }}" type="text/javascript"></script> -->
+        <script
+            src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=51f19831-2995-4814-9cd4-a1ea4d316110"
+            type="text/javascript"></script>
+    </head>
 
-<body>
-  {% include "plan_modal.html" %}
+    <body>
+        {% include "plan_modal.html" %}
 
-  {% include "nav.html" %}
+        {% include "nav.html" %}
 
-  <div class="p-4 sm:ml-64 min-h-screen flex flex-col">
-    {% block content %}
-    {% endblock content %}
-  </div>
-</body>
+        <div class="p-4 sm:ml-64 min-h-screen flex flex-col">
+            {% block content %}
+            {% endblock content %}
+        </div>
+    </body>
 
-<script>
+    <script>
     document.getElementById("excel-button").addEventListener("click", function downloadExcel(e) {
         e.preventDefault();
 

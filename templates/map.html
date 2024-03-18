@@ -1,12 +1,19 @@
 <div id="map" class="flex flex-grow">
 </div>
-{{ clients|json_script:"clients" }}
+{{ plans_json|json_script:"plans_json" }}
+{{ clients_json|json_script:"clients_json" }}
 <script type="text/javascript">
   ymaps.ready(init);
 
+  
+
   function init() {
     // Double JSON parse because upon rendering, the text is first in quotes
-    var clients = JSON.parse(JSON.parse(document.getElementById("clients").textContent));
+    var clients = JSON.parse(JSON.parse(document.getElementById("clients_json").textContent));
+    var plans = JSON.parse(JSON.parse(document.getElementById("plans_json").textContent));
+
+    console.log(clients);
+    console.log(plans);
 
     var center = clients.reduce(
       (acc, client) => [
@@ -22,18 +29,75 @@
       zoom: 12,
     });
 
-    for (var i = 0; i < clients.length; i++) {
-      myMap.geoObjects.add(
-        new ymaps.Placemark(
-          [ parseFloat(clients[i].fields.lat), parseFloat(clients[i].fields.lon) ],
-          {
-            balloonContent: clients[i].fields.name,
-          },
-          {
-            iconColor: "blue",
-          },
-        ),
-      );
+    // for (var i = 0; i < clients.length; i++) {
+    //   myMap.geoObjects.add(
+    //     new ymaps.Placemark(
+    //       [ parseFloat(clients[i].fields.lat), parseFloat(clients[i].fields.lon) ],
+    //       {
+    //         balloonContent: clients[i].fields.name,
+    //       },
+    //       {
+    //         iconColor: "blue",
+    //       },
+    //     ),
+    //   );
+    // }
+
+    const colors = ["#FE5F00", "#467599", "#D56AA0", "#EBBE9B", "#E39774"]
+    const plansByDay = plans.reduce((acc, plan) => {
+      if (acc[plan.fields.assigned_date]) {
+        acc[plan.fields.assigned_date].push(plan);
+      } else {
+        acc[plan.fields.assigned_date] = [plan];
+      }
+      return acc;
+    }, {});
+
+    console.log(plansByDay);
+
+    for (var i = 0; i < Object.keys(plansByDay).length; i++) {
+        var invClients = clients.reduce((acc, client) => {
+            acc[client.pk] = client;
+            client.fields.lon = parseFloat(client.fields.lon + (Math.random() - 0.5) / 800);
+            client.fields.lat = parseFloat(client.fields.lat + (Math.random() - 0.5) / 800);
+            return acc;
+        }, {});
+
+        var day = Object.keys(plansByDay)[i];
+        var dayPlans = plansByDay[day];
+        var dayCoords = dayPlans.map(plan => {
+                return [
+                    invClients[plan.fields.client].fields.lat,
+                    invClients[plan.fields.client].fields.lon
+                ]
+            })
+        var polygonCoords = hull(dayCoords, 50);
+        console.log(dayCoords);
+
+        var dayGeoPolygon = new ymaps.Polygon([polygonCoords], {
+            hintContent: day,
+            balloonContent: day
+        }, {
+            fillColor: colors[i] + "33",
+            strokeColor: colors[i],
+            opacity: 0.5,
+            strokeWidth: 5
+        });
+
+        var dayClientPlacemarks = dayPlans.map(plan => {
+            return new ymaps.Placemark(
+                [ parseFloat(invClients[plan.fields.client].fields.lat), parseFloat(invClients[plan.fields.client].fields.lon) ],
+                {
+                    balloonContent: invClients[plan.fields.client].fields.name + " " + day
+                },
+                {
+                    iconColor: colors[i],
+                },
+            );
+        });
+
+        myMap.geoObjects.add(dayGeoPolygon);
+        dayClientPlacemarks.forEach(placemark => myMap.geoObjects.add(placemark));
     }
 
     myMap.container.fitToViewport();

@@ -9,3 +9,4 @@ pytz==2024.1
 rcssmin==1.1.1
 rjsmin==1.2.1
 sqlparse==0.4.4
+python-dotenv
