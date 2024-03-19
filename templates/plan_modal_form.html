@@ -37,15 +37,14 @@
       <label for="managers" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Менеджер</label>
       <div class="space-y-2">
         {% for manager in managers %}
-        <div class="flex items-center">
+        <label class="flex items-center hover:cursor-pointer">
           <input 
                 {% if manager in plan.managers.all %} checked {% endif %}
                 type="checkbox"
-                id="hide-2" 
                 name="manager_{{ manager.id }}"
                 class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
-          <label for="hide-2" class="ms-2 text-gray-800">{{ manager }}</label>
-        </div>
+          <span class="ms-2 text-gray-800">{{ manager }}</span>
+        </label>
         {% endfor %}
       </div>
     </div>
@@ -53,15 +52,14 @@
       <label for="worklist" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Выберите роботу</label>
       <div class="space-y-2">
         {% for work in worklist %}
-        <div class="flex items-center">
+        <label class="flex items-center hover:cursor-pointer">
           <input 
                 {% if work in plan.worklist.all %} checked {% endif %}
                 type="checkbox" 
-                id="hide-2" 
                 name="worklist_{{ work.id }}" 
-                class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none" />
-          <label for="hide-2" class="ms-2 text-gray-800">{{ work.name }}</label>
-        </div>
+                        class="w-4 h-4 rounded-sm text-gray-800 border-gray-300 focus:ring-gray-500 focus:ring-offset-gray-200 focus:ring-offset-2 focus:outline-none"/>
+          <span class="ms-2 text-gray-800">{{ work.name }}</span>
+        </label>
         {% endfor %}
       </div>
     </div>
