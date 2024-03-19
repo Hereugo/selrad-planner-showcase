@@ -146,8 +146,7 @@ def plans_excel(request):
     earliest_date = queryset.earliest('assigned_date').assigned_date
     latest_date = queryset.latest('assigned_date').assigned_date
 
-    ws.cell(row=1, column=1).value = f'Планы на {
-        earliest_date} - {latest_date}'
+    ws.cell(row=1, column=1).value = f'Планы на {earliest_date} - {latest_date}'
     ws.cell(row=1, column=1).style = 'assigned_date_cell'
 
     row = 2

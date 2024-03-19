@@ -45,7 +45,7 @@
     <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
     <div class="w-full">
       <h3 class="mb-5 font-bold text-gray-900 text-center">Фильтры</h3>
-      <form class="space-y-3" hx-get="{% url 'plans'%}" hx-target="#plans" id="filter-form">
+      <form class="space-y-3" hx-get="{% url 'plans'%}" hx-target="#plans" id="filter-form" autocomplete="off">
         <div class="flex items-center w-full">
           <label for="simple-search" class="sr-only">Search</label>
           <div class="relative w-full">
