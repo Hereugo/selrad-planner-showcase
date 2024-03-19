@@ -59,12 +59,9 @@ class PlanListView(ListView):
 def plan_create(request, pk=None):
     if request.method == 'POST':
         form = PlanForm(request.POST)
-        # TODO: Handle form errors
         if form.is_valid():
             form.save()
-
-        print(form.errors)
-        return redirect('plans')
+            return redirect('plans')
 
     plan = Plan.objects.filter(pk=pk).first()
     clients = Client.objects.all()
@@ -75,7 +72,7 @@ def plan_create(request, pk=None):
         'plan': plan,
         'clients': clients,
         'worklist': worklist,
-        'managers': managers,
+        'managers': managers
     })
 
 

@@ -1,4 +1,3 @@
-<!-- TODO: Think how to go back to table section while remaining with proper filters -->
 <div id="map" class="flex flex-grow">
 </div>
 {{ plans_json|json_script:"plans_json" }}
@@ -31,7 +30,6 @@
       zoom: 12,
     });
 
-    // FIXME: This is a temporary solution, figure out how to choose colors for each day no matter the number of days
     const colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FF00FF"];
     const plansByDay = plans.reduce((acc, plan) => {
       if (acc[plan.fields.assigned_date]) {
@@ -41,6 +39,8 @@
       }
       return acc;
     }, {});
+
+    console.log(plansByDay);
 
     for (var i = 0; i < Object.keys(plansByDay).length; i++) {
         var invAddress = addresses.reduce((acc, address) => {
@@ -54,8 +54,12 @@
             return acc;
         }, {});
 
+        console.log(invAddress);
+
         var day = Object.keys(plansByDay)[i];
         var dayPlans = plansByDay[day];
+
+        console.log(dayPlans);
 
         var dayCoords = dayPlans.map(plan => {
                 return [
@@ -64,6 +68,7 @@
                 ]
             })
         var polygonCoords = hull(dayCoords, 50);
+        console.log(dayCoords);
 
         var dayGeoPolygon = new ymaps.Polygon([polygonCoords], {
             hintContent: day,
