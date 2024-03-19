@@ -3,7 +3,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from plans.views import PlanListView, plan_create, index, plans_excel, plan_show_map, plan_delete, aside_buttons
+from plans.views import PlanListView, plan_create, index, plans_excel, plan_show_map, plan_delete, aside_buttons, get_client_address
 
 
 urlpatterns = [
@@ -16,6 +16,7 @@ urlpatterns = [
 
     path('plans/create', plan_create, name='plan_create_default'),
     path('plans/create/<uuid:pk>', plan_create, name='plan_create'),
+    path('client_address/', get_client_address, name='client_address'),
 
     path('plans/delete/<uuid:pk>', plan_delete, name='plan_delete'),
 

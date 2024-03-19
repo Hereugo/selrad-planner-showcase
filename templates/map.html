@@ -2,25 +2,28 @@
 </div>
 {{ plans_json|json_script:"plans_json" }}
 {{ clients_json|json_script:"clients_json" }}
+{{ addresses_json|json_script:"addresses_json" }}
 <script type="text/javascript">
   ymaps.ready(init);
 
   function init() {
     // Double JSON parse because upon rendering, the text is first in quotes
     var clients = JSON.parse(JSON.parse(document.getElementById("clients_json").textContent));
+    var addresses = JSON.parse(JSON.parse(document.getElementById("addresses_json").textContent));
     var plans = JSON.parse(JSON.parse(document.getElementById("plans_json").textContent));
 
+    console.log(addresses);
     console.log(clients);
     console.log(plans);
 
-    var center = clients.reduce(
-      (acc, client) => [
-        acc[0] + parseFloat(client.fields.lat),
-        acc[1] + parseFloat(client.fields.lon),
+    var center = addresses.reduce(
+      (acc, address) => [
+        acc[0] + parseFloat(address.fields.lat),
+        acc[1] + parseFloat(address.fields.lon),
       ],
       [0, 0],
     );
-    center = [center[0] / clients.length, center[1] / clients.length];
+    center = [center[0] / addresses.length, center[1] / addresses.length];
 
     var myMap = new ymaps.Map("map", {
       center: center,
@@ -40,19 +43,28 @@
     console.log(plansByDay);
 
     for (var i = 0; i < Object.keys(plansByDay).length; i++) {
+        var invAddress = addresses.reduce((acc, address) => {
+            acc[address.pk] = address;
+            address.fields.lon = parseFloat(address.fields.lon + (Math.random() - 0.5) / 800);
+            address.fields.lat = parseFloat(address.fields.lat + (Math.random() - 0.5) / 800);
+            return acc;
+        }, {});
         var invClients = clients.reduce((acc, client) => {
             acc[client.pk] = client;
-            client.fields.lon = parseFloat(client.fields.lon + (Math.random() - 0.5) / 800);
-            client.fields.lat = parseFloat(client.fields.lat + (Math.random() - 0.5) / 800);
             return acc;
         }, {});
 
+        console.log(invAddress);
+
         var day = Object.keys(plansByDay)[i];
         var dayPlans = plansByDay[day];
+
+        console.log(dayPlans);
+
         var dayCoords = dayPlans.map(plan => {
                 return [
-                    invClients[plan.fields.client].fields.lat,
-                    invClients[plan.fields.client].fields.lon
+                    invAddress[plan.fields.address].fields.lat,
+                    invAddress[plan.fields.address].fields.lon,
                 ]
             })
         var polygonCoords = hull(dayCoords, 50);
@@ -70,7 +82,7 @@
 
         var dayClientPlacemarks = dayPlans.map(plan => {
             return new ymaps.Placemark(
-                [ parseFloat(invClients[plan.fields.client].fields.lat), parseFloat(invClients[plan.fields.client].fields.lon) ],
+                [ parseFloat(invAddress[plan.fields.address].fields.lat), parseFloat(invAddress[plan.fields.address].fields.lon) ],
                 {
                     balloonContent: invClients[plan.fields.client].fields.name + " " + day
                 },

@@ -16,7 +16,7 @@ from .filters import PlanFilter
 from .forms import PlanForm
 from .models import Plan, Worklist
 
-from clients.models import Client
+from clients.models import Client, Address
 from managers.models import Manager
 
 
@@ -76,6 +76,24 @@ def plan_create(request, pk=None):
     })
 
 
+def get_client_address(request):
+    client_pk = int(request.GET.get('selected_client') or '-1')
+    plan_pk = request.GET.get('plan_pk')
+
+    client = Client.objects.filter(pk=client_pk).first()
+    if client:
+        addresses = Address.objects.filter(clients__pk__in=[client_pk])
+    else:
+        addresses = Address.objects.none()
+
+    if plan_pk:
+        plan = Plan.objects.filter(pk=plan_pk).first()
+    else:
+        plan = Plan.objects.none()
+
+    return render(request, 'client_address_form.html', {'addresses': addresses, 'plan': plan, 'client': client})
+
+
 def plan_delete(request, pk):
     # TODO: Delete plan
     pass
@@ -85,12 +103,15 @@ def plan_show_map(request, pk=None):
     queryset_plans = Plan.objects.all()
     queryset_plans = PlanFilter(request.GET, queryset=queryset_plans).qs
 
-    st = set(queryset_plans.values_list('client__pk', flat=True))
-    queryset_clients = Client.objects.filter(pk__in=st)
+    cst = set(queryset_plans.values_list('client__pk', flat=True))
+    ast = set(queryset_plans.values_list('address__pk', flat=True))
+    queryset_clients = Client.objects.filter(pk__in=cst)
+    queryset_addresses = Address.objects.filter(pk__in=ast)
 
     return render(request, 'map.html', {
         'plans_json': serializers.serialize('json', queryset_plans),
-        'clients_json': serializers.serialize('json', queryset_clients)
+        'clients_json': serializers.serialize('json', queryset_clients),
+        'addresses_json': serializers.serialize('json', queryset_addresses),
     }) 
 
 

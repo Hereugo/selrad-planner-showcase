@@ -24,10 +24,12 @@ class Manager(models.Model):
         blank=True,
     )
     created_at = models.DateTimeField(
-        auto_now_add=True
+        auto_now_add=True,
+        editable=False,
     )
     updated_at = models.DateTimeField(
-        auto_now_add=True
+        auto_now_add=True,
+        editable=False,
     )
 
     def __str__(self):

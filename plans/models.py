@@ -106,6 +106,14 @@ class Plan(models.Model):
         on_delete=models.CASCADE,
         null=True,
     )
+    address = models.ForeignKey(
+        'clients.Address',
+        verbose_name='Адрес',
+        help_text='Выберите адрес',
+        related_name='plans',
+        on_delete=models.CASCADE,
+        null=True,
+    )
 
     def get_absolute_url(self):
         return reverse('plans')
@@ -144,10 +152,6 @@ class PlanManager(models.Model):
         on_delete=models.CASCADE,
         verbose_name='План',
         help_text='Выберите план'
-    )
-    created_at = models.DateTimeField(
-        verbose_name='Дата создания',
-        auto_now_add=True
     )
 
     class Meta:
