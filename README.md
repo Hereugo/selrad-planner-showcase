@@ -6,6 +6,7 @@ Cпециальный веб-сайт для управления планиро
 
 ### Технологии
 
+- Javascript
 - Python 3.11.7
 - Django 4.3.3
 
@@ -25,26 +26,40 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-- node
+- Создайте файл .env в корневой папке проекта:
+
+```
+cp .env.example .env
+```
+
+| VAR   | Description    |
+|--------------- | --------------- |
+| YANDEX_API_KEY   | API key for yandex map. Follow instructions [here](https://yandex.com/dev/commercial/doc/en/concepts/jsapi-geocoder) to setup. |
+| DJANGO_SECRET_KEY | Secret key every django project provides. |
+| DJANGO_DEBUG | True / False. (Optional) defaults to False. Setup project in Debug Mode |  
+
+- Установите зависимости JavaScript
 
 ```
 npm i
 ```
 
-- сделать админку
+- Создайте административного пользователя:
 
 ```
 python3 manage.py createsuperuser
 ```
 
-- добавить базу
+- Добавьте базу данных:
 
 ```
 python3 manage.py loaddata data/worklist.json
 python3 manage.py import_clients_csv
 ```
 
-- В папке с файлом manage.py выполните команду:
+- Запустите сервер:
+
+В папке с файлом manage.py выполните команду:
 
 ```
 python3 manage.py runserver
@@ -53,13 +68,11 @@ python3 manage.py runserver
 ### Авторы
 
 - Амир Нурмухамбетов [github profile](https://github.com/Hereugo)  
+- Мансур Нурмухамбетов [github profile](https://github.com/nomomon)
 
 ### TODO
 
 - [ ] карта hover на точке показать всех ост клиентов на тот же день
 - [ ] Включать / выключать колонки в таблице
-- [ ] Кнопка "отчет"
 - [ ] Хостинг
 - [ ] Докеризация
-- [ ] Yandex карта имплеминтация
-- [ ] Тесты (optional)
