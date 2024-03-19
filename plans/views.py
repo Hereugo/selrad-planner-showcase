@@ -94,11 +94,6 @@ def get_client_address(request):
     return render(request, 'client_address_form.html', {'addresses': addresses, 'plan': plan, 'client': client})
 
 
-def plan_delete(request, pk):
-    # TODO: Delete plan
-    pass
-
-
 def plan_show_map(request, pk=None):
     queryset_plans = Plan.objects.all()
     queryset_plans = PlanFilter(request.GET, queryset=queryset_plans).qs

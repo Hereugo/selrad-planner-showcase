@@ -18,8 +18,6 @@ urlpatterns = [
     path('plans/create/<uuid:pk>', plan_create, name='plan_create'),
     path('client_address/', get_client_address, name='client_address'),
 
-    path('plans/delete/<uuid:pk>', plan_delete, name='plan_delete'),
-
     path('plans/show_map', plan_show_map, name='plan_show_map_default'),
     path('plans/show_map/<uuid:pk>', plan_show_map, name='plan_show_map'),
 

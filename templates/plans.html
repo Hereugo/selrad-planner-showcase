@@ -61,19 +61,11 @@
           {{ plan.box_count }}
         </td>
         <td class="px-6 py-4">
-          {% comment %} TODO: Make this as a dropdown list of settings {% endcomment %}
           <button
                 hx-get="{% url 'plan_create' plan.pk %}"
                 hx-target="#crud-plan-modal-form"
                 data-modal-target="crud-plan-modal" data-modal-toggle="crud-plan-modal"
                 type='button' class="font-medium text-blue-600 hover:underline">Изменить</button>
-          <!-- <button -->
-          <!--       hx-get="{% url 'plan_show_map' plan.pk %}&{{ urlencode }}" -->
-          <!--       hx-target="#plans" -->
-          <!--       type='button' class="font-medium text-blue-600 hover:underline">Показать на карте</button> -->
-          <!-- <button -->
-          <!--       hx-get="{% url 'plan_delete' plan.pk %}" -->
-          <!--       type='button' class="font-medium text-red-500 hover:underline">Удалить</button> -->
         </td>
       </tr>
       {% endfor %}

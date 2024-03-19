@@ -72,7 +72,7 @@ python3 manage.py runserver
 
 ### TODO
 
-- [ ] карта hover на точке показать всех ост клиентов на тот же день
+- [ ] Fix scattered TODOs across the project
 - [ ] Включать / выключать колонки в таблице
 - [ ] Хостинг
 - [ ] Докеризация
