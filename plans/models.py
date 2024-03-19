@@ -154,12 +154,6 @@ class PlanManager(models.Model):
         verbose_name = 'Менеджер плана'
         verbose_name_plural = 'Менеджеры плана'
         ordering = ('plan', 'manager')
-        # constraints = [
-        #     models.UniqueConstraint(
-        #         fields=['manager', 'plan'],
-        #         name='unique_manager_plan'
-        #     )
-        # ]
 
 
 class PlanWorklist(models.Model):
@@ -172,7 +166,7 @@ class PlanWorklist(models.Model):
     )
     plan = models.ForeignKey(
         'Plan',
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         verbose_name='План',
         help_text='Выберите план'
     )
@@ -181,9 +175,3 @@ class PlanWorklist(models.Model):
         verbose_name = 'Список задач для выполнения'
         verbose_name_plural = 'Списки задач для выполнения'
         ordering = ('plan', 'worklist')
-        # constraints = [
-        #     models.UniqueConstraint(
-        #         fields=['worklist', 'plan'],
-        #         name='unique_worklist_plan'
-        #     )
-        # ]

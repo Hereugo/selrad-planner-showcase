@@ -1,5 +1,7 @@
 import io
 import re
+import json
+from urllib.parse import urlencode, quote_plus
 from itertools import groupby
 
 import openpyxl
@@ -20,6 +22,15 @@ from managers.models import Manager
 
 def index(request):
     return render(request, 'index.html')
+
+def aside_buttons(request):
+    # get reuqests query parameters
+    payload = json.loads(request.GET.get('filter_params', '{}'))
+
+    # convert filter to urlencoded string 
+    res = urlencode(payload, quote_via=quote_plus)
+
+    return render(request, 'aside_buttons.html', {'urlencode': res})
 
 
 class PlanListView(ListView):
@@ -71,14 +82,16 @@ def plan_delete(request, pk):
 
 
 def plan_show_map(request, pk=None):
-    # TODO: Show map with the plan's address
-    # return render(request, 'map.html', {
-    #     'clients': serializers.serialize("json", Client.objects.all())
-    # })
+    queryset_plans = Plan.objects.all()
+    queryset_plans = PlanFilter(request.GET, queryset=queryset_plans).qs
+
+    st = set(queryset_plans.values_list('client__pk', flat=True))
+    queryset_clients = Client.objects.filter(pk__in=st)
+
     return render(request, 'map.html', {
-        'plans_json': serializers.serialize("json", Plan.objects.all()),
-        'clients_json': serializers.serialize("json", Client.objects.all())
-    })
+        'plans_json': serializers.serialize('json', queryset_plans),
+        'clients_json': serializers.serialize('json', queryset_clients)
+    }) 
 
 
 def plans_excel(request):

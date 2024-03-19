@@ -3,12 +3,13 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from plans.views import PlanListView, plan_create, index, plans_excel, plan_show_map, plan_delete
-
+from plans.views import PlanListView, plan_create, index, plans_excel, plan_show_map, plan_delete, aside_buttons
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    path('aside_buttons/', aside_buttons, name='aside_buttons'),
 
     path('', index, name='index'),
     path('plans', PlanListView.as_view(), name='plans'),
