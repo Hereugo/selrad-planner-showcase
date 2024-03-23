@@ -10,11 +10,11 @@ from openpyxl.styles import Border, Side
 from django.views.generic import ListView
 from django.shortcuts import render, redirect
 from django.http import FileResponse
-from django.core import serializers
 
 from .filters import PlanFilter
 from .forms import PlanForm
 from .models import Plan, Worklist
+from .serializers import PlanSerializer
 
 from clients.models import Client, Address
 from managers.models import Manager
@@ -95,19 +95,13 @@ def get_client_address(request):
 
 
 def plan_show_map(request, pk=None):
+    # TODO: Figure out how to send json of m2m fields with all necessary fields
     queryset_plans = Plan.objects.all()
     queryset_plans = PlanFilter(request.GET, queryset=queryset_plans).qs
 
-    cst = set(queryset_plans.values_list('client__pk', flat=True))
-    ast = set(queryset_plans.values_list('address__pk', flat=True))
-    queryset_clients = Client.objects.filter(pk__in=cst)
-    queryset_addresses = Address.objects.filter(pk__in=ast)
+    data = PlanSerializer(queryset_plans, many=True).data
 
-    return render(request, 'map.html', {
-        'plans_json': serializers.serialize('json', queryset_plans),
-        'clients_json': serializers.serialize('json', queryset_clients),
-        'addresses_json': serializers.serialize('json', queryset_addresses),
-    }) 
+    return render(request, 'map.html', {'plans_json': data}) 
 
 
 def plans_excel(request):
@@ -168,10 +162,8 @@ def plans_excel(request):
     row = 2
     for assigned_date, plans in groupby(queryset, key=lambda p: p.assigned_date):
         for i, plan in enumerate(plans, start=1):
-            ws.cell(row=row + i,
-                    column=COL_DICT['client']).value = plan.client.name
-            ws.cell(row=row + i,
-                    column=COL_DICT['address']).value = plan.client.address
+            ws.cell(row=row + i, column=COL_DICT['client']).value = plan.client.name
+            ws.cell(row=row + i, column=COL_DICT['address']).value = plan.address.street
             ws.cell(row=row + i, column=COL_DICT['manager']).value = ', '.join(
                 [str(m) for m in plan.managers.all()])
             ws.cell(row=row + i, column=COL_DICT['worklist']).value = ', '.join(

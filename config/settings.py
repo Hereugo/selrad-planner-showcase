@@ -30,8 +30,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Thir-party apps
-    'compressor',
+    'compressor', # flow bite instructions
     'django_filters',
+    'rest_framework', # needed only for serializers
 
     # Local apps
     'plans',

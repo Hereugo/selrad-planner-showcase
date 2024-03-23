@@ -1,29 +1,29 @@
 <div id="map" class="flex flex-grow">
 </div>
 {{ plans_json|json_script:"plans_json" }}
-{{ clients_json|json_script:"clients_json" }}
-{{ addresses_json|json_script:"addresses_json" }}
+<!-- {{ clients_json|json_script:"clients_json" }} -->
+<!-- {{ addresses_json|json_script:"addresses_json" }} -->
 <script type="text/javascript">
   ymaps.ready(init);
 
   function init() {
-    // Double JSON parse because upon rendering, the text is first in quotes
-    var clients = JSON.parse(JSON.parse(document.getElementById("clients_json").textContent));
-    var addresses = JSON.parse(JSON.parse(document.getElementById("addresses_json").textContent));
-    var plans = JSON.parse(JSON.parse(document.getElementById("plans_json").textContent));
+    var plans = JSON.parse(document.getElementById("plans_json").textContent);
+    // process plans convert all string numbers to numbers
+    // giving each plan a random offset for the data to not overlap
+    plans = plans.map(plan => {
+        plan.address.lat = parseFloat(plan.address.lat) + (Math.random() - 0.5) / 800;
+        plan.address.lon = parseFloat(plan.address.lon) + (Math.random() - 0.5) / 800;
+        return plan;
+    });
 
-    console.log(addresses);
-    console.log(clients);
-    console.log(plans);
-
-    var center = addresses.reduce(
-      (acc, address) => [
-        acc[0] + parseFloat(address.fields.lat),
-        acc[1] + parseFloat(address.fields.lon),
+    var center = plans.reduce(
+      (acc, plan) => [
+        acc[0] + plan.address.lat,
+        acc[1] + plan.address.lon,
       ],
       [0, 0],
     );
-    center = [center[0] / addresses.length, center[1] / addresses.length];
+    center = [center[0] / plans.length, center[1] / plans.length];
 
     var myMap = new ymaps.Map("map", {
       center: center,
@@ -31,44 +31,15 @@
     });
 
     const colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FF00FF"];
-    const plansByDay = plans.reduce((acc, plan) => {
-      if (acc[plan.fields.assigned_date]) {
-        acc[plan.fields.assigned_date].push(plan);
-      } else {
-        acc[plan.fields.assigned_date] = [plan];
-      }
-      return acc;
-    }, {});
 
-    console.log(plansByDay);
+    var plansByDay = Object.groupBy(plans, ({ assigned_date }) => assigned_date);
 
     for (var i = 0; i < Object.keys(plansByDay).length; i++) {
-        var invAddress = addresses.reduce((acc, address) => {
-            acc[address.pk] = address;
-            address.fields.lon = parseFloat(address.fields.lon + (Math.random() - 0.5) / 800);
-            address.fields.lat = parseFloat(address.fields.lat + (Math.random() - 0.5) / 800);
-            return acc;
-        }, {});
-        var invClients = clients.reduce((acc, client) => {
-            acc[client.pk] = client;
-            return acc;
-        }, {});
-
-        console.log(invAddress);
-
         var day = Object.keys(plansByDay)[i];
         var dayPlans = plansByDay[day];
 
-        console.log(dayPlans);
-
-        var dayCoords = dayPlans.map(plan => {
-                return [
-                    invAddress[plan.fields.address].fields.lat,
-                    invAddress[plan.fields.address].fields.lon,
-                ]
-            })
+        var dayCoords = dayPlans.map(plan => [plan.address.lat, plan.address.lon]);
         var polygonCoords = hull(dayCoords, 50);
-        console.log(dayCoords);
 
         var dayGeoPolygon = new ymaps.Polygon([polygonCoords], {
             hintContent: day,
@@ -80,11 +51,20 @@
             strokeWidth: 5
         });
 
-        var dayClientPlacemarks = dayPlans.map(plan => {
+        var dayPlacemarks = dayPlans.map(plan => {
+            var placemarkHTML = `
+                <ul>
+                    <li><b>Клиент:</b> ${plan.client.name}</li>
+                    <li><b>Адрес:</b> ${plan.address.street}</li>
+                    <li><b>Менеджеры:</b> ${ plan.managers.reduce((acc, m) => m.first_name + ', ' + acc, '')}</li>
+                    <li><b>Кол-во кор:</b> ${plan.box_count}</li>
+                </ul>
+            `;
             return new ymaps.Placemark(
-                [ parseFloat(invAddress[plan.fields.address].fields.lat), parseFloat(invAddress[plan.fields.address].fields.lon) ],
+                [ plan.address.lat, plan.address.lon ],
                 {
-                    balloonContent: invClients[plan.fields.client].fields.name + " " + day
+                    balloonContentHeader: day,
+                    balloonContent: placemarkHTML,
                 },
                 {
                     iconColor: colors[i],
@@ -93,7 +73,7 @@
         });
 
         myMap.geoObjects.add(dayGeoPolygon);
-        dayClientPlacemarks.forEach(placemark => myMap.geoObjects.add(placemark));
+        dayPlacemarks.forEach(placemark => myMap.geoObjects.add(placemark));
     }
 
     myMap.container.fitToViewport();

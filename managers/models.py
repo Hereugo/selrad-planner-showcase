@@ -11,7 +11,6 @@ class Manager(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(
-        unique=True,
         blank=True,
         null=True,
     )
@@ -20,7 +19,6 @@ class Manager(models.Model):
             PHONE_VALIDATOR,
         ],
         max_length=17,
-        unique=True,
         blank=True,
     )
     created_at = models.DateTimeField(
