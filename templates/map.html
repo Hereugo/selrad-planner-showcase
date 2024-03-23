@@ -76,6 +76,7 @@
                         <li><b>Клиент:</b> ${plan.client.name}</li>
                         <li><b>Адрес:</b> ${plan.address.street}</li>
                         <li><b>Менеджеры:</b> ${ plan.managers.reduce((acc, m) => m.first_name + ', ' + acc, '')}</li>
+                        <li><b>Работа:</b> ${ plan.worklist.reduce((acc, w) => w.name + ', ' + acc, '')}</li>
                         <li><b>Кол-во кор:</b> ${plan.box_count}</li>
                     </ul>
                     <button
