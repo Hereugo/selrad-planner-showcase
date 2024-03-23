@@ -1208,6 +1208,10 @@ input:checked + .toggle-bg {
   margin-top: 0.5rem;
 }
 
+.ml-auto {
+  margin-left: auto;
+}
+
 .block {
   display: block;
 }

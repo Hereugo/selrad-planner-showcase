@@ -52,19 +52,11 @@
         });
 
         var dayPlacemarks = dayPlans.map(plan => {
-            var placemarkHTML = `
-                <ul>
-                    <li><b>Клиент:</b> ${plan.client.name}</li>
-                    <li><b>Адрес:</b> ${plan.address.street}</li>
-                    <li><b>Менеджеры:</b> ${ plan.managers.reduce((acc, m) => m.first_name + ', ' + acc, '')}</li>
-                    <li><b>Кол-во кор:</b> ${plan.box_count}</li>
-                </ul>
-            `;
             return new ymaps.Placemark(
                 [ plan.address.lat, plan.address.lon ],
                 {
                     balloonContentHeader: day,
-                    balloonContent: placemarkHTML,
+                    balloonContent: plan.pk,
                 },
                 {
                     iconColor: colors[i],
@@ -73,7 +65,35 @@
         });
 
         myMap.geoObjects.add(dayGeoPolygon);
-        dayPlacemarks.forEach(placemark => myMap.geoObjects.add(placemark));
+        dayPlacemarks.forEach(placemark => {
+            myMap.geoObjects.add(placemark);
+            placemark.events.add('balloonopen', function (e) {
+                let planPk = placemark.properties.get('balloonContent');
+                let plan = plans.find(p => p.pk == planPk);
+
+                var placemarkHTML = `
+                    <ul>
+                        <li><b>Клиент:</b> ${plan.client.name}</li>
+                        <li><b>Адрес:</b> ${plan.address.street}</li>
+                        <li><b>Менеджеры:</b> ${ plan.managers.reduce((acc, m) => m.first_name + ', ' + acc, '')}</li>
+                        <li><b>Кол-во кор:</b> ${plan.box_count}</li>
+                    </ul>
+                    <button
+                        plan-placemark
+                        hx-get="/plans/create/${plan.pk}"
+                        hx-target="#crud-plan-modal-form"
+                        data-modal-target="crud-plan-modal" data-modal-toggle="crud-plan-modal"
+                        type='button' class="font-medium text-blue-600 hover:underline"
+                    >
+                        Изменить
+                    </button>
+                `;
+                placemark.properties.set('balloonContent', placemarkHTML);
+
+                htmx.process(document.querySelector('[plan-placemark]'));
+                initModals();
+            });
+        });
     }
 
     myMap.container.fitToViewport();
