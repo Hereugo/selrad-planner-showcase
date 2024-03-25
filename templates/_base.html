@@ -18,7 +18,7 @@
         <script src="node_modules/flowbite/dist/flowbite.min.js"></script>
         <script src="node_modules/flowbite/dist/datepicker.min.js"></script>
         <script
-            src="node_modules/flowbite-datepicker/dist/js/datepicker.min.js"></script>
+            src="node_modules/flowbite-datepicker/dist/js/datepicker-full.min.js"></script>
         <script
             src="node_modules/flowbite-datepicker/dist/js/locales/ru.js"></script>
         <script src="node_modules/hull.js/dist/hull.js"></script>
@@ -32,9 +32,18 @@
           });
         });
       }
+      function initDateRangePicker() {
+        document.querySelectorAll('[date-range-picker]').forEach(function (dateRangePickerEl) {
+          new window.DateRangePicker(dateRangePickerEl, {
+            language: "ru",
+            format: "mm/dd/yyyy",
+          });
+        });
+      }
+      window.addEventListener('htmx:load', initDateRangePicker);
     </script>
     <script src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey={{ YANDEX_API_KEY }}" type="text/javascript"></script>
-    <script>
+        <script>
     <!-- Function for handling nav filter params -->
     // TODO: Refactor for sequrity reasons (XSS)
     // https://htmx.org/attributes/hx-vals/
@@ -44,7 +53,7 @@
           return processedData;
       }
     </script>
-</head>
+    </head>
     <body>
         {% include "plan_modal.html" %}
 
