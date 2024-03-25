@@ -19,13 +19,17 @@
         <script src="node_modules/flowbite/dist/datepicker.min.js"></script>
         <script
             src="node_modules/flowbite-datepicker/dist/js/datepicker.min.js"></script>
+        <script
+            src="node_modules/flowbite-datepicker/dist/js/locales/ru.js"></script>
         <script src="node_modules/hull.js/dist/hull.js"></script>
         <script>
 
       {% comment %} FIXME: Hack to reload datepicker instances after htmx loads {% endcomment %}
       function initDatepickers() {
         document.querySelectorAll('[datepicker]').forEach(function (datepickerEl) {
-          new window.Datepicker(datepickerEl);
+          new window.Datepicker(datepickerEl, {
+            language: "ru",
+          });
         });
       }
     </script>
