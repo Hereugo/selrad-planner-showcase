@@ -36,14 +36,15 @@
 
     for (var i = 0; i < Object.keys(plansByDay).length; i++) {
         var day = Object.keys(plansByDay)[i];
+        var dayString = new Date(day).toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         var dayPlans = plansByDay[day];
 
         var dayCoords = dayPlans.map(plan => [plan.address.lat, plan.address.lon]);
         var polygonCoords = hull(dayCoords, 50);
 
         var dayGeoPolygon = new ymaps.Polygon([polygonCoords], {
-            hintContent: day,
-            balloonContent: day
+            hintContent: dayString,
+            balloonContent: dayString
         }, {
             fillColor: colors[i] + "aa",
             strokeColor: colors[i],
@@ -55,7 +56,7 @@
             return new ymaps.Placemark(
                 [ plan.address.lat, plan.address.lon ],
                 {
-                    balloonContentHeader: day,
+                    balloonContentHeader: dayString,
                     balloonContent: plan.pk,
                 },
                 {
