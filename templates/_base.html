@@ -29,6 +29,7 @@
         document.querySelectorAll('[datepicker]').forEach(function (datepickerEl) {
           new window.Datepicker(datepickerEl, {
             language: "ru",
+            format: "mm/dd/yyyy",
           });
         });
       }
@@ -42,7 +43,9 @@
       }
       window.addEventListener('htmx:load', initDateRangePicker);
     </script>
-    <script src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey={{ YANDEX_API_KEY }}" type="text/javascript"></script>
+        <script
+            src="https://enterprise.api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey={{ YANDEX_API_KEY }}"
+            type="text/javascript"></script>
         <script>
     <!-- Function for handling nav filter params -->
     // TODO: Refactor for sequrity reasons (XSS)
