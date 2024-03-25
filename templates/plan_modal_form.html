@@ -27,7 +27,7 @@
         <option 
                 {% if not plan %} selected {% endif %}
                 value="" disabled>Выберите клиента</option>
-        {% for client in clients %}
+        {% for client in clients|dictsort:"name" %}
         <option 
                 value="{{ client.id }}"
                 {% if client == plan.client %} selected {% endif %}
