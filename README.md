@@ -6,7 +6,6 @@ Cпециальный веб-сайт для управления планиро
 
 ### Технологии
 
-- Javascript
 - Python 3.11.7
 - Django 4.3.3
 
@@ -23,12 +22,13 @@ source .venv/bin/activate
 - Установите зависимости из файла requirements.txt
 
 ```
-pip install -r requirements.txt
+pip install -r ./backend/requirements.txt
 ```
 
-- Создайте файл .env в корневой папке проекта:
+- Создайте файл .env в папке 'infra' проекта:
 
 ```
+cd infra
 cp .env.example .env
 ```
 
@@ -38,11 +38,14 @@ cp .env.example .env
 | DJANGO_SECRET_KEY | Secret key every django project provides. |
 | DJANGO_DEBUG | True / False. (Optional) defaults to False. Setup project in Debug Mode |  
 
-- Установите зависимости JavaScript
+- Запустить Docker
 
-```
-npm i
-```
+'''
+cd infra
+docker-compose up -d --build
+'''
+
+В Докере backend container-а:
 
 - Создайте административного пользователя:
 
@@ -53,26 +56,18 @@ python3 manage.py createsuperuser
 - Добавьте базу данных:
 
 ```
-python3 manage.py loaddata data/worklist.json
+python3 manage.py loaddata ./data/worklist.json
 python3 manage.py import_clients_csv
 ```
 
-- Запустите сервер:
+### Endpoint-ы
 
-В папке с файлом manage.py выполните команду:
+Чтобы просмотреть endpoint-ы API, запустите сервер и пройдите по ссылке:
 
-```
-python3 manage.py runserver
-```
+- Swagger UI: <http://localhost/api/schema/swagger-ui/>
+- Redoc: <http://localhost/api/schema/redoc/>
 
 ### Авторы
 
 - Амир Нурмухамбетов [github profile](https://github.com/Hereugo)  
 - Мансур Нурмухамбетов [github profile](https://github.com/nomomon)
-
-### TODO
-
-- [ ] Fix scattered TODOs across the project
-- [ ] Включать / выключать колонки в таблице
-- [ ] Хостинг
-- [ ] Докеризация
