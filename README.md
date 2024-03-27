@@ -58,6 +58,7 @@ python3 manage.py createsuperuser
 ```
 python3 manage.py loaddata ./data/worklist.json
 python3 manage.py import_clients_csv
+python3 manage.py import_managers_csv
 ```
 
 ### Endpoint-ы
