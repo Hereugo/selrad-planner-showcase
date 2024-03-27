@@ -112,8 +112,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Thir-party apps
-    'drf_spectacular',
     'corsheaders',
+    'drf_spectacular',
     'django_filters',
     'rest_framework', # needed only for serializers
     'rest_framework.authtoken',

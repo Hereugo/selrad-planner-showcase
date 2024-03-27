@@ -61,7 +61,7 @@ def generate_excelsheet_by_plan(plans):
     for assigned_date, plans_by_day in groupby(plans, key=lambda p: p.assigned_date):
         for i, plan in enumerate(plans_by_day, start=1):
             ws.cell(row=row + i, column=COL_DICT['client']).value = plan.client.name
-            ws.cell(row=row + i, column=COL_DICT['address']).value = plan.address.street
+            ws.cell(row=row + i, column=COL_DICT['address']).value = plan.client.address.street
             ws.cell(row=row + i, column=COL_DICT['manager']).value = ', '.join(
                 [str(m) for m in plan.managers.all()])
             ws.cell(row=row + i, column=COL_DICT['worklist']).value = ', '.join(
