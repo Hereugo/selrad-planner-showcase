@@ -44,6 +44,36 @@ class PlanViewSet(ModelViewSet):
 
     @extend_schema(
         methods=['get'],
+        parameters=[
+            OpenApiParameter(
+                'radius',
+                float,
+                OpenApiParameter.QUERY,
+                description='Радиус поиска в км',
+                default=0.5
+            )
+        ],
+        responses={
+            200: PlanSerializer(many=True)
+        }
+    )
+    @action(
+        detail=True,
+        methods=['get'],
+        permission_classes=[IsAuthenticated],
+        url_path='find_nearby',
+    )
+    def find_nearby(self, request, pk=None):
+        """Найти ближайшие планы."""
+
+        plan = get_object_or_404(Plan, pk=pk)
+        radius = request.GET.get('radius', 0.5)
+
+        # TODO by distance find nearby pins
+        pass
+
+    @extend_schema(
+        methods=['get'],
         filters=True,
         parameters=[
             OpenApiParameter(
