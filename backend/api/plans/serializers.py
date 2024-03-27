@@ -137,7 +137,12 @@ class MapSerializer(serializers.ModelSerializer):
     """Serializer for Plan model"""
     date = serializers.SerializerMethodField()
     data = serializers.SerializerMethodField()
-   
+    color = serializers.SerializerMethodField()
+    
+    @extend_schema_field(serializers.CharField())
+    def get_color(self, obj):
+        return '#0000FF' # later changed in view
+
     @extend_schema_field(serializers.DateField())
     def get_date(self, obj):
         return obj.assigned_date
@@ -150,4 +155,4 @@ class MapSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Plan 
-        fields = ('date', 'data')
+        fields = ('date', 'data', 'color')

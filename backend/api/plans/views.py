@@ -12,6 +12,7 @@ from django.http import HttpResponse
 from pyhull.convex_hull import ConvexHull
 
 from plans.models import Plan, Worklist
+from utils.generate_colors import generate_colors
 
 from api.utils.custom_permissions import IsAuthenticated 
 from api.utils.custom_paginations import PageLimitPagination
@@ -77,6 +78,11 @@ class PlanViewSet(ModelViewSet):
                 if data['date'] == date:
                     distinct_data.append(data)
                     break
+
+        # TODO: Think how to preserve colors for each grouped data
+        colors = generate_colors(len(distinct_data))
+        for i, data in enumerate(distinct_data):
+            data['color'] = colors[i] 
 
         convex_hull = request.GET.get('convex_hull', False)
         if convex_hull:
