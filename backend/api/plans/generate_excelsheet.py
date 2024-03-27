@@ -92,7 +92,7 @@ def generate_excelsheet_by_plan(plans):
 
 
 def generate_excelsheet_by_manager(plans):
-    workbook = openpyxl.load_workbook('./static/docs/standard_plan_by_manager.xlsx')
+    workbook = openpyxl.load_workbook('./static/docs/standard_report.xlsx')
     ws = workbook.active
 
     if 'assigned_date_cell' not in workbook.style_names:

@@ -136,6 +136,7 @@ class PlanViewSet(ModelViewSet):
 
     @extend_schema(
         methods=['get'],
+        description='Скачать план',
         filters=True
     )
     @action(
@@ -160,6 +161,7 @@ class PlanViewSet(ModelViewSet):
 
     @extend_schema(
         methods=['get'],
+        description='Скачать отчет по менеджерам',
         parameters=[
             OpenApiParameter(
                 'managers',
@@ -173,9 +175,9 @@ class PlanViewSet(ModelViewSet):
         detail=False,
         methods=['get'],
         permission_classes=[IsAuthenticated],
-        url_path='export_by_managers',
+        url_path='export_report',
     )
-    def export_by_managers(self, request):
+    def export_report(self, request):
         """Скачать план."""
         # get from request manager ids
         manager_ids = request.GET.get('managers', '').split(',')
