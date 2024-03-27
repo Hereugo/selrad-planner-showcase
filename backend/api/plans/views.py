@@ -7,7 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action 
 from rest_framework.response import Response
 from rest_framework.schemas.openapi import AutoSchema
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from plans.models import Plan, Worklist
 
@@ -15,7 +15,7 @@ from api.utils.custom_permissions import IsAuthenticated
 from api.utils.custom_paginations import PageLimitPagination
 from .serializers import PlanSerializer, PlanUpdateSerializer, WorklistSerializer 
 from .custom_filters import PlanFilter
-from .generate_excelsheet import generate_excelsheet
+from .generate_excelsheet import generate_excelsheet_by_plan, generate_excelsheet_by_manager
 
 
 logger = logging.getLogger(__name__)
@@ -51,12 +51,46 @@ class PlanViewSet(ModelViewSet):
     def export(self, request):
         """Скачать план."""
 
-        queryset = self.filter_queryset(self.get_queryset())
+        plans = self.filter_queryset(self.get_queryset())
         
-        buffer = generate_excelsheet(queryset)
+        buffer = generate_excelsheet_by_plan(plans)
       
         # TODO: Add from what daterange 
         filename = 'планы.xlsx'
+
+        response = HttpResponse(buffer.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    @extend_schema(
+        methods=['get'],
+        parameters=[
+            OpenApiParameter(
+                'managers',
+                str,
+                OpenApiParameter.QUERY,
+                description='Список ids менеджеров'
+            )
+        ],
+    )
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[IsAuthenticated],
+        url_path='export_by_managers',
+    )
+    def export_by_managers(self, request):
+        """Скачать план."""
+        # get from request manager ids
+        manager_ids = request.GET.get('managers', '').split(',')
+
+        plans = self.filter_queryset(self.get_queryset())
+        # managers = Manager.objects.get(pk__in=manager_ids) 
+
+        buffer = generate_excelsheet_by_manager(plans, manager_ids)
+      
+        # TODO: Add from what daterange 
+        filename = 'отчет.xlsx'
 
         response = HttpResponse(buffer.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'

@@ -27,9 +27,17 @@ ALLOWED_HOSTS = [
     'backend',
 ]
 
+# CORS settings
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_URLS_REGEX = r'^/api/.*$'
+
 # CSRF settings
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 CSRF_TRUSTED_ORIGINS = [
+    'https://planner.example.com',
     'http://planner.example.com',
     'http://YOUR_SERVER_HOST',
     'http://127.0.0.1',
@@ -105,6 +113,7 @@ INSTALLED_APPS = [
 
     # Thir-party apps
     'drf_spectacular',
+    'corsheaders',
     'django_filters',
     'rest_framework', # needed only for serializers
     'rest_framework.authtoken',
@@ -120,6 +129,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -192,7 +202,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

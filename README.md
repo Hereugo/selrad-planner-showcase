@@ -42,7 +42,7 @@ cp .env.example .env
 
 '''
 cd infra
-docker-compose up -d --build
+docker-compose -f docker-compose-dev.yml up -d --build
 '''
 
 В Докере backend container-а:
