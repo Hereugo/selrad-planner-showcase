@@ -1,4 +1,7 @@
+import logging
+
 from rest_framework import serializers 
+from drf_spectacular.utils import extend_schema_field
 
 from api.clients.serializers import ClientSerializer, AddressSerializer
 from api.managers.serializers import ManagerSerializer
@@ -6,6 +9,9 @@ from api.managers.serializers import ManagerSerializer
 from clients.models import Client, Address
 from managers.models import Manager
 from plans.models import Plan, Worklist, PlanWorklist, PlanManager
+
+
+logger = logging.getLogger(__name__)
 
 
 class WorklistSerializer(serializers.ModelSerializer):
@@ -125,3 +131,23 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         return PlanSerializer(
             instance, context={'request': self.context.get('request')}
         ).data
+
+
+class MapSerializer(serializers.ModelSerializer):
+    """Serializer for Plan model"""
+    date = serializers.SerializerMethodField()
+    data = serializers.SerializerMethodField()
+   
+    @extend_schema_field(serializers.DateField())
+    def get_date(self, obj):
+        return obj.assigned_date
+
+    @extend_schema_field(PlanSerializer(many=True))
+    def get_data(self, obj):
+        plans = Plan.objects.filter(assigned_date=obj.assigned_date)
+        logger.info(f'plans: {plans}')
+        return PlanSerializer(plans, many=True).data
+
+    class Meta:
+        model = Plan 
+        fields = ('date', 'data')
