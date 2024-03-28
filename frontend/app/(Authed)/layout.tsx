@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import "./globals.css";
-import Providers from "./providers";
-import TopBar from "@/components/moleculles/top-bar";
-import SideBar from "@/components/moleculles/side-bar";
+import "../globals.css";
+import Providers from "../providers";
+import TopBar from "@/components/molecules/top-bar";
+import SideBar from "@/components/molecules/side-bar";
 
 export const metadata: Metadata = {
     title: "Планировщик",

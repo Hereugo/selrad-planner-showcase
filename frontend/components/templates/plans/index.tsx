@@ -1,9 +1,9 @@
 import { FC } from "react";
 
-interface PlansPageProps { }
+interface PlansTemplateProps { }
 
-const PlansPage: FC<PlansPageProps> = () => {
+const PlansTemplate: FC<PlansTemplateProps> = () => {
     return (<>Plans</>)
 }
 
-export default PlansPage;
+export default PlansTemplate;
