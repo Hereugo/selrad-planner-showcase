@@ -27,6 +27,11 @@ ALLOWED_HOSTS = [
     'backend',
 ]
 
+# CORS settings
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_URLS_REGEX = r'^/api/.*$'
+
 # CSRF settings
 
 CSRF_TRUSTED_ORIGINS = [
@@ -103,6 +108,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'corsheaders',
+
     # Thir-party apps
     'drf_spectacular',
     'django_filters',
@@ -120,6 +127,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
