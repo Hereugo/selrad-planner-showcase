@@ -34,7 +34,10 @@ CORS_URLS_REGEX = r'^/api/.*$'
 
 # CSRF settings
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 CSRF_TRUSTED_ORIGINS = [
+    'https://planner.example.com',
     'http://planner.example.com',
     'http://YOUR_SERVER_HOST',
     'http://127.0.0.1',
@@ -111,6 +114,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     # Thir-party apps
+    'corsheaders',
     'drf_spectacular',
     'django_filters',
     'rest_framework', # needed only for serializers
@@ -200,7 +204,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

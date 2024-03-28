@@ -1,0 +1,51 @@
+version: '3.3'
+name: selrad-planner-dev
+services:
+  db:
+    image: postgres:13.0-alpine
+    restart: always
+    networks:
+      - backend
+    volumes:
+      - db_value:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+
+  backend:
+    build: ../backend
+    restart: always
+    entrypoint: /app/docker/server-entrypoint.sh
+    networks:
+      - backend
+    volumes:
+      - static_value:/app/static/
+      - media_value:/app/media/
+      - logs:/app/logs/
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+  nginx:
+    image: nginx:1.19.3
+    restart: always
+    ports:
+      - 80:80
+    networks:
+      - backend
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
+    depends_on:
+      - backend
+
+volumes:
+  static_value:
+  media_value:
+  db_value:
+  logs:
+
+networks:
+  backend:
+    driver: bridge

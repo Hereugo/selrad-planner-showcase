@@ -42,7 +42,7 @@ cp .env.example .env
 
 '''
 cd infra
-docker-compose up -d --build
+docker-compose -f docker-compose-dev.yml up -d --build
 '''
 
 В Докере backend container-а:
@@ -58,6 +58,7 @@ python3 manage.py createsuperuser
 ```
 python3 manage.py loaddata ./data/worklist.json
 python3 manage.py import_clients_csv
+python3 manage.py import_managers_csv
 ```
 
 ### Endpoint-ы
