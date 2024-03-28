@@ -5,19 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { Loader } from 'lucide-react';
-// import { useUserAuth } from './index.hooks';
+import { useUserAuth } from './index.hooks';
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 const UserAuthForm = ({ className, ...props }: UserAuthFormProps) => {
-    // const { onFormSubmit, isLoading } = useUserAuth();
-    const isLoading = false;
+    const { onFormSubmit, isLoading } = useUserAuth();
 
     return (
         <div className={cn('grid gap-6', className)} {...props}>
-            <form onSubmit={() => { }}>
+            <form onSubmit={onFormSubmit}>
                 <div className="grid gap-2">
-                    <div className="grid gap-1">
+                    <div className="grid gap-1w">
                         <Label className="sr-only" htmlFor="username">
                             Username
                         </Label>
