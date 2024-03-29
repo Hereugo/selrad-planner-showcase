@@ -14,8 +14,9 @@ const BoxCountInput: FC<BoxCountInputProps> = ({ id, className, boxCount, setBox
     return (
         <div id={id} className={className}>
             <Label htmlFor="box_count">Количество коробок</Label>
-            <div className="flex items-center text-muted-foreground hover:text-accent-foreground">
+            <div className="flex items-center text-muted-foreground">
                 <Input
+                    disabled
                     value={boxCount}
                     onChange={(e) => {
                         if (e.target.value) {
@@ -26,7 +27,7 @@ const BoxCountInput: FC<BoxCountInputProps> = ({ id, className, boxCount, setBox
                     }}
                     type="text"
                     id="box_count"
-                    className="focus-visible:ring-0 hover:bg-accent"
+                    className="focus-visible:ring-0"
                     autoComplete="off"
                     placeholder="0"
                 />
