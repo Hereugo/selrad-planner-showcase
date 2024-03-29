@@ -2,10 +2,29 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import urls from "../urls";
 import { deleteWithAuth, fetchWithAuth, patchWithAuth, postWithAuth } from "../httpCalls";
 
-export const usePlansQuery = () => {
-    const url = urls.base_backend.plans;
+interface plansQueryProps {
+    date_after?: string;
+    date_before?: string;
+    limit?: number;
+    ordering?: string;
+    page?: number;
+    search?: string;
+}
 
-    return useQuery(['usePlansQuery'], async () => fetchWithAuth<Plan[]>(url));
+export const usePlansQuery = (props: plansQueryProps = {}) => {
+    const url = urls.base_backend.plans;
+    const queryParams = [];
+
+    if (props.date_after) queryParams.push(`date_after=${props.date_after}`);
+    if (props.date_before) queryParams.push(`date_before=${props.date_before}`);
+    if (props.limit) queryParams.push(`limit=${props.limit}`);
+    if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
+    if (props.page) queryParams.push(`page=${props.page}`);
+    if (props.search) queryParams.push(`search=${props.search}`);
+
+    const urlWithParams = `${url}${queryParams.length > 0 ? '?' : ''}${queryParams.join('&')}`;
+
+    return useQuery(['usePlansQuery', urlWithParams], async () => fetchWithAuth<Plan[]>(urlWithParams));
 }
 
 export const usePlanQuery = (id: string) => {
