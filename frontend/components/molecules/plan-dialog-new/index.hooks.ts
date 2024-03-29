@@ -1,17 +1,10 @@
-import { toast, useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useClientsQuery } from "@/lib/backend/clients"
 import { useManagersQuery } from "@/lib/backend/managers";
 import { usePlanCreateMutation } from "@/lib/backend/plans";
 import { useWorklistsQuery } from "@/lib/backend/worklist";
+import { formatClientName } from "@/lib/utils";
 import { useEffect, useState } from "react";
-
-const formatClientName = (name: string) => {
-    return name
-        .replaceAll('"', " ")
-        .replaceAll("'", " ")
-        .replace(/\s+/g, " ")
-        .trim();
-};
 
 export const useClients = () => {
     const { data, error, isLoading } = useClientsQuery();

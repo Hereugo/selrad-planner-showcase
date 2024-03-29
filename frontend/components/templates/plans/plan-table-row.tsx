@@ -10,7 +10,7 @@ interface PlanTableRowProps {
 
 const PlanTableRow: FC<PlanTableRowProps> = ({ plan }) => {
     return (
-        <TableRow>
+        <TableRow id={`plan-row-${plan.pk}`} className="duration-500">
             <TableCell>
                 {formatDate(plan.assigned_date)}
             </TableCell>
