@@ -1,12 +1,10 @@
 import { FC } from "react";
 import PlanTable from "./plan-table";
 
-interface PlansTemplateProps { }
+interface PlansTemplateProps {}
 
 const PlansTemplate: FC<PlansTemplateProps> = () => {
-    return (
-        <PlanTable />
-    )
-}
+  return <PlanTable />;
+};
 
 export default PlansTemplate;

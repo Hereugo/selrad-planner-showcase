@@ -3,17 +3,17 @@ import CalendarFilters from "./filters-calendar";
 import { Separator } from "@/components/ui/separator";
 
 const Filters = () => {
-    return (<>
-        <div className="font-semibold text-center mb-2">
-            Фильтры
-        </div>
+  return (
+    <>
+      <div className="font-semibold text-center mb-2">Фильтры</div>
 
-        <SearchFilters />
+      <SearchFilters />
 
-        <Separator orientation="horizontal" className="my-4" />
+      <Separator orientation="horizontal" className="my-4" />
 
-        <CalendarFilters />
-    </>)
-}
+      <CalendarFilters />
+    </>
+  );
+};
 
 export default Filters;

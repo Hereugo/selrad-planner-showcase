@@ -6,23 +6,23 @@ import NewPlanButton from "./new-plan-button";
 import Filters from "./filters";
 
 interface SideBarProps {
-    className?: string;
+  className?: string;
 }
 
 const SideBar: FC<SideBarProps> = ({ className }) => {
-    return (
-        <div className={cn("border-r-2 z-50 p-4", className)}>
-            <NewPlanButton />
+  return (
+    <div className={cn("border-r-2 z-50 p-4", className)}>
+      <NewPlanButton />
 
-            <Separator orientation="horizontal" className="my-4" />
+      <Separator orientation="horizontal" className="my-4" />
 
-            <NavigationLinks />
+      <NavigationLinks />
 
-            <Separator orientation="horizontal" className="my-4" />
+      <Separator orientation="horizontal" className="my-4" />
 
-            <Filters />
-        </div>
-    )
-}
+      <Filters />
+    </div>
+  );
+};
 
 export default SideBar;

@@ -2,13 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { FC, ReactNode } from "react";
 import DayPicker from "./day-picker";
@@ -22,109 +22,108 @@ import { useUpdatePlan } from "./index.hooks";
 import { Loader2 } from "lucide-react";
 
 interface PlanDialogEditProps {
-    plan: Plan;
-    children: ReactNode;
+  plan: Plan;
+  children: ReactNode;
 }
 
 const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
+  const {
+    assignedDate,
+    setAssignedDate,
+    client,
+    setClient,
+    managers,
+    switchManager,
+    worklist,
+    switchWork,
+    shipmentCost,
+    setShipmentCost,
+    boxCount,
+    setBoxCount,
+    comment,
+    setComment,
+    handleUpdatePlan,
+    isOpen,
+    setIsOpen,
+    isLoading,
+  } = useUpdatePlan(plan);
 
-    const {
-        assignedDate,
-        setAssignedDate,
-        client,
-        setClient,
-        managers,
-        switchManager,
-        worklist,
-        switchWork,
-        shipmentCost,
-        setShipmentCost,
-        boxCount,
-        setBoxCount,
-        comment,
-        setComment,
-        handleUpdatePlan,
-        isOpen,
-        setIsOpen,
-        isLoading
-    } = useUpdatePlan(plan);
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Изменить план</DialogTitle>
+          <div className="flex flex-col gap-4">
+            <div>
+              <Label htmlFor="assigned_date">Дата</Label>
+              <DayPicker
+                id="assigned_date"
+                assignedDate={assignedDate}
+                setAssignedDate={setAssignedDate}
+              />
+            </div>
 
-    return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Изменить план</DialogTitle>
-                    <div className="flex flex-col gap-4">
-                        <div>
-                            <Label htmlFor="assigned_date">Дата</Label>
-                            <DayPicker
-                                id="assigned_date"
-                                assignedDate={assignedDate}
-                                setAssignedDate={setAssignedDate} />
-                        </div>
+            <div>
+              <Label htmlFor="client">Клиент</Label>
+              <ClientPicker id="client" client={client} setClient={setClient} />
+            </div>
 
-                        <div>
-                            <Label htmlFor="client">Клиент</Label>
-                            <ClientPicker
-                                id="client"
-                                client={client}
-                                setClient={setClient} />
-                        </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="managers">Менеджеры</Label>
+              <SelectManagers
+                id="managers"
+                managers={managers}
+                switchManager={switchManager}
+              />
+            </div>
 
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="managers">Менеджеры</Label>
-                            <SelectManagers
-                                id="managers"
-                                managers={managers}
-                                switchManager={switchManager} />
-                        </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="worklist">Работы</Label>
+              <SelectWorkList
+                id="worklist"
+                worklist={worklist}
+                switchWork={switchWork}
+              />
+            </div>
 
-                        <div className="flex flex-col gap-2">
-                            <Label htmlFor="worklist">Работы</Label>
-                            <SelectWorkList
-                                id="worklist"
-                                worklist={worklist}
-                                switchWork={switchWork} />
-                        </div>
+            <div className="flex gap-4 flex-row justify-stretch w-full">
+              <ShipmentCostInput
+                id="shipment_cost"
+                className="flex-1"
+                shipmentCost={shipmentCost}
+                setShipmentCost={setShipmentCost}
+              />
+              <BoxCountInput
+                id="box_count"
+                className="flex-1"
+                boxCount={boxCount}
+                setBoxCount={setBoxCount}
+              />
+            </div>
 
-                        <div className="flex gap-4 flex-row justify-stretch w-full">
-                            <ShipmentCostInput
-                                id="shipment_cost"
-                                className="flex-1"
-                                shipmentCost={shipmentCost}
-                                setShipmentCost={setShipmentCost} />
-                            <BoxCountInput
-                                id="box_count"
-                                className="flex-1"
-                                boxCount={boxCount}
-                                setBoxCount={setBoxCount} />
-                        </div>
-
-                        <div>
-                            <Label htmlFor="comment">Комментарии</Label>
-                            <CommentInput
-                                id="comment"
-                                comment={comment}
-                                setComment={setComment}
-                            />
-                        </div>
-                    </div>
-                </DialogHeader>
-                <DialogFooter>
-                    <Button
-                        disabled={isLoading}
-                        onClick={handleUpdatePlan}
-                        className="w-full"
-                    >
-                        {isLoading ?
-                            <Loader2 className="animate-spin" /> :
-                            "Сохранить"}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog >
-    )
-}
+            <div>
+              <Label htmlFor="comment">Комментарии</Label>
+              <CommentInput
+                id="comment"
+                comment={comment}
+                setComment={setComment}
+              />
+            </div>
+          </div>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            disabled={isLoading}
+            onClick={handleUpdatePlan}
+            className="w-full"
+          >
+            {isLoading ? <Loader2 className="animate-spin" /> : "Сохранить"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 export default PlanDialogEdit;

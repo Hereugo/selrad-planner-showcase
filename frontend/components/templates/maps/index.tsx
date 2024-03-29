@@ -1,9 +1,9 @@
 import { FC } from "react";
 
-interface MapsTemplateProps { }
+interface MapsTemplateProps {}
 
 const MapsTemplate: FC<MapsTemplateProps> = () => {
-    return (<>Maps</>)
-}
+  return <>Maps</>;
+};
 
 export default MapsTemplate;

@@ -1,7 +1,7 @@
-import LoginTemplate from '@/components/templates/Login';
+import LoginTemplate from "@/components/templates/Login";
 
 const LoginPage = () => {
-    return <LoginTemplate />;
+  return <LoginTemplate />;
 };
 
 export default LoginPage;
