@@ -7,7 +7,7 @@ const SearchFilters = () => {
         <div className="flex">
             <Input
                 placeholder="Поиск"
-                className="rounded-r-none  focus-visible:ring-0"
+                className="rounded-r-none focus-visible:ring-0"
             />
             <Button className="w-12 p-2 rounded-l-none">
                 <Search className="w-4 h-4" />

@@ -1,5 +1,5 @@
 interface Client {
-    pk: number;
+    pk: string;
     name: string;
     created_at: string;
     updated_at: string;
