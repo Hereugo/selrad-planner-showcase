@@ -35,6 +35,11 @@ const PlanTable = () => {
             <TableBody>
                 {plans.map((plan) => (<PlanTableRow key={plan.pk} plan={plan} />))}
             </TableBody>
+            {!plans.length && !isLoading && (
+                <TableCaption>
+                    Нет планов
+                </TableCaption>
+            )}
         </Table>
         {isLoading && (<div className="flex justify-center items-center h-40 w-full">
             <Loader2 className="animate-spin" />
