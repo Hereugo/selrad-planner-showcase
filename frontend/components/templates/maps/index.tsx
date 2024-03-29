@@ -7,14 +7,14 @@ import { useMaps } from "./index.hooks";
 interface MapsTemplateProps { }
 
 const MapsTemplate: FC<MapsTemplateProps> = () => {
-    const { mapCenter, placeMarks } = useMaps();
+    const { mapCenter, placeMarks, polygons } = useMaps();
 
     return (
         <YMaps>
             <Map
                 defaultState={{
                     center: mapCenter,
-                    zoom: 10,
+                    zoom: 12,
                 }}
                 className="w-full h-full"
             >
@@ -23,10 +23,16 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
                         key={index}
                         geometry={placeMark.geometry}
                         properties={placeMark.properties}
-                        modules={["geoObject.addon.hint"]}
-                        options={{
-                            iconColor: "#ff0000",
-                        }}
+                        options={placeMark.options}
+                        modules={["geoObject.addon.balloon", "geoObject.addon.hint"]}
+                    />
+                ))}
+                {polygons.map((polygon, index) => (
+                    <Polygon
+                        key={index}
+                        geometry={polygon.geometry}
+                        options={polygon.options}
+                        modules={["geoObject.addon.balloon", "geoObject.addon.hint"]}
                     />
                 ))}
             </Map>
