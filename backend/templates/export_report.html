@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<form action="" method="post">
+  {% csrf_token %}
+  <p>
+    Выберите менеджера для отчета с {{ earliest_date }} по {{ latest_date }}
+  </p>
+  <select name="manager">
+    <option value="">---------</option>
+    {% for manager in managers %}
+    <option value="{{ manager.id }}">{{ manager }}</option>
+    {% endfor %}
+  </select>
+  <input type="hidden" name="action" value="update_status" />
+  <input type="submit" name="apply" value="Скачать"/>
+</form>
+{% endblock %}

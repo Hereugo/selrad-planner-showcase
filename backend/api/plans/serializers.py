@@ -32,6 +32,7 @@ class PlanSerializer(serializers.ModelSerializer):
     worklist = WorklistSerializer(many=True)
     client = ClientSerializer()
     managers = ManagerSerializer(many=True)
+    box_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Plan 
@@ -65,6 +66,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         queryset=Client.objects.all(),
         required=False,
     )
+    box_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Plan 

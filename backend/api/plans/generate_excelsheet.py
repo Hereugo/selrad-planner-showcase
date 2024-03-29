@@ -59,6 +59,7 @@ def generate_excelsheet_by_plan(plans):
 
     row = 2
     for assigned_date, plans_by_day in groupby(plans, key=lambda p: p.assigned_date):
+        plan_count = 0
         for i, plan in enumerate(plans_by_day, start=1):
             ws.cell(row=row + i, column=COL_DICT['client']).value = plan.client.name
             ws.cell(row=row + i, column=COL_DICT['address']).value = plan.client.address.street
@@ -74,10 +75,11 @@ def generate_excelsheet_by_plan(plans):
                     column=COL_DICT['box_count']).value = plan.box_count
 
             # apply the general style to the row
-            for col in range(2, 9):
+            for col in range(2, len(COL_DICT) + 1):
                 ws.cell(row=row + i, column=col).style = 'general_style'
+            plan_count += 1
 
-        x = plans.filter(assigned_date=assigned_date).count() + 1
+        x = plan_count + 1
         ws.merge_cells(start_row=row, start_column=1,
                        end_row=row + x, end_column=1)
         ws.cell(row=row, column=1).value = assigned_date
@@ -90,10 +92,24 @@ def generate_excelsheet_by_plan(plans):
 
     return buffer
 
+COL_DICT_REPORT = {
+    'assigned_date': 1,
+    'client': 2,
+    'address': 3,
+    'worklist': 4,
+    'comment': 5,
+    'box_count': 6
+}
 
-def generate_excelsheet_by_manager(plans):
+
+def generate_excelsheet_by_manager(plans, manager):
     workbook = openpyxl.load_workbook('./static/docs/standard_report.xlsx')
     ws = workbook.active
+
+    if 'head_cell' not in workbook.style_names:
+        head_style = openpyxl.styles.NamedStyle(name='head_cell')
+        head_style.font = openpyxl.styles.Font(color='000000', bold=True, size=18)
+        workbook.add_named_style(head_style)
 
     if 'assigned_date_cell' not in workbook.style_names:
         date_style = openpyxl.styles.NamedStyle(name='assigned_date_cell')
@@ -124,30 +140,33 @@ def generate_excelsheet_by_manager(plans):
     earliest_date = plans.earliest('assigned_date').assigned_date
     latest_date = plans.latest('assigned_date').assigned_date
 
-    ws.cell(row=1, column=1).value = f'Отчет на {earliest_date} - {latest_date}'
-    ws.cell(row=1, column=1).style = 'assigned_date_cell'
+    ws.cell(row=1, column=1).value = f'ОТЧЕТ {manager}' 
+    ws.cell(row=2, column=1).value = f'ЗА ПЕРИОД С {earliest_date} - {latest_date}'
+    ws.cell(row=1, column=1).style = 'head_cell'
+    ws.cell(row=2, column=1).style = 'head_cell'
 
-    row = 2
+    ws.cell(row=3, column=1).value = f'{earliest_date} - {latest_date}'
+    ws.cell(row=3, column=1).style = 'assigned_date_cell'
+
+    row = 4
     for assigned_date, plans_by_day in groupby(plans, key=lambda p: p.assigned_date):
+        plans_by_day = [plan for plan in plans_by_day if manager in plan.managers.all()]
+        plan_count = 0
         for i, plan in enumerate(plans_by_day, start=1):
-            ws.cell(row=row + i, column=COL_DICT['client']).value = plan.client.name
-            ws.cell(row=row + i, column=COL_DICT['address']).value = plan.address.street
-            ws.cell(row=row + i, column=COL_DICT['manager']).value = ', '.join(
-                [str(m) for m in plan.managers.all()])
-            ws.cell(row=row + i, column=COL_DICT['worklist']).value = ', '.join(
+            ws.cell(row=row + i, column=COL_DICT_REPORT['client']).value = plan.client.name
+            ws.cell(row=row + i, column=COL_DICT_REPORT['address']).value = plan.address.street
+            ws.cell(row=row + i, column=COL_DICT_REPORT['worklist']).value = ', '.join(
                 [str(w) for w in plan.worklist.all()])
-            ws.cell(row=row + i,
-                    column=COL_DICT['comment']).value = plan.comment
-            ws.cell(
-                row=row + i, column=COL_DICT['shipment_cost']).value = plan.shipment_cost
-            ws.cell(row=row + i,
-                    column=COL_DICT['box_count']).value = plan.box_count
+            ws.cell(row=row + i, column=COL_DICT_REPORT['comment']).value = plan.comment
+            ws.cell(row=row + i, column=COL_DICT_REPORT['box_count']).value = plan.box_count
 
             # apply the general style to the row
-            for col in range(2, 9):
+            for col in range(2, len(COL_DICT_REPORT) + 1): 
                 ws.cell(row=row + i, column=col).style = 'general_style'
 
-        x = plans.filter(assigned_date=assigned_date).count() + 1
+            plan_count += 1
+
+        x = plan_count + 1
         ws.merge_cells(start_row=row, start_column=1,
                        end_row=row + x, end_column=1)
         ws.cell(row=row, column=1).value = assigned_date

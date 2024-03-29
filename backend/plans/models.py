@@ -1,3 +1,4 @@
+import logging
 import uuid
 from math import ceil
 
@@ -71,11 +72,6 @@ class Plan(models.Model):
         max_digits=10,
         decimal_places=2,
     )
-    is_completed = models.BooleanField(
-        verbose_name='Статус выполнения',
-        help_text='Отметьте, если план выполнен',
-        default=False,
-    )
     comment = models.TextField(
         verbose_name='Комментарии',
         help_text='Ввидите доп комментарии',
@@ -116,7 +112,7 @@ class Plan(models.Model):
         return ceil(self.shipment_cost / 100_000)
 
     def __str__(self):
-        return f'{self.assigned_date} - {self.is_completed}' 
+        return f'{self.assigned_date}' 
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
