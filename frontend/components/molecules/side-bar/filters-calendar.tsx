@@ -35,12 +35,10 @@ const formatRange = (calendarRange: DateRange | undefined) => {
     const { from, to } = calendarRange;
 
     if (!from) return 'Выберите дату';
-    if (!to) return from.toLocaleDateString("ru-RU");
-
     const fromStr = from.toLocaleDateString("ru-RU");
-    const toStr = to.toLocaleDateString("ru-RU");
 
-    if (fromStr === toStr) return fromStr;
+    if (!to) return `${fromStr} – ...`;
+    const toStr = to.toLocaleDateString("ru-RU");
 
     const matchedLabel = calendarOptions.find((option) => {
         return isSameDay(option.from, from) && isSameDay(option.to, to);
@@ -48,5 +46,7 @@ const formatRange = (calendarRange: DateRange | undefined) => {
 
     if (matchedLabel) return matchedLabel;
 
-    return `${fromStr} - ${toStr}`;
+    if (fromStr === toStr) return fromStr;
+
+    return `${fromStr} – ${toStr}`;
 }
