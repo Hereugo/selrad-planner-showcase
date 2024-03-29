@@ -145,10 +145,11 @@ class PlanViewSet(ModelViewSet):
         permission_classes=[IsAuthenticated],
         url_path='export',
     )
-    def export(self, request):
+    def export(self, request, plans=None):
         """Скачать план."""
 
-        plans = self.filter_queryset(self.get_queryset())
+        if not plans:
+            plans = self.filter_queryset(self.get_queryset())
         
         buffer = generate_excelsheet_by_plan(plans)
       
@@ -161,13 +162,14 @@ class PlanViewSet(ModelViewSet):
 
     @extend_schema(
         methods=['get'],
-        description='Скачать отчет по менеджерам',
+        description='Скачать отчет менеджера',
         parameters=[
             OpenApiParameter(
-                'managers',
+                'manager_id',
                 str,
-                OpenApiParameter.QUERY,
-                description='Список ids менеджеров'
+                OpenApiParameter.PATH,
+                description='id менеджера',
+                required=True
             )
         ],
     )
@@ -175,17 +177,16 @@ class PlanViewSet(ModelViewSet):
         detail=False,
         methods=['get'],
         permission_classes=[IsAuthenticated],
-        url_path='export_report',
+        url_path=r'export_report/(?P<manager_id>\d+)',
     )
-    def export_report(self, request):
-        """Скачать план."""
-        # get from request manager ids
-        manager_ids = request.GET.get('managers', '').split(',')
+    def export_report(self, request, manager_id=None, plans=None):
+        """Скачать отчет."""
+        # Method export report is used here, because filters are applied here.
+        if not plans:
+            plans = self.filter_queryset(self.get_queryset())
+        manager = get_object_or_404(Manager, pk=manager_id)
 
-        plans = self.filter_queryset(self.get_queryset())
-        # managers = Manager.objects.get(pk__in=manager_ids) 
-
-        buffer = generate_excelsheet_by_manager(plans, manager_ids)
+        buffer = generate_excelsheet_by_manager(plans, manager)
       
         # TODO: Add from what daterange 
         filename = 'отчет.xlsx'

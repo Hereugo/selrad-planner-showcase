@@ -111,8 +111,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'corsheaders',
-
     # Thir-party apps
     'corsheaders',
     'drf_spectacular',

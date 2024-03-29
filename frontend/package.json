@@ -4,11 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "NEXT_PUBLIC_BASE_BACKEND_URL='http://localhost'  next dev",
-    "build": "next build",
+    "build": "NEXT_PUBLIC_BASE_BACKEND_URL='http://localhost' next build",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "dockerbuild": "docker build --no-cache -t nomomon/pricelist_frontend .",
     "prepare": "husky"
   },
   "lint-staged": {
