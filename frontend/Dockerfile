@@ -1,7 +1,7 @@
 ARG NEXT_PUBLIC_BASE_BACKEND_URL
 
 # Install dependencies only when needed
-FROM --platform=linux/amd64 node:19-alpine AS deps
+FROM --platform=linux/amd64 node:20-alpine AS deps
 ENV NODE_ENV=production
 RUN apk add --no-cache libc6-compat
 WORKDIR /frontend
@@ -9,7 +9,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 # Rebuild the source code only when needed
-FROM --platform=linux/amd64 node:19-alpine AS builder
+FROM --platform=linux/amd64 node:20-alpine AS builder
 ENV NODE_ENV=production
 WORKDIR /frontend
 COPY --from=deps /frontend/node_modules ./node_modules
@@ -20,7 +20,7 @@ ARG NEXT_PUBLIC_BASE_BACKEND_URL
 RUN NEXT_PUBLIC_BASE_BACKEND_URL="" npm run build
 
 # Production image, copy all the files and run next
-FROM --platform=linux/amd64 node:19-alpine AS runner
+FROM --platform=linux/amd64 node:20-alpine AS runner
 WORKDIR /frontend
 ENV NODE_ENV=production
 ARG NEXT_PUBLIC_BASE_BACKEND_URL
