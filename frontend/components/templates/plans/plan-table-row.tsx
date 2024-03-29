@@ -2,6 +2,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { FC } from "react";
 import { managerFullName, managerShortName } from "@/lib/utils";
+import PlanDialogEdit from "@/components/molecules/plan-dialog-edit";
 
 interface PlanTableRowProps {
     plan: Plan;
@@ -47,7 +48,9 @@ const PlanTableRow: FC<PlanTableRowProps> = ({ plan }) => {
                 {plan.box_count}
             </TableCell>
             <TableCell className="text-blue-500 hover:cursor-pointer">
-                Изменить
+                <PlanDialogEdit plan={plan}>
+                    <span>Изменить</span>
+                </PlanDialogEdit>
             </TableCell>
         </TableRow>
     )

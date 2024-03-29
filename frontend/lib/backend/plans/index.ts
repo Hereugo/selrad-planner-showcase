@@ -43,14 +43,21 @@ export const usePlanCreateMutation = () => {
 };
 
 
+interface planUpdateMutation {
+    assigned_date: string;
+    client: string;
+    managers: number[];
+    worklist: string[];
+    shipment_cost: string;
+    box_count: string;
+    comment: string;
+}
 
-interface planUpdateMutation extends Partial<Plan> { }
-
-export const usePlanUpdateMutation = (id: string) => {
+export const usePlanUpdateMutation = (pk: string) => {
     const queryClient = useQueryClient();
 
     const url = urls.base_backend.plans;
-    const urlParamed = `${url}/${id}/`;
+    const urlParamed = `${url}/${pk}/`;
 
     const call = (plan: planUpdateMutation) => {
         return patchWithAuth(urlParamed, plan);
