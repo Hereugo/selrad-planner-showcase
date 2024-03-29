@@ -2,11 +2,12 @@ import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { usePlansQuery } from "@/lib/backend/plans";
 
 export const usePlans = () => {
-    const { calendarRange } = useFiltersContext();
+    const { calendarRange, searchQuery } = useFiltersContext();
 
     const { data, error, isLoading } = usePlansQuery({
         date_after: calendarRange?.from?.toLocaleDateString("ru-RU").split(".").reverse().join("-"),
         date_before: calendarRange?.to?.toLocaleDateString("ru-RU").split(".").reverse().join("-"),
+        search: searchQuery
     });
 
     const plans = (data?.data || [])

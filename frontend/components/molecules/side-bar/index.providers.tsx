@@ -5,6 +5,8 @@ import { DateRange } from 'react-day-picker';
 interface FiltersContextProps {
     calendarRange: DateRange | undefined;
     setCalendarRange: React.Dispatch<React.SetStateAction<DateRange | undefined>>;
+    searchQuery: string | undefined;
+    setSearchQuery: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
 interface FiltersProviderProps {
@@ -21,6 +23,7 @@ export default useFiltersContext;
 export const FiltersProvider = ({ children }: FiltersProviderProps) => {
     // set states here
     const [calendarRange, setCalendarRange] = useState<DateRange | undefined>();
+    const [searchQuery, setSearchQuery] = useState<string | undefined>();
 
     return (
         <FiltersContext.Provider
@@ -28,6 +31,8 @@ export const FiltersProvider = ({ children }: FiltersProviderProps) => {
             value={{
                 calendarRange,
                 setCalendarRange,
+                searchQuery,
+                setSearchQuery,
             }}
         >
             {children}
