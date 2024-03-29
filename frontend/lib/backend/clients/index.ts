@@ -1,0 +1,38 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchWithAuth, postWithAuth } from "../httpCalls";
+import urls from "../urls";
+
+export const useClientsQuery = () => {
+  const url = urls.base_backend.clients;
+
+  return useQuery(["useClientsQuery"], async () =>
+    fetchWithAuth<Client[]>(url),
+  );
+};
+
+export const useClientQuery = (id: string) => {
+  const url = urls.base_backend.clients;
+  const urlParamed = `${url}/${id}/`;
+
+  return useQuery(["useClientQuery", id], async () =>
+    fetchWithAuth<Client>(urlParamed),
+  );
+};
+
+interface clientCreateMutationProps extends Omit<Client, "id"> {}
+
+export const useClientCreateMutation = () => {
+  const queryClient = useQueryClient();
+
+  const url = urls.base_backend.clients + "/";
+
+  const call = (client: clientCreateMutationProps) => {
+    return postWithAuth(url, client);
+  };
+
+  return useMutation(call, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["useClientsQuery"]);
+    },
+  });
+};
