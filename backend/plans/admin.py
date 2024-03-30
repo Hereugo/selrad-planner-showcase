@@ -39,7 +39,6 @@ def export_plans(modeladmin, request, queryset):
 @admin.action(description='Скачать отчет')
 def export_report(modeladmin, request, queryset):
     plans = queryset.all()
-
     if 'apply' in request.POST:
         response = PlanViewSet.export_report(PlanViewSet, request, request.POST['manager'], plans)
 
@@ -49,8 +48,7 @@ def export_report(modeladmin, request, queryset):
                 f'Не удалось скачать отчет',
                 level='ERROR'
             )
-        
-        # FIXME: doesn't download the file, only redirects back to the page
+
         return response
     
     return render(request, 'export_report.html', {
@@ -108,7 +106,6 @@ class PlanAdmin(admin.ModelAdmin):
     empty_value_display = '--пусто--'
 
     readonly_fields = (
-        'uuid',
         'updated_at',
         'created_at',
     )

@@ -5,6 +5,7 @@ from managers.models import Manager
 @admin.register(Manager)
 class ManagerAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'first_name',
         'last_name',
     )
