@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "NEXT_PUBLIC_BASE_BACKEND_URL='http://localhost'  next dev",
-    "build": "NEXT_PUBLIC_BASE_BACKEND_URL='http://localhost' next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "dockerbuild": "docker build --no-cache -t nomomon/selrad_planner ."
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
