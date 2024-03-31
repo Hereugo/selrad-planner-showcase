@@ -45,14 +45,6 @@ class Worklist(models.Model):
 class Plan(models.Model):
     """Model Plan"""
 
-    uuid = models.UUIDField(
-        verbose_name='UUID',
-        primary_key=True,
-        editable=False,
-        unique=True,
-        blank=False,
-        null=False
-    )
     assigned_date = models.DateField(
         max_length=255,
         verbose_name='Время назначения',
@@ -70,11 +62,6 @@ class Plan(models.Model):
         help_text='Ввидите сумму отгрузки',
         max_digits=10,
         decimal_places=2,
-    )
-    is_completed = models.BooleanField(
-        verbose_name='Статус выполнения',
-        help_text='Отметьте, если план выполнен',
-        default=False,
     )
     comment = models.TextField(
         verbose_name='Комментарии',
@@ -116,13 +103,11 @@ class Plan(models.Model):
         return ceil(self.shipment_cost / 100_000)
 
     def __str__(self):
-        return f'{self.assigned_date} - {self.is_completed}' 
+        return f'{self.assigned_date}'
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
         self.updated_at = timezone.now()
-        if not self.uuid:
-            self.uuid = uuid.uuid4()
         super().save(*args, **kwargs)
 
     class Meta:

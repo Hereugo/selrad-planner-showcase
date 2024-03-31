@@ -19,7 +19,7 @@ class WorklistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Worklist
         fields = (
-            'pk',
+            'id',
             'name',
             'description',
             'created_at',
@@ -32,11 +32,12 @@ class PlanSerializer(serializers.ModelSerializer):
     worklist = WorklistSerializer(many=True)
     client = ClientSerializer()
     managers = ManagerSerializer(many=True)
+    box_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Plan 
         fields = (
-            'pk',
+            'id',
             'assigned_date',
             'worklist',
             'client',
@@ -65,11 +66,12 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         queryset=Client.objects.all(),
         required=False,
     )
+    box_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Plan 
         fields = (
-            'pk',
+            'id',
             'assigned_date',
             'worklist',
             'client',
@@ -80,7 +82,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         )
-        read_only_fields = ('pk', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'box_count', 'created_at', 'updated_at')
 
     def create_worklist(self, plan, worklist):
         plan_worklist = []
@@ -150,7 +152,6 @@ class MapSerializer(serializers.ModelSerializer):
     @extend_schema_field(PlanSerializer(many=True))
     def get_data(self, obj):
         plans = Plan.objects.filter(assigned_date=obj.assigned_date)
-        logger.info(f'plans: {plans}')
         return PlanSerializer(plans, many=True).data
 
     class Meta:

@@ -4,8 +4,16 @@ from django.utils import timezone
 
 
 class Manager(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+    first_name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+    last_name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         editable=False,

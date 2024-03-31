@@ -26,6 +26,16 @@ services:
     env_file:
       - ./.env
 
+  frontend:
+    build: ../frontend
+    restart: always
+    networks:
+      - backend
+    depends_on:
+      - backend
+    env_file:
+      - ./.env 
+
   nginx:
     image: nginx:1.19.3
     restart: always

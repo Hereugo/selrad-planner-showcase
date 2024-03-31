@@ -25,7 +25,7 @@ const DayPicker: FC<DayPickerProps> = ({
   assignedDate,
   setAssignedDate,
 }) => {
-  const [date, setDate] = useState<Date>(new Date(assignedDate));
+  const [date, setDate] = useState<Date | undefined>(new Date(assignedDate));
 
   useEffect(() => {
     if (setAssignedDate) {

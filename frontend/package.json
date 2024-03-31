@@ -3,13 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NEXT_PUBLIC_BASE_BACKEND_URL='http://localhost'  next dev",
-    "build": "next build",
+    "dev": "NEXT_PUBLIC_BASE_BACKEND_URL='http://localhost' next dev",
+    "build": "NEXT_PUBLIC_BASE_BACKEND_URL='' next build",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "dockerbuild": "docker build --no-cache -t nomomon/pricelist_frontend .",
-    "prepare": "husky"
+    "dockerbuild": "docker build --no-cache -t hereugo/planner_frontend ."
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"

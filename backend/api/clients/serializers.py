@@ -7,7 +7,7 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = (
-            'pk',
+            'id',
             'street',
             'lon',
             'lat',
@@ -23,7 +23,7 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = (
-            'pk',
+            'id',
             'name',
             'created_at',
             'updated_at',

@@ -53,7 +53,7 @@ export const useWorks = () => {
 
 export const highlightPlanRow = (plan: Plan, attempts = 3) => {
     try {
-        const row = document.getElementById(`plan-row-${plan.pk}`);
+        const row = document.getElementById(`plan-row-${plan.id}`);
         if (row) {
             setTimeout(() => {
                 row.classList.add("bg-blue-100");
@@ -79,18 +79,18 @@ export const useUpdatePlan = (initialPlan: Plan) => {
 
     const [isOpen, setIsOpen] = useState(false);
     const [assignedDate, setAssignedDate] = useState(initialPlan.assigned_date);
-    const [client, setClient] = useState(initialPlan.client.pk);
+    const [client, setClient] = useState(initialPlan.client.id);
     const [managers, setManagers] = useState(
         initialPlan.managers.map((manager) => manager.id),
     );
     const [worklist, setWorklist] = useState(
-        initialPlan.worklist.map((work) => work.pk),
+        initialPlan.worklist.map((work) => work.id),
     );
     const [shipmentCost, setShipmentCost] = useState(initialPlan.shipment_cost);
     const [boxCount, setBoxCount] = useState(initialPlan.box_count);
     const [comment, setComment] = useState(initialPlan.comment);
 
-    const planUpdateMutation = usePlanUpdateMutation(initialPlan.pk);
+    const planUpdateMutation = usePlanUpdateMutation(initialPlan.id);
 
     const switchManager = (manager: number) => {
         setManagers((prev) => {
