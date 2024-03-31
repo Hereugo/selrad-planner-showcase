@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NEXT_PUBLIC_BASE_BACKEND_URL='http://localhost'  next dev",
-    "build": "next build",
+    "dev": "NEXT_PUBLIC_BASE_BACKEND_URL='http://localhost' next dev",
+    "build": "NEXT_PUBLIC_BASE_BACKEND_URL='' next build",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "dockerbuild": "docker build --no-cache -t nomomon/selrad_planner ."
+    "dockerbuild": "docker build --no-cache -t hereugo/planner_frontend ."
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
@@ -39,6 +39,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
