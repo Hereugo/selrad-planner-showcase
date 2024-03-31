@@ -61,6 +61,50 @@ python3 manage.py import_clients_csv
 python3 manage.py import_managers_csv
 ```
 
+### Запуск проекта в prod-режиме на сервере
+
+Инструкция только при выкладавании на сервер.
+
+- Удоствавертись что Docker-desktop версии > 4.26.0.
+
+- Dockerfiles для backend-а и frontend-а должны быть сделаны для поддержки на linux-amd64
+
+- Добавить новые изменения в docker image
+
+```
+cd backend
+docker build -t hereugo/planner_backend .
+docker push hereugo/planner_backend 
+```
+
+```
+cd frontend 
+docker build -t hereugo/planner_frontend .
+docker push hereugo/planner_frontend 
+```
+
+- Зайти на сервер через ssh. Только у Амира есть доступ на сервер
+
+```
+ssh ubuntu@YOUR_SERVER_HOST
+# Provide ssh key to gain access
+```
+
+- Обновить docker image-ы
+
+```
+cd selrad-planner
+sudo docker pull hereugo/planner_backend
+sudo docker pull hereugo/planner_frontend
+```
+
+- Перезапустить docker compose
+
+```
+cd selrad-planner
+sudo docker compose -f docker-compose-prod.yml up -d --build
+```
+
 ### Endpoint-ы
 
 Чтобы просмотреть endpoint-ы API, запустите сервер и пройдите по ссылке:
