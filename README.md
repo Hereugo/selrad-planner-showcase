@@ -52,7 +52,6 @@ cp .env.example .env
 ```
 cd infra
 make build
-
 ```
 
 ```
@@ -74,19 +73,15 @@ docker-compose -f docker-compose-dev.yml up -d --build
 - Создайте административного пользователя:
 
 ```
-
 python3 manage.py createsuperuser
-
 ```
 
 - Добавьте базу данных:
 
 ```
-
 python3 manage.py loaddata ./data/worklist.json
 python3 manage.py import_clients_csv
 python3 manage.py import_managers_csv
-
 ```
 
 ### Запуск проекта в prod-режиме на сервере
@@ -100,48 +95,38 @@ python3 manage.py import_managers_csv
 - Добавить новые изменения в docker image
 
 ```
-
 cd backend
 docker build -t hereugo/planner_backend .
 docker push hereugo/planner_backend
-
 ```
 
 ```
-
 cd frontend
 docker build -t hereugo/planner_frontend .
 docker push hereugo/planner_frontend
-
 ```
 
 - Зайти на сервер через ssh. Только у Амира есть доступ на сервер
 
 ```
-
 ssh ubuntu@YOUR_SERVER_HOST
 
 # Provide ssh key to gain access
-
 ```
 
 - Обновить docker image-ы
 
 ```
-
 cd selrad-planner
 sudo docker pull hereugo/planner_backend
 sudo docker pull hereugo/planner_frontend
-
 ```
 
 - Перезапустить docker compose
 
 ```
-
 cd selrad-planner
 sudo docker compose -f docker-compose-prod.yml up -d --build
-
 ```
 
 ### Endpoint-ы
