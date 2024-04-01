@@ -7,6 +7,7 @@ COPY requirements.txt .
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
+    binutils libproj-dev gdal-bin python3-gdal \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install -r ./requirements.txt --no-cache-dir  

@@ -110,6 +110,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # GIS
+    'django.contrib.gis',
 
     # Thir-party apps
     'corsheaders',

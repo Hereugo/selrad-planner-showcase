@@ -2,7 +2,7 @@ version: '3.3'
 name: selrad-planner-dev
 services:
   db:
-    image: postgres:13.0-alpine
+    image: postgis/postgis:13-3.1
     restart: always
     networks:
       - backend

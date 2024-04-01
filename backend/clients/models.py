@@ -1,3 +1,6 @@
+from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import Point
+
 from django.db import models
 from django.utils import timezone
 
@@ -44,7 +47,7 @@ class Client(models.Model):
         ordering = ['-created_at']
 
 
-class Address(models.Model):
+class Address(gis_models.Model):
     street = models.CharField(
         max_length=255,
         verbose_name='Адрес клиента',
@@ -74,12 +77,29 @@ class Address(models.Model):
         editable=False,
     )
 
+    point = gis_models.PointField(
+        verbose_name='Точка',
+        help_text='Точка адреса',
+        blank=True,
+        null=True,
+        spatial_index=True
+    )
+
     def __str__(self):
         return f'{self.street} - {self.lat}, {self.lon}'
     
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
         self.updated_at = timezone.now()
+        if self.lon and self.lat:
+            self.point = Point(
+                float(self.lon),
+                float(self.lat),
+                srid=4326
+            )
+        else:
+            self.point = None
+
         super().save(*args, **kwargs)
 
     class Meta:

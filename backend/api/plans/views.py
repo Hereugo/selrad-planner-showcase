@@ -9,10 +9,8 @@ from rest_framework.response import Response
 from rest_framework.schemas.openapi import AutoSchema
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.http import HttpResponse
-from pyhull.convex_hull import ConvexHull
 
 from plans.models import Plan, Worklist
-from utils.generate_colors import generate_colors
 
 from api.utils.custom_permissions import IsAuthenticated 
 from api.utils.custom_paginations import PageLimitPagination
@@ -41,98 +39,6 @@ class PlanViewSet(ModelViewSet):
             return PlanUpdateSerializer
 
         return super().get_serializer_class()
-
-    @extend_schema(
-        methods=['get'],
-        parameters=[
-            OpenApiParameter(
-                'radius',
-                float,
-                OpenApiParameter.QUERY,
-                description='Радиус поиска в км',
-                default=0.5
-            )
-        ],
-        responses={
-            200: PlanSerializer(many=True)
-        }
-    )
-    @action(
-        detail=True,
-        methods=['get'],
-        permission_classes=[IsAuthenticated],
-        url_path='find_nearby',
-    )
-    def find_nearby(self, request, pk=None):
-        """Найти ближайшие планы."""
-
-        plan = get_object_or_404(Plan, pk=pk)
-        radius = request.GET.get('radius', 0.5)
-
-        # TODO by distance find nearby pins
-        pass
-
-    @extend_schema(
-        methods=['get'],
-        filters=True,
-        parameters=[
-            OpenApiParameter(
-                'convex_hull',
-                bool,
-                OpenApiParameter.QUERY,
-                description='Получить данные для выпуклой оболочки',
-                default=False
-            )
-        ],
-        responses={
-            200: MapSerializer(many=True)
-        }
-    )
-    @action(
-        detail=False,
-        methods=['get'],
-        permission_classes=[IsAuthenticated],
-        url_path='map',
-    )
-    def map(self, request):
-        """Получить карту планов."""
-
-        plans = self.filter_queryset(self.get_queryset())
-        serializer = MapSerializer(plans, many=True)
-
-        # leave only unique date 
-        dates = set([data['date'] for data in serializer.data])
-        distinct_data = []
-        for date in dates:
-            for data in serializer.data:
-                if data['date'] == date:
-                    distinct_data.append(data)
-                    break
-
-        # TODO: Think how to preserve colors for each grouped data
-        colors = generate_colors(len(distinct_data))
-        for i, data in enumerate(distinct_data):
-            data['color'] = colors[i] 
-
-        convex_hull = request.GET.get('convex_hull', False)
-        if convex_hull:
-            for data in distinct_data:
-                # https://stackoverflow.com/questions/50185446/qhull-convex-hull-wants-me-to-input-at-least-3-points
-                if len(data['data']) < 3:
-                    continue
-
-                points = [
-                    [float(point['client']['address']['lat']), float(point['client']['address']['lon'])] 
-                    for point in data['data']
-                ]
-                hull = ConvexHull(points)
-                hull_points = hull.points
-                data['data'] = [
-                    point for point in data['data']  
-                    if [float(point['client']['address']['lat']), float(point['client']['address']['lon'])] in hull_points
-                ]
-
-        return Response(distinct_data)
 
     @extend_schema(
         methods=['get'],
