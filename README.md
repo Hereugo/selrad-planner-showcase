@@ -8,6 +8,7 @@ Cпециальный веб-сайт для управления планиро
 
 - Python 3.11.7
 - Django 4.3.3
+- Nextjs
 
 ### Запуск проекта в dev-режиме
 
@@ -39,6 +40,25 @@ cp .env.example .env
 | DJANGO_DEBUG | True / False. (Optional) defaults to False. Setup project in Debug Mode |  
 
 - Запустить Docker
+
+#### Supa Fast Installation
+
+'''
+cd infra
+make build
+'''
+
+'''
+cd infra
+make flush
+make loaddata
+'''
+
+'''
+make superuser
+'''
+
+#### Verbose Installation
 
 '''
 cd infra
