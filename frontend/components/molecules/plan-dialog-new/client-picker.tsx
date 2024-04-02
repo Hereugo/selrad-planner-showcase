@@ -65,7 +65,7 @@ const ClientPicker: FC<ClientPickerProps> = ({ id, setClient }) => {
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[29rem] max-w-[calc(100vw-3rem)] p-0">
+        <PopoverContent className="w-[29rem] max-w-[calc(100vw-3rem)] p-0 shadow-md">
           <Command filter={filterFunc}>
             <CommandInput placeholder="Найти клиента..." />
             <CommandEmpty>Клиент не найден</CommandEmpty>

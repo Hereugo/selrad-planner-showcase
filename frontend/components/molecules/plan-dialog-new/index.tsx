@@ -20,6 +20,7 @@ import BoxCountInput from "./input-box-count";
 import CommentInput from "./input-comment";
 import { useCreatePlan } from "./index.hooks";
 import { Loader2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface PlanDialogNewProps {
   children: ReactNode;
@@ -43,47 +44,53 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Новый план</DialogTitle>
-          <div className="flex flex-col gap-4">
-            <div>
-              <Label htmlFor="assigned_date">Дата</Label>
-              <DayPicker id="assigned_date" setAssignedDate={setAssignedDate} />
-            </div>
+          <div className="flex flex-row gap-4">
+            <div className="flex flex-col gap-4 flex-1 w-[calc((48rem-8rem)/2)]">
+              <div>
+                <Label htmlFor="assigned_date">Дата</Label>
+                <DayPicker
+                  id="assigned_date"
+                  setAssignedDate={setAssignedDate}
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="client">Клиент</Label>
-              <ClientPicker id="client" setClient={setClient} />
-            </div>
+              <div>
+                <Label htmlFor="client">Клиент</Label>
+                <ClientPicker id="client" setClient={setClient} />
+              </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="managers">Менеджеры</Label>
-              <SelectManagers id="managers" switchManager={switchManager} />
+              <div className="flex gap-4 flex-row justify-stretch w-full">
+                <ShipmentCostInput
+                  id="shipment_cost"
+                  className="flex-1"
+                  setShipmentCost={setShipmentCost}
+                />
+                <BoxCountInput
+                  id="box_count"
+                  className="flex-1"
+                  setBoxCount={setBoxCount}
+                />
+              </div>
             </div>
+            <Separator orientation="vertical" />
+            <div className="flex flex-col gap-4 flex-1 w-[calc((48rem-8rem)/2)]">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="managers">Менеджеры</Label>
+                <SelectManagers id="managers" switchManager={switchManager} />
+              </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="worklist">Работы</Label>
-              <SelectWorkList id="worklist" switchWork={switchWork} />
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="worklist">Работы</Label>
+                <SelectWorkList id="worklist" switchWork={switchWork} />
+              </div>
             </div>
-
-            <div className="flex gap-4 flex-row justify-stretch w-full">
-              <ShipmentCostInput
-                id="shipment_cost"
-                className="flex-1"
-                setShipmentCost={setShipmentCost}
-              />
-              <BoxCountInput
-                id="box_count"
-                className="flex-1"
-                setBoxCount={setBoxCount}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="comment">Комментарии</Label>
-              <CommentInput id="comment" setComment={setComment} />
-            </div>
+          </div>
+          <div>
+            <Label htmlFor="comment">Комментарии</Label>
+            <CommentInput id="comment" setComment={setComment} />
           </div>
         </DialogHeader>
         <DialogFooter>
