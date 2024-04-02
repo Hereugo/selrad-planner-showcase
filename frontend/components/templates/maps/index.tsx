@@ -1,55 +1,33 @@
 "use client";
 
-import { FC } from "react";
+import React, { FC } from "react";
 import { Polygon, Placemark, YMaps, Map } from "@pbe/react-yandex-maps";
 import { useMaps } from "./index.hooks";
 import PlanDialogEdit from "@/components/molecules/plan-dialog-edit";
 import { Button } from "@/components/ui/button";
-import {
-  CircleXIcon,
-  Earth,
-  PackageOpenIcon,
-  Pen,
-  PenBoxIcon,
-  PenIcon,
-  XIcon,
-} from "lucide-react";
+import { CircleXIcon, Earth, PackageOpenIcon, PenBoxIcon } from "lucide-react";
 import { cn, managerFullName } from "@/lib/utils";
 import { TengeReciept } from "@/components/icons/tenge-reciept";
 
 interface MapsTemplateProps {}
 
 const MapsTemplate: FC<MapsTemplateProps> = () => {
-  const { mapCenter, placeMarks, polygons, selectedPlan, setSelectedPlanId } =
-    useMaps();
+  const {
+    mapRef,
+    mapCenter,
+    placeMarks,
+    polygons,
+    selectedPlan,
+    setSelectedPlanId,
+  } = useMaps();
 
   return (
     <div className="flex h-full gap-4">
-      <YMaps>
-        <Map
-          defaultState={{
-            center: mapCenter,
-            zoom: 12,
-          }}
-          className="flex-1 h-full rounded-lg overflow-clip duration-300"
-        >
-          {placeMarks.map((placeMark, index) => (
-            <Placemark
-              key={index}
-              {...placeMark}
-              modules={["geoObject.addon.balloon", "geoObject.addon.hint"]}
-            />
-          ))}
-          {polygons.map((polygon, index) => (
-            <Polygon
-              key={index}
-              geometry={polygon.geometry}
-              options={polygon.options}
-              modules={["geoObject.addon.balloon", "geoObject.addon.hint"]}
-            />
-          ))}
-        </Map>
-      </YMaps>
+      <div
+        className="flex-1 h-full rounded-lg overflow-clip duration-300"
+        style={{ minHeight: "500px" }}
+        ref={mapRef}
+      />
       <div
         className={cn(
           "h-full overflow-y-auto duration-300",
