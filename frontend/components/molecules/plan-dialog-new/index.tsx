@@ -46,7 +46,7 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Новый план</DialogTitle>
+          <DialogTitle className="mb-4">Новый план</DialogTitle>
           <div className="flex flex-row gap-4">
             <div className="flex flex-col gap-4 flex-1 w-[calc((48rem-8rem)/2)]">
               <div>

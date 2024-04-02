@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { FC } from "react";
 import { useWorks } from "./index.hooks";
+import { toTitle } from "@/lib/utils";
 
 interface SelectWorklistProps {
   id?: string;
@@ -26,7 +27,7 @@ const SelectWorkList: FC<SelectWorklistProps> = ({ id, switchWork }) => {
             htmlFor={`work-${work.id}`}
             title={work.description}
           >
-            {work.name}
+            {toTitle(work.name)}
           </Label>
         </div>
       ))}
