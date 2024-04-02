@@ -1,7 +1,5 @@
 const locations = JSON.parse(document.getElementById("locations").textContent);
 
-console.log(locations);
-
 const features = [];
 for (let i = 0; i < locations.length; i++) {
   features.push(

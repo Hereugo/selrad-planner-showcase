@@ -57,6 +57,7 @@ make build
 ```
 cd infra
 make flush
+make migrate
 make loaddata
 make superuser
 ```
