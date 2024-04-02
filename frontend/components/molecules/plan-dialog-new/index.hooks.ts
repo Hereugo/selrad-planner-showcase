@@ -5,6 +5,7 @@ import { usePlanCreateMutation } from "@/lib/backend/plans";
 import { useWorklistsQuery } from "@/lib/backend/worklist";
 import { formatClientName } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { highlightPlanRow } from "../plan-dialog-edit/index.hooks";
 
 export const useClients = () => {
   const { data, error, isLoading } = useClientsQuery();
@@ -130,6 +131,7 @@ export const useCreatePlan = () => {
       });
 
       setIsOpen(false);
+      highlightPlanRow(planCreateMutation.data?.data as Plan);
     }
   }, [planCreateMutation.isSuccess, toast, setIsOpen]);
 

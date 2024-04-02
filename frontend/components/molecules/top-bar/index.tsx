@@ -11,7 +11,7 @@ const TopBar: FC<TopBarProps> = ({ className }) => {
   return (
     <div className={cn("border-b-2", className)}>
       <Link
-        className="h-full text-2xl font-bold flex items-center px-6 gap-2"
+        className="w-64 h-full text-2xl font-bold flex items-center px-6 gap-2"
         href="/"
       >
         <CalendarDays />

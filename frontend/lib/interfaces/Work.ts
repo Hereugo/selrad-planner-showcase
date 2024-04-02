@@ -1,8 +1,8 @@
 interface Work {
-    id: string;
-    name: string;
-    description: string;
+  id: string;
+  name: string;
+  description: string;
 
-    created_at: string;
-    updated_at: string;
+  created_at: string;
+  updated_at: string;
 }
