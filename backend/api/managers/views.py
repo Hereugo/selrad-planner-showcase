@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class ManagerViewSet(ModelViewSet):
     """API для работы с менеджерами."""
 
-    queryset = Manager.objects.all()
+    queryset = Manager.objects.filter(is_hidden=False)
     serializer_class = ManagerSerializer
     pagination_class = None
 

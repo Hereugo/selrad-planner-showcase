@@ -71,18 +71,19 @@ docker-compose -f docker-compose-dev.yml up -d --build
 
 В Докере backend container-а:
 
+- Добавьте базу данных:
+
+```
+python3 manage.py flush
+python3 manage.py loaddata ./data/worklist.json
+python3 manage.py loaddata ./data/clients_w_address.json
+python3 manage.py import_managers_csv
+```
+
 - Создайте административного пользователя:
 
 ```
 python3 manage.py createsuperuser
-```
-
-- Добавьте базу данных:
-
-```
-python3 manage.py loaddata ./data/worklist.json
-python3 manage.py import_clients_csv
-python3 manage.py import_managers_csv
 ```
 
 ### Запуск проекта в prod-режиме на сервере

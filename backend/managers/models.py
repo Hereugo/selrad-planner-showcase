@@ -23,6 +23,10 @@ class Manager(models.Model):
         editable=False,
     )
 
+    is_hidden = models.BooleanField(
+        default=False,
+    )
+
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 

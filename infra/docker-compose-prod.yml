@@ -2,12 +2,12 @@ version: '3.3'
 name: selrad-planner-prod
 services:
   db:
-    image: postgres:13.0-alpine
+    image: postgis/postgis:13-3.1
     restart: always
     networks:
       - backend
     volumes:
-    - db_value:/var/lib/postgresql/data/
+      - db_value:/var/lib/postgresql/data/
     env_file:
       - ./.env
 

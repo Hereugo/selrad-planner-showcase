@@ -8,6 +8,7 @@ class ManagerAdmin(admin.ModelAdmin):
         'id',
         'first_name',
         'last_name',
+        'is_hidden',
     )
     search_fields = ('first_name', 'last_name',)
     empty_value_display = '--пусто--'
