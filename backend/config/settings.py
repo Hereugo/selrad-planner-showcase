@@ -265,3 +265,8 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API for the Selrad Planner project',
     'VERSION': '1.0.0',
 }
+
+# Gmaps settings
+
+GMAPS_API_KEY = os.getenv('GMAPS_API_KEY')
+GMAPS_API_URL = os.getenv('GMAPS_API_URL', 'https://maps.googleapis.com/maps/api/geocode/json')

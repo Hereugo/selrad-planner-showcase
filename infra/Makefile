@@ -19,7 +19,7 @@ superuser:
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py createsuperuser	
 loaddata:
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py loaddata ./data/worklist.json; \
-	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py import_clients_csv; \
+	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py loaddata ./data/clients_w_address.json; \
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py import_managers_csv
 
 flush:

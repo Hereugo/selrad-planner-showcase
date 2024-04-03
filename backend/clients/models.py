@@ -1,8 +1,15 @@
+import requests
+import logging
+
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
+from django.conf import settings
 
 from django.db import models
 from django.utils import timezone
+
+
+logger = logging.getLogger(__name__)
 
 
 class Client(models.Model):
@@ -84,6 +91,37 @@ class Address(gis_models.Model):
         null=True,
         spatial_index=True
     )
+
+    def update_coordinates(self):
+        """Update the coordinates of the address"""
+        street = self.street + 'г. Алматы, Казахстан'
+        street = street.replace('^[A-Za-zА-Яа-яЁё.,]', ' ')
+
+        if street is None:
+            return 
+
+        params = {
+            'address': street,
+            'key': settings.GMAPS_API_KEY,
+        }
+        response = requests.get(settings.GMAPS_API_URL, params=params)
+        data = response.json()
+        if data['status'] == 'OK':
+            location = data['results'][0]['geometry']['location']
+            if location:
+                if not self.lat or not self.lon:
+                    logger.info('Location is empty for', street, 
+                          'new:', location['lat'], location['lng'])
+                    self.lat, self.lon = float(location['lat']), float(location['lng'])
+                elif abs(float(location['lat']) - float(self.lat)) > 0.0001 or abs(float(location['lng']) - float(self.lon)) > 0.0001:
+                    logger.info('Location is different for', street, 
+                          'old:', self.lat, self.lon, 
+                          'new:', location['lat'], location['lng'])
+                    self.lat, self.lon = float(location['lat']), float(location['lng'])
+
+            self.save()
+        else:
+            return
 
     def __str__(self):
         return f'{self.street} - {self.lat}, {self.lon}'
