@@ -1,5 +1,5 @@
 import io
-import logging 
+import logging
 from itertools import groupby
 
 import openpyxl
@@ -10,80 +10,86 @@ logger = logging.getLogger(__name__)
 
 
 COL_DICT = {
-    'assigned_date': 1,
-    'client': 2,
-    'address': 3,
-    'manager': 4,
-    'worklist': 5,
-    'comment': 6,
-    'shipment_cost': 7,
-    'box_count': 8
+    "assigned_date": 1,
+    "client": 2,
+    "address": 3,
+    "manager": 4,
+    "worklist": 5,
+    "comment": 6,
+    "shipment_cost": 7,
+    "box_count": 8,
 }
 
 
 def generate_excelsheet_by_plan(plans):
-    workbook = openpyxl.load_workbook('./static/docs/standard_plan.xlsx')
+    workbook = openpyxl.load_workbook("./static/docs/standard_plan.xlsx")
     ws = workbook.active
 
-    if 'assigned_date_cell' not in workbook.style_names:
-        date_style = openpyxl.styles.NamedStyle(name='assigned_date_cell')
+    if "assigned_date_cell" not in workbook.style_names:
+        date_style = openpyxl.styles.NamedStyle(name="assigned_date_cell")
         # set format to date with weekday
-        date_style.number_format = 'DD.MM.YYYY'
+        date_style.number_format = "DD.MM.YYYY"
 
         # font color white, background color gray and bold
-        date_style.font = openpyxl.styles.Font(color='FFFFFF', bold=True)
+        date_style.font = openpyxl.styles.Font(color="FFFFFF", bold=True)
         date_style.fill = openpyxl.styles.PatternFill(
-            start_color='808080', end_color='808080', fill_type='solid')
+            start_color="808080", end_color="808080", fill_type="solid"
+        )
         date_style.alignment = openpyxl.styles.Alignment(
-            horizontal='center', vertical='center')
+            horizontal="center", vertical="center"
+        )
         date_style.alignment.wrap_text = True
 
         workbook.add_named_style(date_style)
 
-    if 'general_style' not in workbook.style_names:
-        general_style = openpyxl.styles.NamedStyle(name='general_style')
+    if "general_style" not in workbook.style_names:
+        general_style = openpyxl.styles.NamedStyle(name="general_style")
         general_style.alignment.wrap_text = True
 
-        general_style.border = Border(left=Side(style='thin'),
-                                      right=Side(style='thin'),
-                                      top=Side(style='thin'),
-                                      bottom=Side(style='thin'))
+        general_style.border = Border(
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="thin"),
+        )
 
         workbook.add_named_style(general_style)
 
-    earliest_date = plans.earliest('assigned_date').assigned_date
-    latest_date = plans.latest('assigned_date').assigned_date
+    earliest_date = plans.earliest("assigned_date").assigned_date
+    latest_date = plans.latest("assigned_date").assigned_date
 
-    ws.cell(row=1, column=1).value = f'Планы на {earliest_date} - {latest_date}'
-    ws.cell(row=1, column=1).style = 'assigned_date_cell'
+    ws.cell(row=1, column=1).value = f"Планы на {earliest_date} - {latest_date}"
+    ws.cell(row=1, column=1).style = "assigned_date_cell"
 
     row = 2
     for assigned_date, plans_by_day in groupby(plans, key=lambda p: p.assigned_date):
         plan_count = 0
         for i, plan in enumerate(plans_by_day, start=1):
-            ws.cell(row=row + i, column=COL_DICT['client']).value = plan.client.name
-            ws.cell(row=row + i, column=COL_DICT['address']).value = plan.client.address.street
-            ws.cell(row=row + i, column=COL_DICT['manager']).value = ', '.join(
-                [str(m) for m in plan.managers.all()])
-            ws.cell(row=row + i, column=COL_DICT['worklist']).value = ', '.join(
-                [str(w) for w in plan.worklist.all()])
-            ws.cell(row=row + i,
-                    column=COL_DICT['comment']).value = plan.comment
-            ws.cell(
-                row=row + i, column=COL_DICT['shipment_cost']).value = plan.shipment_cost
-            ws.cell(row=row + i,
-                    column=COL_DICT['box_count']).value = plan.box_count
+            ws.cell(row=row + i, column=COL_DICT["client"]).value = plan.client.name
+            ws.cell(row=row + i, column=COL_DICT["address"]).value = (
+                plan.client.address.street
+            )
+            ws.cell(row=row + i, column=COL_DICT["manager"]).value = ", ".join(
+                [str(m) for m in plan.managers.all()]
+            )
+            ws.cell(row=row + i, column=COL_DICT["worklist"]).value = ", ".join(
+                [str(w) for w in plan.worklist.all()]
+            )
+            ws.cell(row=row + i, column=COL_DICT["comment"]).value = plan.comment
+            ws.cell(row=row + i, column=COL_DICT["shipment_cost"]).value = (
+                plan.shipment_cost
+            )
+            ws.cell(row=row + i, column=COL_DICT["box_count"]).value = plan.box_count
 
             # apply the general style to the row
             for col in range(2, len(COL_DICT) + 1):
-                ws.cell(row=row + i, column=col).style = 'general_style'
+                ws.cell(row=row + i, column=col).style = "general_style"
             plan_count += 1
 
         x = plan_count + 1
-        ws.merge_cells(start_row=row, start_column=1,
-                       end_row=row + x, end_column=1)
+        ws.merge_cells(start_row=row, start_column=1, end_row=row + x, end_column=1)
         ws.cell(row=row, column=1).value = assigned_date
-        ws.cell(row=row, column=1).style = 'assigned_date_cell'
+        ws.cell(row=row, column=1).style = "assigned_date_cell"
 
         row += x + 1
 
@@ -92,85 +98,96 @@ def generate_excelsheet_by_plan(plans):
 
     return buffer
 
+
 COL_DICT_REPORT = {
-    'assigned_date': 1,
-    'client': 2,
-    'address': 3,
-    'worklist': 4,
-    'comment': 5,
-    'box_count': 6
+    "assigned_date": 1,
+    "client": 2,
+    "address": 3,
+    "worklist": 4,
+    "comment": 5,
+    "box_count": 6,
 }
 
 
 def generate_excelsheet_by_manager(plans, manager):
-    workbook = openpyxl.load_workbook('./static/docs/standard_report.xlsx')
+    workbook = openpyxl.load_workbook("./static/docs/standard_report.xlsx")
     ws = workbook.active
 
-    if 'head_cell' not in workbook.style_names:
-        head_style = openpyxl.styles.NamedStyle(name='head_cell')
-        head_style.font = openpyxl.styles.Font(color='000000', bold=True, size=18)
+    if "head_cell" not in workbook.style_names:
+        head_style = openpyxl.styles.NamedStyle(name="head_cell")
+        head_style.font = openpyxl.styles.Font(color="000000", bold=True, size=18)
         workbook.add_named_style(head_style)
 
-    if 'assigned_date_cell' not in workbook.style_names:
-        date_style = openpyxl.styles.NamedStyle(name='assigned_date_cell')
+    if "assigned_date_cell" not in workbook.style_names:
+        date_style = openpyxl.styles.NamedStyle(name="assigned_date_cell")
         # set format to date with weekday
-        date_style.number_format = 'DD.MM.YYYY'
+        date_style.number_format = "DD.MM.YYYY"
 
         # font color white, background color gray and bold
-        date_style.font = openpyxl.styles.Font(color='FFFFFF', bold=True)
+        date_style.font = openpyxl.styles.Font(color="FFFFFF", bold=True)
         date_style.fill = openpyxl.styles.PatternFill(
-            start_color='808080', end_color='808080', fill_type='solid')
+            start_color="808080", end_color="808080", fill_type="solid"
+        )
         date_style.alignment = openpyxl.styles.Alignment(
-            horizontal='center', vertical='center')
+            horizontal="center", vertical="center"
+        )
         date_style.alignment.wrap_text = True
 
         workbook.add_named_style(date_style)
 
-    if 'general_style' not in workbook.style_names:
-        general_style = openpyxl.styles.NamedStyle(name='general_style')
+    if "general_style" not in workbook.style_names:
+        general_style = openpyxl.styles.NamedStyle(name="general_style")
         general_style.alignment.wrap_text = True
 
-        general_style.border = Border(left=Side(style='thin'),
-                                      right=Side(style='thin'),
-                                      top=Side(style='thin'),
-                                      bottom=Side(style='thin'))
+        general_style.border = Border(
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="thin"),
+        )
 
         workbook.add_named_style(general_style)
 
-    earliest_date = plans.earliest('assigned_date').assigned_date
-    latest_date = plans.latest('assigned_date').assigned_date
+    earliest_date = plans.earliest("assigned_date").assigned_date
+    latest_date = plans.latest("assigned_date").assigned_date
 
-    ws.cell(row=1, column=1).value = f'ОТЧЕТ {manager}' 
-    ws.cell(row=2, column=1).value = f'ЗА ПЕРИОД С {earliest_date} - {latest_date}'
-    ws.cell(row=1, column=1).style = 'head_cell'
-    ws.cell(row=2, column=1).style = 'head_cell'
+    ws.cell(row=1, column=1).value = f"ОТЧЕТ {manager}"
+    ws.cell(row=2, column=1).value = f"ЗА ПЕРИОД С {earliest_date} - {latest_date}"
+    ws.cell(row=1, column=1).style = "head_cell"
+    ws.cell(row=2, column=1).style = "head_cell"
 
-    ws.cell(row=3, column=1).value = f'{earliest_date} - {latest_date}'
-    ws.cell(row=3, column=1).style = 'assigned_date_cell'
+    ws.cell(row=3, column=1).value = f"{earliest_date} - {latest_date}"
+    ws.cell(row=3, column=1).style = "assigned_date_cell"
 
     row = 4
     for assigned_date, plans_by_day in groupby(plans, key=lambda p: p.assigned_date):
         plans_by_day = [plan for plan in plans_by_day if manager in plan.managers.all()]
         plan_count = 0
         for i, plan in enumerate(plans_by_day, start=1):
-            ws.cell(row=row + i, column=COL_DICT_REPORT['client']).value = plan.client.name
-            ws.cell(row=row + i, column=COL_DICT_REPORT['address']).value = plan.address.street
-            ws.cell(row=row + i, column=COL_DICT_REPORT['worklist']).value = ', '.join(
-                [str(w) for w in plan.worklist.all()])
-            ws.cell(row=row + i, column=COL_DICT_REPORT['comment']).value = plan.comment
-            ws.cell(row=row + i, column=COL_DICT_REPORT['box_count']).value = plan.box_count
+            ws.cell(row=row + i, column=COL_DICT_REPORT["client"]).value = (
+                plan.client.name
+            )
+            ws.cell(row=row + i, column=COL_DICT_REPORT["address"]).value = (
+                plan.address.street
+            )
+            ws.cell(row=row + i, column=COL_DICT_REPORT["worklist"]).value = ", ".join(
+                [str(w) for w in plan.worklist.all()]
+            )
+            ws.cell(row=row + i, column=COL_DICT_REPORT["comment"]).value = plan.comment
+            ws.cell(row=row + i, column=COL_DICT_REPORT["box_count"]).value = (
+                plan.box_count
+            )
 
             # apply the general style to the row
-            for col in range(2, len(COL_DICT_REPORT) + 1): 
-                ws.cell(row=row + i, column=col).style = 'general_style'
+            for col in range(2, len(COL_DICT_REPORT) + 1):
+                ws.cell(row=row + i, column=col).style = "general_style"
 
             plan_count += 1
 
         x = plan_count + 1
-        ws.merge_cells(start_row=row, start_column=1,
-                       end_row=row + x, end_column=1)
+        ws.merge_cells(start_row=row, start_column=1, end_row=row + x, end_column=1)
         ws.cell(row=row, column=1).value = assigned_date
-        ws.cell(row=row, column=1).style = 'assigned_date_cell'
+        ws.cell(row=row, column=1).style = "assigned_date_cell"
 
         row += x + 1
 
@@ -178,4 +195,3 @@ def generate_excelsheet_by_manager(plans, manager):
     workbook.save(buffer)
 
     return buffer
-

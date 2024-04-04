@@ -4,28 +4,30 @@ from clients.models import Client, Address
 
 class AddressSerializer(serializers.ModelSerializer):
     """Serializer for Address model"""
+
     class Meta:
         model = Address
         fields = (
-            'id',
-            'street',
-            'lon',
-            'lat',
-            'created_at',
-            'updated_at',
+            "id",
+            "street",
+            "lon",
+            "lat",
+            "created_at",
+            "updated_at",
         )
 
 
 class ClientSerializer(serializers.ModelSerializer):
     """Serializer for Client model"""
+
     address = AddressSerializer(read_only=True)
 
     class Meta:
         model = Client
         fields = (
-            'id',
-            'name',
-            'created_at',
-            'updated_at',
-            'address',
+            "id",
+            "name",
+            "created_at",
+            "updated_at",
+            "address",
         )

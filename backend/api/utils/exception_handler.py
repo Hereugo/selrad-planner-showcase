@@ -15,9 +15,12 @@ def custom_exception_handler(exc, context):
 
     if isinstance(exc, Exception):
         return Response(
-            {'error': str(exc)},
-            status=response.status_code if response else status.HTTP_500_INTERNAL_SERVER_ERROR,
+            {"error": str(exc)},
+            status=(
+                response.status_code
+                if response
+                else status.HTTP_500_INTERNAL_SERVER_ERROR
+            ),
         )
 
     return response
-

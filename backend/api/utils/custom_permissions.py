@@ -39,8 +39,11 @@ def permission_required(permission):
         def has_permission_wrapper(*args, **kwargs):
             request = args[0].request
             if not request.user.has_perm(permission):
-                return Response({'error': 'У вас нет прав на это действие.'}, status=403)
+                return Response(
+                    {"error": "У вас нет прав на это действие."}, status=403
+                )
             return func(*args, **kwargs)
-        return has_permission_wrapper
-    return has_permission_decorator
 
+        return has_permission_wrapper
+
+    return has_permission_decorator
