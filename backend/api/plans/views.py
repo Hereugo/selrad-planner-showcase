@@ -18,7 +18,6 @@ from .serializers import (
     PlanSerializer,
     PlanUpdateSerializer,
     WorklistSerializer,
-    MapSerializer,
 )
 from .custom_filters import PlanFilter
 from .generate_excelsheet import (

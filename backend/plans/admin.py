@@ -86,6 +86,7 @@ class PlanAdmin(admin.ModelAdmin):
         "shipment_cost",
         "box_count",
         "client",
+        "address",
     )
     search_fields = ("client__name",)
     list_filter = (

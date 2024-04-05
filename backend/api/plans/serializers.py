@@ -33,6 +33,7 @@ class PlanSerializer(serializers.ModelSerializer):
 
     worklist = WorklistSerializer(many=True)
     client = ClientSerializer()
+    address = AddressSerializer()
     managers = ManagerSerializer(many=True)
     box_count = serializers.IntegerField(read_only=True)
 
@@ -43,6 +44,7 @@ class PlanSerializer(serializers.ModelSerializer):
             "assigned_date",
             "worklist",
             "client",
+            "address",
             "shipment_cost",
             "comment",
             "managers",
@@ -69,6 +71,10 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         queryset=Client.objects.all(),
         required=False,
     )
+    address = serializers.PrimaryKeyRelatedField(
+        queryset=Address.objects.all(),
+        required=False,
+    )
     box_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -78,6 +84,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             "assigned_date",
             "worklist",
             "client",
+            "address",
             "shipment_cost",
             "comment",
             "managers",
@@ -130,28 +137,3 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         return PlanSerializer(
             instance, context={"request": self.context.get("request")}
         ).data
-
-
-class MapSerializer(serializers.ModelSerializer):
-    """Serializer for Plan model"""
-
-    date = serializers.SerializerMethodField()
-    data = serializers.SerializerMethodField()
-    color = serializers.SerializerMethodField()
-
-    @extend_schema_field(serializers.CharField())
-    def get_color(self, obj):
-        return "#0000FF"  # later changed in view
-
-    @extend_schema_field(serializers.DateField())
-    def get_date(self, obj):
-        return obj.assigned_date
-
-    @extend_schema_field(PlanSerializer(many=True))
-    def get_data(self, obj):
-        plans = Plan.objects.filter(assigned_date=obj.assigned_date)
-        return PlanSerializer(plans, many=True).data
-
-    class Meta:
-        model = Plan
-        fields = ("date", "data", "color")
