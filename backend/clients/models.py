@@ -109,33 +109,38 @@ class Address(gis_models.Model):
 
         data = response.json()
         if "response" in data:
-            lon, lat = map(
-                float,
-                data["response"]["GeoObjectCollection"]["featureMember"][0][
-                    "GeoObject"
-                ]["Point"]["pos"].split(" "),
-            )
-            if lon and lat:
-                if not self.lat or not self.lon:
-                    logger.info("Location is empty for", street, "new:", lon, lat)
-                    self.lon, self.lat = lon, lat
-                elif (
-                    abs(lat - float(self.lat)) > 0.0001
-                    or abs(lon - float(self.lon)) > 0.0001
-                ):
-                    logger.info(
-                        "Location is different for",
-                        street,
-                        "old:",
-                        self.lon,
-                        self.lat,
-                        "new:",
-                        lon,
-                        lat,
-                    )
-                    self.lon, self.lat = lon, lat
+            try:
+                lon, lat = map(
+                    float,
+                    data["response"]["GeoObjectCollection"]["featureMember"][0][
+                        "GeoObject"
+                    ]["Point"]["pos"].split(" "),
+                )
+                if lon and lat:
+                    if not self.lat or not self.lon:
+                        logger.info("Location is empty for", street, "new:", lon, lat)
+                        self.lon, self.lat = lon, lat
+                    elif (
+                        abs(lat - float(self.lat)) > 0.0001
+                        or abs(lon - float(self.lon)) > 0.0001
+                    ):
+                        logger.info(
+                            "Location is different for",
+                            street,
+                            "old:",
+                            self.lon,
+                            self.lat,
+                            "new:",
+                            lon,
+                            lat,
+                        )
+                        self.lon, self.lat = lon, lat
 
-            self.save()
+                self.save()
+            except Exception as e:
+                logger.error(
+                    f"Error while updating coordinates for {street}. Error: {e}"
+                )
 
     def __str__(self):
         return f"{self.street} - {self.lat}, {self.lon}"

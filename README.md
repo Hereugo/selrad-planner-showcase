@@ -36,6 +36,7 @@ cp .env.example .env
 | VAR   | Description    |
 |--------------- | --------------- |
 | YANDEX_API_KEY   | API key for yandex map. Follow instructions [here](https://yandex.com/dev/commercial/doc/en/concepts/jsapi-geocoder) to setup. |
+| YANDEX_API_URL | https://geocode-maps.yandex.ru/1.x/' API URL for yandex map geocoder. | 
 | DJANGO_SECRET_KEY | Secret key every django project provides. |
 | DJANGO_DEBUG | True / False. (Optional) defaults to False. Setup project in Debug Mode |  
 | DB_ENGINE | 'django.contrib.gis.db.backends.postgis'. PostGis, Postgres with geo extension |
