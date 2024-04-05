@@ -28,14 +28,13 @@ class Client(models.Model):
         editable=False,
     )
 
-    address = models.ForeignKey(
+    addresses = models.ManyToManyField(
         "Address",
-        on_delete=models.CASCADE,
-        related_name="addresses",
-        verbose_name="Адрес клиента",
-        help_text="Выберите адрес клиента",
+        through="ClientAddress",
+        related_name="clients",
+        verbose_name="Адреса клиента",
+        help_text="Выберите адреса клиента",
         blank=True,
-        null=True,
     )
 
     def __str__(self):
@@ -119,7 +118,7 @@ class Address(gis_models.Model):
                 if lon and lat:
                     if not self.lat or not self.lon:
                         logger.info("Location is empty for", street, "new:", lon, lat)
-                        self.lon, self.lat = lon, lat
+                        self.point = Point(lon, lat, srid=4326)
                     elif (
                         abs(lat - float(self.lat)) > 0.0001
                         or abs(lon - float(self.lon)) > 0.0001
@@ -134,9 +133,8 @@ class Address(gis_models.Model):
                             lon,
                             lat,
                         )
-                        self.lon, self.lat = lon, lat
+                        self.point = Point(lon, lat, srid=4326)
 
-                self.save()
             except Exception as e:
                 logger.error(
                     f"Error while updating coordinates for {street}. Error: {e}"
@@ -148,10 +146,9 @@ class Address(gis_models.Model):
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
         self.updated_at = timezone.now()
-        if self.lon and self.lat:
-            self.point = Point(float(self.lon), float(self.lat), srid=4326)
-        else:
-            self.point = None
+
+        self.lon = float(self.point.x)
+        self.lat = float(self.point.y)
 
         super().save(*args, **kwargs)
 
@@ -159,3 +156,30 @@ class Address(gis_models.Model):
         verbose_name = "Адрес"
         verbose_name_plural = "Адреса"
         ordering = ["street"]
+
+
+class ClientAddress(models.Model):
+    """Model ClientAddress"""
+
+    client = models.ForeignKey(
+        "Client",
+        on_delete=models.CASCADE,
+        related_name="client_addresses",
+        verbose_name="Клиент",
+        help_text="Выберите клиента",
+    )
+    address = models.ForeignKey(
+        "Address",
+        on_delete=models.CASCADE,
+        related_name="client_addresses",
+        verbose_name="Адрес",
+        help_text="Выберите адрес",
+    )
+
+    def __str__(self):
+        return f"{self.client.name} - {self.address.street}"
+
+    class Meta:
+        verbose_name = "Адрес клиента"
+        verbose_name_plural = "Адреса клиентов"
+        ordering = ["client__name"]

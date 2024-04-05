@@ -20,7 +20,7 @@ class AddressSerializer(serializers.ModelSerializer):
 class ClientSerializer(serializers.ModelSerializer):
     """Serializer for Client model"""
 
-    address = AddressSerializer(read_only=True)
+    addresses = AddressSerializer(read_only=True, many=True)
 
     class Meta:
         model = Client
@@ -29,5 +29,5 @@ class ClientSerializer(serializers.ModelSerializer):
             "name",
             "created_at",
             "updated_at",
-            "address",
+            "addresses",
         )

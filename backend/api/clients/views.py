@@ -5,7 +5,7 @@ from django.contrib.gis.measure import Distance
 
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
@@ -18,13 +18,14 @@ from .serializers import ClientSerializer
 logger = logging.getLogger(__name__)
 
 
-class ClientViewSet(ModelViewSet):
+class ClientViewSet(ReadOnlyModelViewSet):
     """API для работы с клиентами."""
 
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
     pagination_class = None
 
+    # FIXME Переделать так клиент может иметь несколько адресов
     @extend_schema(
         methods=["get"],
         parameters=[

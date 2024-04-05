@@ -1,6 +1,6 @@
 import logging
 
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from managers.models import Manager
 from .serializers import ManagerSerializer
@@ -9,7 +9,7 @@ from .serializers import ManagerSerializer
 logger = logging.getLogger(__name__)
 
 
-class ManagerViewSet(ModelViewSet):
+class ManagerViewSet(ReadOnlyModelViewSet):
     """API для работы с менеджерами."""
 
     queryset = Manager.objects.filter(is_hidden=False)

@@ -61,7 +61,7 @@ class Plan(models.Model):
     shipment_cost = models.DecimalField(
         verbose_name="Сумма отгрузки",
         help_text="Ввидите сумму отгрузки",
-        max_digits=10,
+        max_digits=15,
         decimal_places=2,
     )
     comment = models.TextField(

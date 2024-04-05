@@ -118,13 +118,14 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # GIS
     "django.contrib.gis",
-    # Thir-party apps
+    # Third-party apps
     "corsheaders",
     "drf_spectacular",
     "django_filters",
     "rest_framework",  # needed only for serializers
     "rest_framework.authtoken",
     "djoser",
+    "leaflet",
     # Local apps
     "api",
     "plans",
@@ -267,7 +268,18 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
 }
 
-# Gmaps settings
+# Yandex Map settings
 
 YANDEX_API_KEY = os.getenv("YANDEX_API_KEY")
 YANDEX_API_URL = os.getenv("YANDEX_API_URL")
+
+
+# Leaflet settings
+
+LEAFLET_CONFIG = {
+    "DEFAULT_ZOOM": 5,
+    "MAX_ZOOM": 20,
+    "MIN_ZOOM": 3,
+    "SCALE": "both",
+    "ATTRIBUTION_PREFIX": "Inspired by Life in GIS",
+}

@@ -118,7 +118,7 @@ class PlanViewSet(ModelViewSet):
         return response
 
 
-class WorklistViewSet(ModelViewSet):
+class WorklistViewSet(ReadOnlyModelViewSet):
     """API для работы с рабочими списками."""
 
     queryset = Worklist.objects.all()
