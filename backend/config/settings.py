@@ -244,7 +244,6 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "api.utils.custom_permissions.IsAuthenticated",
-        # 'rest_framework.permissions.AllowAny',
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",  # noqa
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
@@ -266,6 +265,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Selrad Planner API",
     "DESCRIPTION": "API for the Selrad Planner project",
     "VERSION": "1.0.0",
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,
+    },
 }
 
 # Yandex Map settings
