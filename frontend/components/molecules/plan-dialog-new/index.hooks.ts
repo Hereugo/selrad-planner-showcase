@@ -57,8 +57,8 @@ export const useCreatePlan = () => {
 
   const [assigned_date, setAssignedDate] = useState<string>();
   const [client, setClient] = useState<string>();
-  const [managers, setManagers] = useState<number[]>([]);
-  const [worklist, setWorklist] = useState<string[]>([]);
+  const [selectedManagers, setSelectedManagers] = useState<number[]>([]);
+  const [selectedWorklist, setSelectedWorklist] = useState<string[]>([]);
   const [shipment_cost, setShipmentCost] = useState<string>();
   const [box_count, setBoxCount] = useState<string>();
   const [comment, setComment] = useState<string>();
@@ -71,8 +71,8 @@ export const useCreatePlan = () => {
     if (
       !assigned_date ||
       !client ||
-      !managers.length ||
-      !worklist.length ||
+      !selectedManagers.length ||
+      !selectedWorklist.length ||
       !shipment_cost ||
       !box_count
     ) {
@@ -86,8 +86,8 @@ export const useCreatePlan = () => {
     return planCreateMutation.mutate({
       assigned_date: assigned_date,
       client: client,
-      managers: managers,
-      worklist: worklist,
+      managers: selectedManagers,
+      worklist: selectedWorklist,
       shipment_cost: shipment_cost,
       box_count: box_count,
       comment: comment ?? "",
@@ -95,7 +95,7 @@ export const useCreatePlan = () => {
   };
 
   const switchManager = (manager: number) => {
-    setManagers((prev) => {
+    setSelectedManagers((prev) => {
       if (prev.includes(manager)) {
         return prev.filter((m) => m !== manager);
       } else {
@@ -105,7 +105,7 @@ export const useCreatePlan = () => {
   };
 
   const switchWork = (work: string) => {
-    setWorklist((prev) => {
+    setSelectedWorklist((prev) => {
       if (prev.includes(work)) {
         return prev.filter((w) => w !== work);
       } else {
@@ -132,11 +132,22 @@ export const useCreatePlan = () => {
 
       setIsOpen(false);
       highlightPlanRow(planCreateMutation.data?.data as Plan);
+
+      // reset all fields
+      setAssignedDate(undefined);
+      setClient(undefined);
+      setSelectedManagers([]);
+      setSelectedWorklist([]);
+      setShipmentCost(undefined);
+      setBoxCount(undefined);
+      setComment(undefined);
     }
   }, [planCreateMutation.isSuccess, toast, setIsOpen]);
 
   return {
     isOpen,
+    selectedManagers,
+    selectedWorklist,
     setIsOpen,
     setAssignedDate,
     setClient,

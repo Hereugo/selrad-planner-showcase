@@ -9,9 +9,14 @@ import { managerFullName, managerShortName } from "@/lib/utils";
 interface SelectManagersProps {
   id?: string;
   switchManager: (id: number) => void;
+  selectedManagers: number[];
 }
 
-const SelectManagers: FC<SelectManagersProps> = ({ id, switchManager }) => {
+const SelectManagers: FC<SelectManagersProps> = ({
+  id,
+  switchManager,
+  selectedManagers,
+}) => {
   const { managers } = useManagers();
 
   return (
@@ -21,6 +26,7 @@ const SelectManagers: FC<SelectManagersProps> = ({ id, switchManager }) => {
           <Checkbox
             id={`manager-${manager.id}`}
             onClick={() => switchManager(manager.id)}
+            checked={selectedManagers.includes(manager.id)}
           />
           <Label
             className="font-normal hover:cursor-pointer"

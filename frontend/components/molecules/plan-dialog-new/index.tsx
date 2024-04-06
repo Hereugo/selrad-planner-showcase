@@ -39,6 +39,8 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
     setComment,
     handleCreatePlan,
     isLoading,
+    selectedManagers,
+    selectedWorklist,
   } = useCreatePlan();
 
   return (
@@ -79,12 +81,20 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
             <div className="flex flex-col gap-4 flex-1 w-[calc((48rem-8rem)/2)]">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="managers">Менеджеры</Label>
-                <SelectManagers id="managers" switchManager={switchManager} />
+                <SelectManagers
+                  id="managers"
+                  switchManager={switchManager}
+                  selectedManagers={selectedManagers}
+                />
               </div>
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="worklist">Работы</Label>
-                <SelectWorkList id="worklist" switchWork={switchWork} />
+                <SelectWorkList
+                  id="worklist"
+                  switchWork={switchWork}
+                  selectedWorklist={selectedWorklist}
+                />
               </div>
             </div>
           </div>

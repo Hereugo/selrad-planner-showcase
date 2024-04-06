@@ -11,4 +11,12 @@ interface Client {
     created_at: string;
     updated_at: string;
   };
+  addresses: {
+    id: number;
+    street: string;
+    lon: string;
+    lat: string;
+    created_at: string;
+    updated_at: string;
+  }[];
 }

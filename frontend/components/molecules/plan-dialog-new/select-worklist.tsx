@@ -9,9 +9,14 @@ import { toTitle } from "@/lib/utils";
 interface SelectWorklistProps {
   id?: string;
   switchWork: (id: string) => void;
+  selectedWorklist: string[];
 }
 
-const SelectWorkList: FC<SelectWorklistProps> = ({ id, switchWork }) => {
+const SelectWorkList: FC<SelectWorklistProps> = ({
+  id,
+  switchWork,
+  selectedWorklist,
+}) => {
   const { worklist } = useWorks();
 
   return (
@@ -21,6 +26,7 @@ const SelectWorkList: FC<SelectWorklistProps> = ({ id, switchWork }) => {
           <Checkbox
             id={`work-${work.id}`}
             onClick={() => switchWork(work.id)}
+            checked={selectedWorklist.includes(work.id)}
           />
           <Label
             className="font-normal hover:cursor-pointer"
