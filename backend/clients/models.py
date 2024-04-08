@@ -147,6 +147,9 @@ class Address(gis_models.Model):
         """Save the model instance. Update the updated_at field."""
         self.updated_at = timezone.now()
 
+        if not self.point: 
+            self.update_coordinates()
+
         self.lon = float(self.point.x)
         self.lat = float(self.point.y)
 
