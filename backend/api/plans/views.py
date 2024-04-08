@@ -1,5 +1,9 @@
 import logging
 
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import Distance
+from django.utils import timezone
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status
@@ -8,12 +12,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.schemas.openapi import AutoSchema
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from django.http import HttpResponse
 
 from plans.models import Plan, Worklist
+from clients.models import Client
 
 from api.utils.custom_permissions import IsAuthenticated
 from api.utils.custom_paginations import PageLimitPagination
+from api.clients.serializers import ClientSerializer
 from .serializers import (
     PlanSerializer,
     PlanUpdateSerializer,
@@ -68,7 +73,7 @@ class PlanViewSet(ModelViewSet):
 
         buffer = generate_excelsheet_by_plan(plans)
 
-        # TODO: Add from what daterange
+        # TODO Add from what daterange
         filename = "планы.xlsx"
 
         response = HttpResponse(
@@ -106,7 +111,7 @@ class PlanViewSet(ModelViewSet):
 
         buffer = generate_excelsheet_by_manager(plans, manager)
 
-        # TODO: Add from what daterange
+        # TODO Add from what daterange
         filename = "отчет.xlsx"
 
         response = HttpResponse(
@@ -115,6 +120,52 @@ class PlanViewSet(ModelViewSet):
         )
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
+
+    # FIXME Переделать так клиент может иметь несколько адресов
+    @extend_schema(
+        methods=["get"],
+        parameters=[
+            OpenApiParameter(
+                "radius",
+                float,
+                OpenApiParameter.QUERY,
+                description="Радиус поиска в км",
+                default=0.5,
+            ),
+            OpenApiParameter(
+                "time_threshold",
+                int,
+                OpenApiParameter.QUERY,
+                description="Порог времени в днях",
+                default=30,
+            ),
+        ],
+        responses={200: ClientSerializer(many=True)},
+    )
+    @action(
+        detail=True,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="find_nearby",
+    )
+    def find_nearby(self, request, pk=None):
+        """Найти ближайшие планы по текущему плану."""
+
+        plan = get_object_or_404(Plan, pk=pk)
+        radius = float(request.GET.get("radius", 0.5))
+        time_threshold = int(request.GET.get("time_threshold", 30))
+
+        nearby_clients = Client.objects.filter(
+            addresses__point__distance_lte=(plan.address.point, Distance(km=radius))
+        ).exclude(pk=pk)
+
+        nearby_clients = nearby_clients.filter(
+            plans__assigned_date__lte=plan.assigned_date
+            - timezone.timedelta(days=time_threshold)
+        )
+
+        serializer = ClientSerializer(nearby_clients, many=True)
+        return Response(serializer.data)
 
 
 class WorklistViewSet(ReadOnlyModelViewSet):
