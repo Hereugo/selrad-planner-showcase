@@ -59,7 +59,7 @@ export const useCreatePlan = () => {
   const [client, setClient] = useState<string>();
   const [selectedManagers, setSelectedManagers] = useState<number[]>([]);
   const [selectedWorklist, setSelectedWorklist] = useState<string[]>([]);
-  const [shipment_cost, setShipmentCost] = useState<string>();
+  const [shipment_cost, setShipmentCost] = useState<number>();
   const [box_count, setBoxCount] = useState<string>();
   const [comment, setComment] = useState<string>();
 
@@ -67,18 +67,10 @@ export const useCreatePlan = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleCreatePlan = () => {
-    // do checking if all fields are filled
-    if (
-      !assigned_date ||
-      !client ||
-      !selectedManagers.length ||
-      !selectedWorklist.length ||
-      !shipment_cost ||
-      !box_count
-    ) {
+    if (!assigned_date || !client) {
       toast({
         title: "Ошибка при создании плана",
-        description: "Заполните все поля",
+        description: "Заполните хотя бы дату и клиента",
       });
       return;
     }
@@ -86,10 +78,10 @@ export const useCreatePlan = () => {
     return planCreateMutation.mutate({
       assigned_date: assigned_date,
       client: client,
-      managers: selectedManagers,
-      worklist: selectedWorklist,
-      shipment_cost: shipment_cost,
-      box_count: box_count,
+      managers: selectedManagers || [],
+      worklist: selectedWorklist || [],
+      shipment_cost: shipment_cost ?? 0,
+      box_count: box_count ?? "",
       comment: comment ?? "",
     });
   };

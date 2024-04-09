@@ -48,7 +48,7 @@ interface planCreateMutationProps {
   client: string;
   managers: number[];
   worklist: string[];
-  shipment_cost: string;
+  shipment_cost: number;
   box_count: string;
   comment: string;
 }

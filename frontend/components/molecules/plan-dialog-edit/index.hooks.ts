@@ -116,17 +116,10 @@ export const useUpdatePlan = (initialPlan: Plan) => {
   };
 
   const handleUpdatePlan = () => {
-    if (
-      !assignedDate ||
-      !client ||
-      !managers.length ||
-      !worklist.length ||
-      !shipmentCost ||
-      !boxCount
-    ) {
+    if (!assignedDate || !client) {
       toast({
-        title: "Ошибка при обновлении плана",
-        description: "Заполните все поля",
+        title: "Ошибка при создании плана",
+        description: "Заполните хотя бы дату и клиента",
       });
       return;
     }
@@ -134,10 +127,10 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     return planUpdateMutation.mutate({
       assigned_date: assignedDate,
       client: client,
-      managers: managers,
-      worklist: worklist,
+      managers: managers || [],
+      worklist: worklist || [],
       shipment_cost: shipmentCost,
-      box_count: boxCount,
+      box_count: boxCount ?? "",
       comment: comment ?? "",
     });
   };
