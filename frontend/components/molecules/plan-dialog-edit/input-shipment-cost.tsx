@@ -6,8 +6,8 @@ import { FC } from "react";
 interface ShipmentCostInputProps {
   id?: string;
   className?: string;
-  shipmentCost: string;
-  setShipmentCost: (cost: string) => void;
+  shipmentCost: number;
+  setShipmentCost: (cost: number) => void;
 }
 
 const ShipmentCostInput: FC<ShipmentCostInputProps> = ({
