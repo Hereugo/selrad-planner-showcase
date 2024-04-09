@@ -20,11 +20,13 @@ export const usePlans = () => {
 
   const plans = (data?.data || []).sort((a, b) => {
     let diff =
-      new Date(b.assigned_date).getTime() - new Date(a.assigned_date).getTime();
+      new Date(a.assigned_date).getTime() - new Date(b.assigned_date).getTime();
     if (diff === 0) {
-      return a.client.name.localeCompare(b.client.name);
+      return (
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
     }
-    return -diff;
+    return diff;
   });
 
   return {
