@@ -3,7 +3,7 @@ interface Plan {
   assigned_date: string;
   worklist: Work[];
   client: Client;
-  shipment_cost: string;
+  shipment_cost: number;
   comment: string;
   managers: Manager[];
   box_count: string;

@@ -37,3 +37,11 @@ export const formatClientName = (name: string) => {
     .replace(/\s+/g, " ")
     .trim();
 };
+
+export function formatPrice(price: number | undefined) {
+  if (!price && price !== 0) return undefined;
+
+  const sign = "₸";
+  const priceStr = price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
+  return `${priceStr} ${sign}`;
+}

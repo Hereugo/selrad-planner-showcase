@@ -6,7 +6,7 @@ import { useMaps } from "./index.hooks";
 import PlanDialogEdit from "@/components/molecules/plan-dialog-edit";
 import { Button } from "@/components/ui/button";
 import { CircleXIcon, Earth, PackageOpenIcon, PenBoxIcon } from "lucide-react";
-import { cn, managerFullName } from "@/lib/utils";
+import { cn, formatPrice, managerFullName } from "@/lib/utils";
 import { TengeReciept } from "@/components/icons/tenge-reciept";
 
 interface MapsTemplateProps {}
@@ -89,7 +89,7 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
                   <TengeReciept className="w-5 h-5 mr-2" />
                   Сумма отгрузки
                 </span>
-                <span>{selectedPlan.shipment_cost}</span>
+                <span>{formatPrice(selectedPlan.shipment_cost)}</span>
               </div>
               <div className="grid grid-cols-2">
                 <span className="flex items-center">
