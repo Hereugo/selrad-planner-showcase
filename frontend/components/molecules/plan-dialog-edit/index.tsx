@@ -18,8 +18,8 @@ import SelectWorkList from "./select-worklist";
 import ShipmentCostInput from "./input-shipment-cost";
 import BoxCountInput from "./input-box-count";
 import CommentInput from "./input-comment";
-import { useUpdatePlan } from "./index.hooks";
-import { Loader2 } from "lucide-react";
+import { useDeletePlan, useUpdatePlan } from "./index.hooks";
+import { Loader2, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface PlanDialogEditProps {
@@ -48,6 +48,8 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
     setIsOpen,
     isLoading,
   } = useUpdatePlan(plan);
+
+  const { handleDeletePlan } = useDeletePlan(plan);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -127,6 +129,14 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
             className="w-full"
           >
             {isLoading ? <Loader2 className="animate-spin" /> : "Сохранить"}
+          </Button>
+          <Button
+            disabled={isLoading}
+            onClick={handleDeletePlan}
+            variant="destructive"
+            className="w-10 h-10 p-3"
+          >
+            <Trash2 />
           </Button>
         </DialogFooter>
       </DialogContent>

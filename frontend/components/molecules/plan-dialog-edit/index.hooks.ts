@@ -1,7 +1,10 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useClientsQuery } from "@/lib/backend/clients";
 import { useManagersQuery } from "@/lib/backend/managers";
-import { usePlanUpdateMutation } from "@/lib/backend/plans";
+import {
+  usePlanDeleteMutation,
+  usePlanUpdateMutation,
+} from "@/lib/backend/plans";
 import { useWorklistsQuery } from "@/lib/backend/worklist";
 import { formatClientName } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -179,5 +182,39 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     isOpen,
     setIsOpen,
     isLoading: planUpdateMutation.isLoading,
+  };
+};
+
+export const useDeletePlan = (plan: Plan) => {
+  const { toast } = useToast();
+
+  const planDeleteMutation = usePlanDeleteMutation(plan.id);
+
+  const handleDeletePlan = () => {
+    return planDeleteMutation.mutate();
+  };
+
+  useEffect(() => {
+    if (planDeleteMutation.isError) {
+      toast({
+        title: "Ошибка",
+        description: "Ошибка при удалении плана",
+      });
+    }
+  }, [planDeleteMutation.isError, toast]);
+
+  useEffect(() => {
+    if (planDeleteMutation.isSuccess) {
+      toast({
+        title: "Успех",
+        description: "Предложение успешно удалено",
+      });
+
+      highlightPlanRow(plan);
+    }
+  }, [planDeleteMutation.isSuccess, toast]);
+
+  return {
+    handleDeletePlan,
   };
 };

@@ -74,7 +74,7 @@ interface planUpdateMutation {
   client: string;
   managers: number[];
   worklist: string[];
-  shipment_cost: string;
+  shipment_cost: number;
   box_count: string;
   comment: string;
 }
@@ -96,7 +96,7 @@ export const usePlanUpdateMutation = (id: string) => {
   });
 };
 
-export const useDeletePlanMutation = (id: string) => {
+export const usePlanDeleteMutation = (id: string) => {
   const queryClient = useQueryClient();
 
   const url = urls.base_backend.plans;
