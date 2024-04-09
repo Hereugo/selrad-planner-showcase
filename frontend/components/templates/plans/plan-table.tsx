@@ -30,9 +30,31 @@ const PlanTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {plans.map((plan) => (
-            <PlanTableRow key={plan.id} plan={plan} />
-          ))}
+          {
+            plans.reduce(
+              (acc, plan) => {
+                if (acc.prevDate !== plan.assigned_date) {
+                  acc.prevDate = plan.assigned_date;
+                  acc.parity = 1 - acc.parity;
+                }
+
+                acc.rows.push(
+                  <PlanTableRow
+                    key={plan.id}
+                    plan={plan}
+                    className={acc.parity ? "bg-yellow-50" : ""}
+                  />,
+                );
+
+                return acc;
+              },
+              {
+                prevDate: "",
+                parity: 1,
+                rows: [] as JSX.Element[],
+              },
+            ).rows
+          }
         </TableBody>
         {!plans.length && !isLoading && <TableCaption>Нет планов</TableCaption>}
       </Table>
