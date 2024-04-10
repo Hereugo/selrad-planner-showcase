@@ -25,10 +25,10 @@ const ShipmentCostInput: FC<ShipmentCostInputProps> = ({
           onChange={(e) => {
             if (e.target.value) {
               if (e.target.value.match(/^[0-9]*\.?[0-9]{0,2}$/)) {
-                setShipmentCost(e.target.value);
+                setShipmentCost(parseInt(e.target.value));
               }
             } else {
-              setShipmentCost("0");
+              setShipmentCost(0);
             }
           }}
           type="text"
