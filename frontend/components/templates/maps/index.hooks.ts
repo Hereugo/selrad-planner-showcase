@@ -125,8 +125,8 @@ export const useMaps = () => {
 const planToPlaceMark = (plan: Plan, color: string, callback: Function) => {
   return {
     geometry: [
-      Number(plan.client.address.lat) + random(-1e-3, 1e-3),
-      Number(plan.client.address.lon) + random(-1e-3, 1e-3),
+      Number(plan.client.addresses[0].lat) + random(-1e-3, 1e-3),
+      Number(plan.client.addresses[0].lon) + random(-1e-3, 1e-3),
     ],
     properties: {
       // hintContent: plan.client.name,
@@ -143,7 +143,7 @@ const planToBalloonHTML = (plan: Plan) => {
   return `
         <div>
             <h3 class="text-lg font-semibold">${plan.client.name}</h3>
-            <p>Адрес: ${plan.client.address.street}</p>
+            <p>Адрес: ${plan.client.addresses[0].street}</p>
         </div>
     `;
 };
@@ -158,8 +158,8 @@ const managerPlansToPolygon = (
     plan.managers.map((m) => m.id).includes(manager.id),
   );
   const managerCoordinates = managerPlans.map((plan) => [
-    Number(plan.client.address.lat) + displace,
-    Number(plan.client.address.lon) + displace,
+    Number(plan.client.addresses[0].lat) + displace,
+    Number(plan.client.addresses[0].lon) + displace,
   ]);
 
   if (managerCoordinates.length <= 1) return [];
