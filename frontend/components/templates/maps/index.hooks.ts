@@ -184,7 +184,7 @@ const selectedManagerDisplay = (
 
     const { lon, lat } = client.addresses[0];
     const clientPlacemark = new ymaps.Placemark(
-      [lat + rand(), lon + rand()],
+      [lat, lon],
       {
         // hintContent: client.name
       },
