@@ -97,24 +97,37 @@ class Address(gis_models.Model):
         if street is None:
             return
 
+        # params = {
+        #     "apikey": settings.YANDEX_API_KEY,
+        #     "geocode": street,
+        #     "format": "json",
+        #     "lang": "ru_RU",
+        # }
+
+        # response = requests.get(settings.YANDEX_API_URL, params=params)
+
         params = {
-            "apikey": settings.YANDEX_API_KEY,
-            "geocode": street,
-            "format": "json",
-            "lang": "ru_RU",
+            "key": settings.TWOGIS_API_KEY,
+            "q": street,
         }
 
-        response = requests.get(settings.YANDEX_API_URL, params=params)
+        response = requests.get(settings.TWOGIS_API_URL, params=params)
 
         data = response.json()
         if "response" in data:
             try:
-                lon, lat = map(
-                    float,
-                    data["response"]["GeoObjectCollection"]["featureMember"][0][
-                        "GeoObject"
-                    ]["Point"]["pos"].split(" "),
+                # lon, lat = map(
+                #     float,
+                #     data["response"]["GeoObjectCollection"]["featureMember"][0][
+                #         "GeoObject"
+                #     ]["Point"]["pos"].split(" "),
+                # )
+
+                lon, lat = (
+                    data["results"]["items"][0]["point"]["lon"],
+                    data["results"]["items"][0]["point"]["lat"],
                 )
+
                 if lon and lat:
                     if not self.lat or not self.lon:
                         logger.info("Location is empty for", street, "new:", lon, lat)
@@ -147,11 +160,11 @@ class Address(gis_models.Model):
         """Save the model instance. Update the updated_at field."""
         self.updated_at = timezone.now()
 
-        if not self.point: 
-            self.update_coordinates()
-
-        self.lon = float(self.point.x)
-        self.lat = float(self.point.y)
+        if not self.point:
+            self.point = Point(float(self.lon), float(self.lat), srid=4326)
+        else:
+            self.lon = float(self.point.x)
+            self.lat = float(self.point.y)
 
         super().save(*args, **kwargs)
 
