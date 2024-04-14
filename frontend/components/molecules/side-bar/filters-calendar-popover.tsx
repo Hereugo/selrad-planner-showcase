@@ -45,7 +45,7 @@ const CalendarFilterPopover: FC<CalendarFilterPopoverProps> = ({
   return (
     <Popover>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent side="bottom">
+      <PopoverContent side="right">
         <Calendar
           locale={ru}
           mode="range"

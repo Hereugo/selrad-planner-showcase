@@ -7,6 +7,10 @@ interface FiltersContextProps {
   setCalendarRange: React.Dispatch<React.SetStateAction<DateRange | undefined>>;
   searchQuery: string | undefined;
   setSearchQuery: React.Dispatch<React.SetStateAction<string | undefined>>;
+  workId: string;
+  setWorkId: React.Dispatch<React.SetStateAction<string>>;
+  managerId: string;
+  setManagerId: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface FiltersProviderProps {
@@ -26,6 +30,8 @@ export const FiltersProvider = ({ children }: FiltersProviderProps) => {
   // set states here
   const [calendarRange, setCalendarRange] = useState<DateRange | undefined>();
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
+  const [workId, setWorkId] = useState<string | undefined>("-1");
+  const [managerId, setManagerId] = useState<string | undefined>("-1");
 
   return (
     <FiltersContext.Provider
@@ -35,6 +41,10 @@ export const FiltersProvider = ({ children }: FiltersProviderProps) => {
         setCalendarRange,
         searchQuery,
         setSearchQuery,
+        workId,
+        setWorkId,
+        managerId,
+        setManagerId,
       }}
     >
       {children}
