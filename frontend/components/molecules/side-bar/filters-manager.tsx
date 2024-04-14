@@ -16,15 +16,24 @@ const ManagerFilter = () => {
   const { managerId, setManagerId } = useFiltersContext();
   const { managers } = useManagers();
 
+  const handleSelectManager = (newManagerId: string) => {
+    setManagerId((oldManagerId) => {
+      if (newManagerId == "-1" || oldManagerId == newManagerId) {
+        return undefined;
+      }
+      return newManagerId;
+    });
+  };
+
   return (
     <div className="flex flex-col">
       <Label className="text-sm">Менеджер</Label>
-      <Select value={managerId} onValueChange={setManagerId}>
+      <Select value={managerId || "-1"} onValueChange={handleSelectManager}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Не выбрано" />
         </SelectTrigger>
         <SelectContent side="right">
-          <SelectItem key={-1} value={"-1"}>
+          <SelectItem key={-1} value="-1">
             Не выбрано
           </SelectItem>
           {managers.map((manager) => (

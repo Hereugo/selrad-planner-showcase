@@ -16,10 +16,19 @@ const WorkFilter = () => {
   const { workId, setWorkId } = useFiltersContext();
   const { worklist } = useWorks();
 
+  const handleSelectWork = (newWorkId: string) => {
+    setWorkId((oldWorkId) => {
+      if (newWorkId == "-1" || oldWorkId == newWorkId) {
+        return undefined;
+      }
+      return newWorkId;
+    });
+  };
+
   return (
     <div className="flex flex-col">
       <Label className="text-sm">Работа</Label>
-      <Select value={workId} onValueChange={setWorkId}>
+      <Select value={workId || "-1"} onValueChange={handleSelectWork}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Не выбрано" />
         </SelectTrigger>
