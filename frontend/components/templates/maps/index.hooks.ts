@@ -5,7 +5,7 @@ import { useYMaps } from "@pbe/react-yandex-maps";
 import Color from "color";
 
 export const useMaps = () => {
-  const { plans } = usePlans();
+  const { plans, isLoading: isPlansLoading } = usePlans();
   const mapElementRef = useRef(null);
   const ymaps = useYMaps([
     "Map",
@@ -79,6 +79,7 @@ export const useMaps = () => {
     mapElementRef,
     selectedPlan,
     setSelectedPlanId,
+    isPlansLoading,
   };
 };
 

@@ -18,8 +18,11 @@ const WorkFilter = () => {
 
   const handleSelectWork = (newWorkId: string) => {
     setWorkId((oldWorkId) => {
-      if (newWorkId == "-1" || oldWorkId == newWorkId) {
+      if (newWorkId == "undefined") {
         return undefined;
+      }
+      if (newWorkId == "-1") {
+        return newWorkId;
       }
       return newWorkId;
     });
@@ -28,14 +31,13 @@ const WorkFilter = () => {
   return (
     <div className="flex flex-col">
       <Label className="text-sm">Работа</Label>
-      <Select value={workId || "-1"} onValueChange={handleSelectWork}>
+      <Select value={workId || "undefined"} onValueChange={handleSelectWork}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Не выбрано" />
+          <SelectValue placeholder="---" />
         </SelectTrigger>
         <SelectContent side="right">
-          <SelectItem key={-1} value={"-1"}>
-            Не выбрано
-          </SelectItem>
+          <SelectItem value="undefined">Все</SelectItem>
+          <SelectItem value="-1">Не выбрано</SelectItem>
           {worklist.map((work) => (
             <SelectItem key={work.id} value={work.id}>
               {toTitle(work.name)}

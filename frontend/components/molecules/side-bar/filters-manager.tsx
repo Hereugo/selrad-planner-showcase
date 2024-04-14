@@ -18,8 +18,11 @@ const ManagerFilter = () => {
 
   const handleSelectManager = (newManagerId: string) => {
     setManagerId((oldManagerId) => {
-      if (newManagerId == "-1" || oldManagerId == newManagerId) {
+      if (newManagerId === "undefined") {
         return undefined;
+      }
+      if (newManagerId === "-1") {
+        return newManagerId;
       }
       return newManagerId;
     });
@@ -28,14 +31,16 @@ const ManagerFilter = () => {
   return (
     <div className="flex flex-col">
       <Label className="text-sm">Менеджер</Label>
-      <Select value={managerId || "-1"} onValueChange={handleSelectManager}>
+      <Select
+        value={managerId || "undefined"}
+        onValueChange={handleSelectManager}
+      >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Не выбрано" />
+          <SelectValue placeholder="---" />
         </SelectTrigger>
         <SelectContent side="right">
-          <SelectItem key={-1} value="-1">
-            Не выбрано
-          </SelectItem>
+          <SelectItem value="undefined">Все</SelectItem>
+          <SelectItem value="-1">Не выбрано</SelectItem>
           {managers.map((manager) => (
             <SelectItem key={manager.id} value={manager.id}>
               {managerFullName(manager)}

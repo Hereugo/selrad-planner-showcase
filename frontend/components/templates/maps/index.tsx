@@ -5,17 +5,27 @@ import { Polygon, Placemark, YMaps, Map } from "@pbe/react-yandex-maps";
 import { useMaps } from "./index.hooks";
 import PlanDialogEdit from "@/components/molecules/plan-dialog-edit";
 import { Button } from "@/components/ui/button";
-import { CircleXIcon, Earth, PackageOpenIcon, PenBoxIcon } from "lucide-react";
+import {
+  Circle,
+  CircleXIcon,
+  Earth,
+  PackageOpenIcon,
+  PenBoxIcon,
+} from "lucide-react";
 import { cn, formatPrice, managerFullName } from "@/lib/utils";
 import { TengeReciept } from "@/components/icons/tenge-reciept";
 
 interface MapsTemplateProps {}
 
 const MapsTemplate: FC<MapsTemplateProps> = () => {
-  const { mapElementRef, selectedPlan, setSelectedPlanId } = useMaps();
+  const { mapElementRef, selectedPlan, setSelectedPlanId, isPlansLoading } =
+    useMaps();
 
   return (
     <div className="flex h-full gap-4">
+      {isPlansLoading && (
+        <Circle className="absolute top-[calc(50%-1rem)] left-[calc(50%-1rem)] z-10 w-8 h-8 animate-ping text-gray-300" />
+      )}
       <div
         className="flex-1 h-full rounded-lg overflow-clip duration-300"
         style={{ minHeight: "500px" }}
