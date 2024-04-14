@@ -2,7 +2,7 @@ import hull from "hull.js";
 import { usePlans } from "../Plans/index.hooks";
 import _ from "lodash";
 import { useManagers } from "@/components/molecules/plan-dialog-new/index.hooks";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useYMaps } from "@pbe/react-yandex-maps";
 import { formatClientName, managerFullName } from "@/lib/utils";
 import Color from "color";
@@ -171,12 +171,14 @@ const selectedManagerDisplay = (
   ymaps: any,
   manager: Manager,
   selectedPlan: Plan | undefined,
-  setSelectedPlan: (plan: Plan) => void,
+  setSelectedPlan: React.Dispatch<React.SetStateAction<Plan | undefined>>,
 ) => {
   const managerPlans = plans.filter((plan) =>
     plan.managers.find((m) => m.id === manager.id),
   );
-  const uniqueDates = _.uniq(managerPlans.map((plan) => plan.assigned_date));
+  const uniqueDates = _.uniq(
+    managerPlans.map((plan) => plan.assigned_date).toSorted(),
+  );
   const n = uniqueDates.length;
 
   managerPlans.map((plan, i) => {
@@ -184,7 +186,6 @@ const selectedManagerDisplay = (
     const dateInd = uniqueDates.findIndex(
       (date) => date === plan.assigned_date,
     );
-
     const planPlacemark = new ymaps.Placemark(
       [lat, lon],
       {
@@ -195,6 +196,11 @@ const selectedManagerDisplay = (
         iconColor: Color.hsl((dateInd / n) * 100, 75, 50).hex(),
       },
     );
+
+    planPlacemark.events.add("click", (e: any) => {
+      e.preventDefault();
+      setSelectedPlan((p) => (p?.id === plan.id ? undefined : plan));
+    });
 
     mapInstance.geoObjects.add(planPlacemark);
   });
