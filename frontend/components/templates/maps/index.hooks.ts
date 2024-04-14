@@ -18,7 +18,6 @@ export const useMaps = () => {
   const [selectedPlanId, setSelectedPlanId] = useState<
     Plan["id"] | undefined
   >();
-  const selectedPlan = plans.filter((p) => p.id === selectedPlanId)[0];
   const mapCenter = [43.238949, 76.889709];
 
   const plansByDay = _.groupBy(plans, "assigned_date");
@@ -77,7 +76,7 @@ export const useMaps = () => {
 
   return {
     mapElementRef,
-    selectedPlan,
+    selectedPlan: plans.filter((p) => p.id === selectedPlanId)[0] || undefined,
     setSelectedPlanId,
     isPlansLoading,
   };

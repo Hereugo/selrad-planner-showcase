@@ -38,7 +38,10 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
         )}
       >
         {selectedPlan && (
-          <div className="flex flex-col gap-4 relative pt-8">
+          <div
+            className="flex flex-col gap-4 relative pt-8"
+            key={selectedPlan.id}
+          >
             <div className="text-lg font-bold">
               План отгрузки{" "}
               {new Date(selectedPlan.assigned_date).toLocaleString("ru-RU", {
