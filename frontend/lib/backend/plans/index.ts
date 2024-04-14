@@ -49,7 +49,6 @@ interface planCreateMutationProps {
   managers: number[];
   worklist: string[];
   shipment_cost: number;
-  box_count: string;
   comment: string;
 }
 
@@ -72,10 +71,9 @@ export const usePlanCreateMutation = () => {
 interface planUpdateMutation {
   assigned_date: string;
   client: string;
-  managers: number[];
+  managers: string[];
   worklist: string[];
   shipment_cost: number;
-  box_count: string;
   comment: string;
 }
 

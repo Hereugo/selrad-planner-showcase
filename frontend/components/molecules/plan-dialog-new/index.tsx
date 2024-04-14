@@ -21,6 +21,7 @@ import CommentInput from "./input-comment";
 import { useCreatePlan } from "./index.hooks";
 import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { getBoxCount } from "@/lib/utils";
 
 interface PlanDialogNewProps {
   children: ReactNode;
@@ -34,8 +35,8 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
     setClient,
     switchManager,
     switchWork,
+    shipmentCost,
     setShipmentCost,
-    setBoxCount,
     setComment,
     handleCreatePlan,
     isLoading,
@@ -73,7 +74,7 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
                 <BoxCountInput
                   id="box_count"
                   className="flex-1"
-                  setBoxCount={setBoxCount}
+                  boxCount={getBoxCount(shipmentCost)}
                 />
               </div>
             </div>

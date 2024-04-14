@@ -90,17 +90,16 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     initialPlan.worklist.map((work) => work.id),
   );
   const [shipmentCost, setShipmentCost] = useState(initialPlan.shipment_cost);
-  const [boxCount, setBoxCount] = useState(initialPlan.box_count);
   const [comment, setComment] = useState(initialPlan.comment);
 
   const planUpdateMutation = usePlanUpdateMutation(initialPlan.id);
 
-  const switchManager = (manager: number) => {
+  const switchManager = (managerId: string) => {
     setManagers((prev) => {
-      if (prev.includes(manager)) {
-        return prev.filter((m) => m !== manager);
+      if (prev.includes(managerId)) {
+        return prev.filter((m) => m !== managerId);
       } else {
-        return [...prev, manager];
+        return [...prev, managerId];
       }
     });
   };
@@ -130,7 +129,6 @@ export const useUpdatePlan = (initialPlan: Plan) => {
       managers: managers || [],
       worklist: worklist || [],
       shipment_cost: shipmentCost,
-      box_count: boxCount ?? "",
       comment: comment ?? "",
     });
   };
@@ -165,8 +163,6 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     worklist,
     shipmentCost,
     setShipmentCost,
-    boxCount,
-    setBoxCount,
     comment,
     setComment,
     switchManager,

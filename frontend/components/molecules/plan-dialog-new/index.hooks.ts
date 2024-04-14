@@ -59,8 +59,7 @@ export const useCreatePlan = () => {
   const [client, setClient] = useState<string>();
   const [selectedManagers, setSelectedManagers] = useState<number[]>([]);
   const [selectedWorklist, setSelectedWorklist] = useState<string[]>([]);
-  const [shipment_cost, setShipmentCost] = useState<number>();
-  const [box_count, setBoxCount] = useState<string>();
+  const [shipmentCost, setShipmentCost] = useState<number>(0);
   const [comment, setComment] = useState<string>();
 
   const planCreateMutation = usePlanCreateMutation();
@@ -80,8 +79,7 @@ export const useCreatePlan = () => {
       client: client,
       managers: selectedManagers || [],
       worklist: selectedWorklist || [],
-      shipment_cost: shipment_cost ?? 0,
-      box_count: box_count ?? "",
+      shipment_cost: shipmentCost ?? 0,
       comment: comment ?? "",
     });
   };
@@ -130,8 +128,7 @@ export const useCreatePlan = () => {
       setClient(undefined);
       setSelectedManagers([]);
       setSelectedWorklist([]);
-      setShipmentCost(undefined);
-      setBoxCount(undefined);
+      setShipmentCost(0);
       setComment(undefined);
     }
   }, [planCreateMutation.isSuccess, toast, setIsOpen]);
@@ -145,8 +142,8 @@ export const useCreatePlan = () => {
     setClient,
     switchManager,
     switchWork,
+    shipmentCost,
     setShipmentCost,
-    setBoxCount,
     setComment,
     handleCreatePlan,
     isSuccess: planCreateMutation.isSuccess,
