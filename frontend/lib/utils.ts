@@ -45,9 +45,3 @@ export function formatPrice(price: number | undefined) {
   const priceStr = price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
   return `${priceStr} ${sign}`;
 }
-
-export function getBoxCount(shipmentCost: number | undefined) {
-  if (!shipmentCost && shipmentCost !== 0) return 0;
-  if (shipmentCost < 0) return 0;
-  return Math.ceil(shipmentCost / 100_000);
-}

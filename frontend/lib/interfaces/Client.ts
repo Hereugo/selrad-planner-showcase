@@ -4,10 +4,10 @@ interface Client {
   created_at: string;
   updated_at: string;
   addresses: {
-    id: string;
+    id: number;
     street: string;
-    lon: number;
-    lat: number;
+    lon: string;
+    lat: string;
     created_at: string;
     updated_at: string;
   }[];

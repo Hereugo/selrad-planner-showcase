@@ -8,8 +8,8 @@ import { managerFullName, managerShortName } from "@/lib/utils";
 
 interface SelectManagersProps {
   id?: string;
-  switchManager: (id: string) => void;
-  selectedManagers: string[];
+  switchManager: (id: number) => void;
+  selectedManagers: number[];
 }
 
 const SelectManagers: FC<SelectManagersProps> = ({

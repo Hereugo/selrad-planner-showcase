@@ -57,9 +57,10 @@ export const useCreatePlan = () => {
 
   const [assigned_date, setAssignedDate] = useState<string>();
   const [client, setClient] = useState<string>();
-  const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
+  const [selectedManagers, setSelectedManagers] = useState<number[]>([]);
   const [selectedWorklist, setSelectedWorklist] = useState<string[]>([]);
-  const [shipmentCost, setShipmentCost] = useState<number>(0);
+  const [shipment_cost, setShipmentCost] = useState<number>();
+  const [box_count, setBoxCount] = useState<string>();
   const [comment, setComment] = useState<string>();
 
   const planCreateMutation = usePlanCreateMutation();
@@ -79,17 +80,18 @@ export const useCreatePlan = () => {
       client: client,
       managers: selectedManagers || [],
       worklist: selectedWorklist || [],
-      shipment_cost: shipmentCost ?? 0,
+      shipment_cost: shipment_cost ?? 0,
+      box_count: box_count ?? "",
       comment: comment ?? "",
     });
   };
 
-  const switchManager = (managerId: string) => {
+  const switchManager = (manager: number) => {
     setSelectedManagers((prev) => {
-      if (prev.includes(managerId)) {
-        return prev.filter((m) => m !== managerId);
+      if (prev.includes(manager)) {
+        return prev.filter((m) => m !== manager);
       } else {
-        return [...prev, managerId];
+        return [...prev, manager];
       }
     });
   };
@@ -128,7 +130,8 @@ export const useCreatePlan = () => {
       setClient(undefined);
       setSelectedManagers([]);
       setSelectedWorklist([]);
-      setShipmentCost(0);
+      setShipmentCost(undefined);
+      setBoxCount(undefined);
       setComment(undefined);
     }
   }, [planCreateMutation.isSuccess, toast, setIsOpen]);
@@ -142,8 +145,8 @@ export const useCreatePlan = () => {
     setClient,
     switchManager,
     switchWork,
-    shipmentCost,
     setShipmentCost,
+    setBoxCount,
     setComment,
     handleCreatePlan,
     isSuccess: planCreateMutation.isSuccess,

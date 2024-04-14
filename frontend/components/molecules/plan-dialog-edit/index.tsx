@@ -21,7 +21,6 @@ import CommentInput from "./input-comment";
 import { useDeletePlan, useUpdatePlan } from "./index.hooks";
 import { Loader2, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { getBoxCount } from "@/lib/utils";
 
 interface PlanDialogEditProps {
   plan: Plan;
@@ -40,6 +39,8 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
     switchWork,
     shipmentCost,
     setShipmentCost,
+    boxCount,
+    setBoxCount,
     comment,
     setComment,
     handleUpdatePlan,
@@ -86,7 +87,8 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
                 <BoxCountInput
                   id="box_count"
                   className="flex-1"
-                  boxCount={getBoxCount(shipmentCost)}
+                  boxCount={boxCount}
+                  setBoxCount={setBoxCount}
                 />
               </div>
             </div>

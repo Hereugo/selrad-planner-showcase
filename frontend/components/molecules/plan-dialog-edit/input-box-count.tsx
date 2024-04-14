@@ -6,10 +6,16 @@ import { FC } from "react";
 interface BoxCountInputProps {
   id?: string;
   className?: string;
-  boxCount: number;
+  boxCount: string;
+  setBoxCount: (count: string) => void;
 }
 
-const BoxCountInput: FC<BoxCountInputProps> = ({ id, className, boxCount }) => {
+const BoxCountInput: FC<BoxCountInputProps> = ({
+  id,
+  className,
+  boxCount,
+  setBoxCount,
+}) => {
   return (
     <div id={id} className={className}>
       <Label htmlFor="box_count">Количество коробок</Label>
@@ -17,6 +23,13 @@ const BoxCountInput: FC<BoxCountInputProps> = ({ id, className, boxCount }) => {
         <Input
           disabled
           value={boxCount}
+          onChange={(e) => {
+            if (e.target.value) {
+              setBoxCount(e.target.value);
+            } else {
+              setBoxCount("0");
+            }
+          }}
           type="text"
           id="box_count"
           className="focus-visible:ring-0"
