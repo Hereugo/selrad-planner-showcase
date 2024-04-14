@@ -36,6 +36,7 @@ export const useMaps = () => {
   ]);
   const [mapInstance, setMapInstance] = useState<ymaps.Map>();
   const [selectedManager, setSelectedManager] = useState<Manager | undefined>();
+  const [selectedPlan, setSelectedPlan] = useState<Plan | undefined>();
 
   // initial creation of the map
   useEffect(() => {
@@ -57,12 +58,20 @@ export const useMaps = () => {
   useEffect(() => {
     if (!ymaps || !mapElementRef.current || !mapInstance) return;
 
+    setSelectedPlan(undefined);
     if (selectedManager) {
       clearMap(mapInstance);
-      selectedManagerDisplay(mapInstance, plans, ymaps, selectedManager);
+      selectedManagerDisplay(
+        mapInstance,
+        plans,
+        ymaps,
+        selectedManager,
+        selectedPlan,
+        setSelectedPlan,
+      );
     } else {
       clearMap(mapInstance);
-      initailStateDisplay(mapInstance, plans, ymaps);
+      initailStateDisplay(mapInstance, plans, ymaps, setSelectedManager);
     }
   }, [plans, mapInstance, selectedManager]);
 
@@ -71,18 +80,23 @@ export const useMaps = () => {
     managers,
     mapElementRef,
     ymaps,
+    selectedManager,
     setSelectedManager,
+    selectedPlan,
+    setSelectedPlan,
   };
 };
 
 const clearMap = (mapInstance: ymaps.Map) => {
   mapInstance.geoObjects.removeAll();
+  mapInstance.balloon.close();
 };
 
 const initailStateDisplay = (
   mapInstance: ymaps.Map,
   plans: Plan[],
   ymaps: any,
+  setSelectedManager: (manager: Manager) => void,
 ) => {
   // get unique clients in plans
   const clients = _.uniqBy(
@@ -119,12 +133,6 @@ const initailStateDisplay = (
       const managerLon = lon + r * Math.cos((2 * Math.PI * index) / n);
       const managerLat = lat + r * Math.sin((2 * Math.PI * index) / n);
 
-      console.log(
-        managerFullName(manager),
-        [managerLat, managerLon],
-        [lon, lat],
-      );
-
       const managerPlacemark = new ymaps.Placemark(
         [managerLat, managerLon],
         {
@@ -135,6 +143,11 @@ const initailStateDisplay = (
           iconColor: "blue",
         },
       );
+
+      managerPlacemark.events.add("click", (e: any) => {
+        e.preventDefault();
+        setSelectedManager(manager);
+      });
 
       mapInstance.geoObjects.add(managerPlacemark);
     });
@@ -157,6 +170,8 @@ const selectedManagerDisplay = (
   plans: Plan[],
   ymaps: any,
   manager: Manager,
+  selectedPlan: Plan | undefined,
+  setSelectedPlan: (plan: Plan) => void,
 ) => {
   const managerPlans = plans.filter((plan) =>
     plan.managers.find((m) => m.id === manager.id),
@@ -169,7 +184,8 @@ const selectedManagerDisplay = (
     const dateInd = uniqueDates.findIndex(
       (date) => date === plan.assigned_date,
     );
-    const placemark = new ymaps.Placemark(
+
+    const planPlacemark = new ymaps.Placemark(
       [lat, lon],
       {
         hintContent: `${formatDate(plan.assigned_date, "dd.MM.yyyy")}`,
@@ -179,6 +195,7 @@ const selectedManagerDisplay = (
         iconColor: Color.hsl((dateInd / n) * 100, 75, 50).hex(),
       },
     );
-    mapInstance.geoObjects.add(placemark);
+
+    mapInstance.geoObjects.add(planPlacemark);
   });
 };

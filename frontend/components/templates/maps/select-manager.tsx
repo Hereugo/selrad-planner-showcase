@@ -11,10 +11,14 @@ import { managerFullName } from "@/lib/utils";
 import { FC } from "react";
 
 interface SelectManagerProps {
+  selectedManager: Manager | undefined;
   onSelect: (manager: Manager | undefined) => void;
 }
 
-const SelectManager: FC<SelectManagerProps> = ({ onSelect }) => {
+const SelectManager: FC<SelectManagerProps> = ({
+  onSelect,
+  selectedManager,
+}) => {
   const { data } = useManagersQuery();
 
   const handleSelect = (managerId: string) => {
@@ -34,7 +38,7 @@ const SelectManager: FC<SelectManagerProps> = ({ onSelect }) => {
   return (
     <div>
       <Label>Менеджер</Label>
-      <Select onValueChange={handleSelect}>
+      <Select onValueChange={handleSelect} value={selectedManager?.id || "-1"}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Не выбрано" />
         </SelectTrigger>
