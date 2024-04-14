@@ -46,7 +46,7 @@ export const usePlanQuery = (id: string) => {
 interface planCreateMutationProps {
   assigned_date: string;
   client: string;
-  managers: number[];
+  managers: string[];
   worklist: string[];
   shipment_cost: number;
   comment: string;
