@@ -35,8 +35,7 @@ export const useMaps = () => {
     "control.ZoomControl",
   ]);
   const [mapInstance, setMapInstance] = useState<ymaps.Map>();
-
-  const [selectedManager, setSelectedManager] = useState<Manager | null>(null);
+  const [selectedManager, setSelectedManager] = useState<Manager | undefined>();
 
   // initial creation of the map
   useEffect(() => {
