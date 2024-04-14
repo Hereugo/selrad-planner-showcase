@@ -45,30 +45,16 @@ const CalendarFilterPopover: FC<CalendarFilterPopoverProps> = ({
   return (
     <Popover>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent side="right" asChild>
-        <div className="p-4 w-[500px] h-96 bg-white shadow-lg rounded-lg z-50 flex flex-row">
-          <Calendar
-            locale={ru}
-            mode="range"
-            defaultMonth={month}
-            month={month}
-            onMonthChange={setMonth}
-            selected={calendarRange}
-            onSelect={setCalendarRange}
-          />
-          <Separator orientation="vertical" />
-          <div className="flex flex-col gap-2 w-[200px]">
-            {calendarOptions.map((option) => (
-              <div
-                key={option.label}
-                className="flex flex-row items-center px-4 cursor-pointer"
-                onClick={() => setCalendarRange(option)}
-              >
-                {option.label}
-              </div>
-            ))}
-          </div>
-        </div>
+      <PopoverContent side="bottom">
+        <Calendar
+          locale={ru}
+          mode="range"
+          defaultMonth={month}
+          month={month}
+          onMonthChange={setMonth}
+          selected={calendarRange}
+          onSelect={setCalendarRange}
+        />
       </PopoverContent>
     </Popover>
   );
