@@ -11,8 +11,8 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
   const {
     mapElementRef,
     selectedManager,
-    selectedPlan,
-    setSelectedPlan,
+    selectedPlanId,
+    setSelectedPlanId,
     setSelectedManager,
   } = useMaps();
 
@@ -29,9 +29,9 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
           ref={mapElementRef}
         />
         <SelectedPlan
-          plan={selectedPlan}
-          onClose={() => setSelectedPlan(undefined)}
-          className={!!selectedPlan ? "flex-[.5]" : ""}
+          planId={selectedPlanId}
+          onClose={() => setSelectedPlanId(undefined)}
+          className={!!selectedPlanId ? "flex-[.5]" : ""}
         />
       </div>
     </div>

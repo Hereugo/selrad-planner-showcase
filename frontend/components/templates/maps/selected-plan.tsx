@@ -1,23 +1,32 @@
 import { TengeReciept } from "@/components/icons/tenge-reciept";
 import PlanDialogEdit from "@/components/molecules/plan-dialog-edit";
 import { Button } from "@/components/ui/button";
+import { useNearbyPlansQuery, usePlanQuery } from "@/lib/backend/plans";
 import { cn, formatPrice, managerFullName, toTitle } from "@/lib/utils";
 import { CircleXIcon, Earth, PackageOpenIcon, PenBoxIcon } from "lucide-react";
 import { FC } from "react";
 
 interface SelectedPlanProps {
-  plan?: Plan;
+  planId?: Plan["id"];
   onClose?: () => void;
   className?: string;
 }
 
-const SelectedPlan: FC<SelectedPlanProps> = ({ plan, onClose, className }) => {
-  if (!plan) return <div className={className} />;
+const SelectedPlan: FC<SelectedPlanProps> = ({
+  planId,
+  onClose,
+  className,
+}) => {
+  const { data } = useNearbyPlansQuery({ id: planId || "" });
+  const { data: planData } = usePlanQuery(planId || "");
+  const plan = planData?.data;
+
+  if (!planId || !plan) return <></>;
 
   return (
     <div className={cn("flex flex-col gap-4 relative pt-8 px-4", className)}>
       <div className="text-lg font-bold">
-        План отгрузки{" "}
+        План{" "}
         {new Date(plan.assigned_date).toLocaleString("ru-RU", {
           day: "numeric",
           month: "long",
@@ -88,7 +97,7 @@ const SelectedPlan: FC<SelectedPlanProps> = ({ plan, onClose, className }) => {
           </Button>
         </PlanDialogEdit>
 
-        <Button className="flex-1">
+        <Button className="flex-1" onClick={() => {}}>
           <Earth className="w-5 h-5 mr-2" />
           Клиенты рядом
         </Button>

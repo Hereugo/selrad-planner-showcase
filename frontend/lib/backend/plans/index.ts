@@ -89,7 +89,7 @@ export const usePlanUpdateMutation = (id: string) => {
 
   return useMutation(call, {
     onSuccess: () => {
-      queryClient.invalidateQueries(["usePlansQuery"]);
+      queryClient.invalidateQueries(["usePlansQuery", "usePlanQuery"]);
     },
   });
 };
@@ -106,7 +106,42 @@ export const usePlanDeleteMutation = (id: string) => {
 
   return useMutation(call, {
     onSuccess: () => {
-      queryClient.invalidateQueries(["usePlansQuery"]);
+      queryClient.invalidateQueries(["usePlansQuery", "usePlanQuery"]);
     },
   });
+};
+
+interface nearbyPlansQueryProps {
+  date_after?: string;
+  date_before?: string;
+  limit?: number;
+  ordering?: string;
+  page?: number;
+  search?: string;
+
+  time_threshold?: number;
+  radius?: number;
+  id: string;
+}
+
+export const useNearbyPlansQuery = (props: nearbyPlansQueryProps) => {
+  const url = urls.base_backend.plans;
+  const queryParams = [];
+
+  if (props.date_after) queryParams.push(`date_after=${props.date_after}`);
+  if (props.date_before) queryParams.push(`date_before=${props.date_before}`);
+  if (props.limit) queryParams.push(`limit=${props.limit}`);
+  if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
+  if (props.page) queryParams.push(`page=${props.page}`);
+  if (props.search) queryParams.push(`search=${props.search}`);
+  if (props.time_threshold)
+    queryParams.push(`time_threshold=${props.time_threshold}`);
+  if (props.radius) queryParams.push(`radius=${props.radius}`);
+  if (props.id) queryParams.push(`id=${props.id}`);
+
+  const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
+
+  return useQuery(["useNearbyPlansQuery", urlWithParams], async () =>
+    fetchWithAuth<Plan[]>(urlWithParams),
+  );
 };
