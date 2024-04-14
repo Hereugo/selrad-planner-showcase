@@ -5,6 +5,10 @@ from clients.models import Client, Address
 class AddressSerializer(serializers.ModelSerializer):
     """Serializer for Address model"""
 
+    id = serializers.StringRelatedField()
+    lon = serializers.FloatField()
+    lat = serializers.FloatField()
+
     class Meta:
         model = Address
         fields = (
@@ -20,6 +24,7 @@ class AddressSerializer(serializers.ModelSerializer):
 class ClientSerializer(serializers.ModelSerializer):
     """Serializer for Client model"""
 
+    id = serializers.StringRelatedField()
     addresses = AddressSerializer(read_only=True, many=True)
 
     class Meta:

@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 class WorklistSerializer(serializers.ModelSerializer):
     """Serializer for Worklist model"""
 
+    id = serializers.StringRelatedField()
+
     class Meta:
         model = Worklist
         fields = (
@@ -31,6 +33,7 @@ class WorklistSerializer(serializers.ModelSerializer):
 class PlanSerializer(serializers.ModelSerializer):
     """Serializer for Plan model"""
 
+    id = serializers.StringRelatedField()
     worklist = WorklistSerializer(many=True)
     client = ClientSerializer()
     address = AddressSerializer()
@@ -56,6 +59,8 @@ class PlanSerializer(serializers.ModelSerializer):
 
 class PlanUpdateSerializer(serializers.ModelSerializer):
     """Serializer for Plan model"""
+
+    id = serializers.StringRelatedField()
 
     worklist = serializers.PrimaryKeyRelatedField(
         queryset=Worklist.objects.all(),
