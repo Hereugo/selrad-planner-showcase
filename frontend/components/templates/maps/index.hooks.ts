@@ -7,7 +7,12 @@ import Color from "color";
 export const useMaps = () => {
   const { plans } = usePlans();
   const mapElementRef = useRef(null);
-  const ymaps = useYMaps(["Map", "Placemark", "Polygon"]);
+  const ymaps = useYMaps([
+    "Map",
+    "Placemark",
+    "Polygon",
+    "control.ZoomControl",
+  ]);
   const [mapInstance, setMapInstance] = useState<ymaps.Map>();
 
   const [selectedPlanId, setSelectedPlanId] = useState<
@@ -46,7 +51,7 @@ export const useMaps = () => {
     const map = new ymaps.Map(mapElementRef.current, {
       center: mapCenter,
       zoom: 12,
-      controls: [],
+      controls: ["zoomControl"],
     });
 
     if (!mapInstance) setMapInstance(map);
