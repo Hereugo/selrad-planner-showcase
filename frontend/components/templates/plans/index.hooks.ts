@@ -2,7 +2,7 @@ import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { usePlansQuery } from "@/lib/backend/plans";
 
 export const usePlans = () => {
-  const { calendarRange, searchQuery } = useFiltersContext();
+  const { calendarRange, searchQuery, managerId, workId } = useFiltersContext();
 
   const { data, error, isLoading } = usePlansQuery({
     date_after: calendarRange?.from
@@ -16,6 +16,8 @@ export const usePlans = () => {
       .reverse()
       .join("-"),
     search: searchQuery,
+    manager_id: managerId,
+    worklist_id: workId,
   });
 
   const plans = (data?.data || []).sort((a, b) => {

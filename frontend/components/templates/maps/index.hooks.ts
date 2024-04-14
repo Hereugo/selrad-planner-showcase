@@ -1,42 +1,19 @@
-import hull from "hull.js";
 import { usePlans } from "../Plans/index.hooks";
 import _, { random } from "lodash";
-import { useManagers } from "@/components/molecules/plan-dialog-new/index.hooks";
 import { useEffect, useRef, useState } from "react";
-import { managerFullName } from "@/lib/utils";
 import { useYMaps } from "@pbe/react-yandex-maps";
-
-// HSV contrast colors
-const pinColors = [
-  "#1f77b4",
-  "#ff7f0e",
-  "#2ca02c",
-  "#d62728",
-  "#9467bd",
-  "#8c564b",
-  "#e377c2",
-  "#7f7f7f",
-  "#bcbd22",
-  "#17becf",
-];
-const edgeColors = [
-  "#1f77b4",
-  "#ff7f0e",
-  "#2ca02c",
-  "#d62728",
-  "#9467bd",
-  "#8c564b",
-  "#e377c2",
-  "#7f7f7f",
-  "#bcbd22",
-  "#17becf",
-];
+import Color from "color";
 
 export const useMaps = () => {
-  const { plans } = usePlans();
-  const { managers } = useManagers();
-  const mapRef = useRef(null);
-  const ymaps = useYMaps(["Map", "Placemark", "Polygon"]);
+  const { plans, isLoading: isPlansLoading } = usePlans();
+  const mapElementRef = useRef(null);
+  const ymaps = useYMaps([
+    "Map",
+    "Placemark",
+    "Polygon",
+    "control.ZoomControl",
+  ]);
+  const [mapInstance, setMapInstance] = useState<ymaps.Map>();
 
   const [selectedPlanId, setSelectedPlanId] = useState<
     Plan["id"] | undefined
@@ -53,27 +30,38 @@ export const useMaps = () => {
     options: { iconColor: string };
   }[] = [];
 
-  for (let i = 0; i < Object.keys(plansByDay).length; i++) {
-    let day = Object.keys(plansByDay)[i];
+  const dayKeys = Object.keys(plansByDay);
+  for (let i = 0; i < dayKeys.length; i++) {
+    let day = dayKeys[i];
     let plans = plansByDay[day];
 
     for (let plan of plans) {
       placeMarks.push(
-        planToPlaceMark(plan, pinColors[i % pinColors.length], () => {
+        planToPlaceMark(plan, getColor(i, dayKeys.length), () => {
           setSelectedPlanId((p) => (p !== plan.id ? plan.id : undefined));
         }),
       );
     }
   }
 
+  // setup
   useEffect(() => {
-    if (!ymaps || !mapRef.current) return;
+    if (!ymaps || !mapElementRef.current) return;
 
-    const map = new ymaps.Map(mapRef.current, {
+    const map = new ymaps.Map(mapElementRef.current, {
       center: mapCenter,
       zoom: 12,
-      controls: [],
+      controls: ["zoomControl"],
     });
+
+    if (!mapInstance) setMapInstance(map);
+  }, [ymaps, mapInstance, mapElementRef.current]);
+
+  // drawing with data
+  useEffect(() => {
+    if (!ymaps || !mapElementRef.current) return;
+    if (!mapInstance) return;
+    clearMap(mapInstance);
 
     placeMarks.forEach((mark) => {
       const placemark = new ymaps.Placemark(
@@ -83,17 +71,21 @@ export const useMaps = () => {
       );
       // @ts-ignore
       placemark.events.add("click", mark.onClick);
-      map.geoObjects.add(placemark);
+      mapInstance.geoObjects.add(placemark);
     });
-  }, [ymaps]);
+  }, [plans, mapInstance, ymaps, placeMarks]);
 
   return {
-    mapRef,
-    mapCenter,
-    placeMarks,
+    mapElementRef,
     selectedPlan,
     setSelectedPlanId,
+    isPlansLoading,
   };
+};
+
+const clearMap = (map: ymaps.Map) => {
+  map.geoObjects.removeAll();
+  map.balloon.close();
 };
 
 const planToPlaceMark = (plan: Plan, color: string, callback: Function) => {
@@ -120,4 +112,8 @@ const planToBalloonHTML = (plan: Plan) => {
             <p>Адрес: ${plan.client.addresses[0].street}</p>
         </div>
     `;
+};
+
+const getColor = (index: number, length: number) => {
+  return Color.hsl((index / length) * 100, 75, 50).hex();
 };

@@ -14,6 +14,8 @@ interface plansQueryProps {
   ordering?: string;
   page?: number;
   search?: string;
+  manager_id?: string;
+  worklist_id?: string;
 }
 
 export const usePlansQuery = (props: plansQueryProps = {}) => {
@@ -26,6 +28,8 @@ export const usePlansQuery = (props: plansQueryProps = {}) => {
   if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
   if (props.page) queryParams.push(`page=${props.page}`);
   if (props.search) queryParams.push(`search=${props.search}`);
+  if (props.manager_id) queryParams.push(`manager_id=${props.manager_id}`);
+  if (props.worklist_id) queryParams.push(`worklist_id=${props.worklist_id}`);
 
   const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
 
