@@ -91,8 +91,8 @@ class Address(gis_models.Model):
 
     def update_coordinates(self):
         """Update the coordinates of the address"""
-        street = self.street + " г. Алматы, Казахстан"
-        street = street.replace("^[A-Za-zА-Яа-яЁё.,]", " ")
+        street = self.street
+        # street = street.replace("^[A-Za-zА-Яа-яЁё.,]", " ")
 
         if street is None:
             return
@@ -106,15 +106,16 @@ class Address(gis_models.Model):
 
         # response = requests.get(settings.YANDEX_API_URL, params=params)
 
-        params = {
-            "key": settings.TWOGIS_API_KEY,
-            "q": street,
-        }
+        params = {"key": settings.TWOGIS_API_KEY, "q": street, "fields": "items.point"}
 
         response = requests.get(settings.TWOGIS_API_URL, params=params)
 
         data = response.json()
-        if "response" in data:
+
+        logger.info(data)
+
+        if "result" in data:
+            # if "response" in data:
             try:
                 # lon, lat = map(
                 #     float,
@@ -124,9 +125,11 @@ class Address(gis_models.Model):
                 # )
 
                 lon, lat = (
-                    data["results"]["items"][0]["point"]["lon"],
-                    data["results"]["items"][0]["point"]["lat"],
+                    data["result"]["items"][0]["point"]["lon"],
+                    data["result"]["items"][0]["point"]["lat"],
                 )
+
+                logger.info("Lon and lat:", street, lon, lat)
 
                 if lon and lat:
                     if not self.lat or not self.lon:
@@ -147,7 +150,8 @@ class Address(gis_models.Model):
                             lat,
                         )
                         self.point = Point(lon, lat, srid=4326)
-
+                else:
+                    logger.info("Location not found for ", street)
             except Exception as e:
                 logger.error(
                     f"Error while updating coordinates for {street}. Error: {e}"

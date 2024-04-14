@@ -12,9 +12,13 @@ class PlanFilter(FilterSet):
     manager_id = NumberFilter(field_name="manager_id", method="filter_manager_id")
 
     def filter_worklist_id(self, queryset, name, value):
+        if value == -1:
+            return queryset.filter(worklist__isnull=True)
         return queryset.filter(worklist__id=value)
 
     def filter_manager_id(self, queryset, name, value):
+        if value == -1:
+            return queryset.filter(managers__isnull=True)
         return queryset.filter(managers__id=value)
 
     class Meta:
