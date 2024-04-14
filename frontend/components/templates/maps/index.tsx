@@ -12,14 +12,7 @@ import { TengeReciept } from "@/components/icons/tenge-reciept";
 interface MapsTemplateProps {}
 
 const MapsTemplate: FC<MapsTemplateProps> = () => {
-  const {
-    mapRef,
-    mapCenter,
-    placeMarks,
-    polygons,
-    selectedPlan,
-    setSelectedPlanId,
-  } = useMaps();
+  const { mapRef, selectedPlan, setSelectedPlanId } = useMaps();
 
   return (
     <div className="flex h-full gap-4">

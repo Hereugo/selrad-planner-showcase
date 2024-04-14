@@ -52,11 +52,6 @@ export const useMaps = () => {
     onClick: Function;
     options: { iconColor: string };
   }[] = [];
-  const polygons: {
-    geometry: (number[][] | object[])[];
-    options: { fillColor: string; strokeColor: string; strokeWidth: number };
-    properties: { hintContent: string };
-  }[] = [];
 
   for (let i = 0; i < Object.keys(plansByDay).length; i++) {
     let day = Object.keys(plansByDay)[i];
@@ -67,17 +62,6 @@ export const useMaps = () => {
         planToPlaceMark(plan, pinColors[i % pinColors.length], () => {
           setSelectedPlanId((p) => (p !== plan.id ? plan.id : undefined));
         }),
-      );
-    }
-
-    for (let [idx, manager] of Object.entries(managers)) {
-      polygons.push(
-        ...managerPlansToPolygon(
-          plans,
-          manager,
-          edgeColors[Number(idx) % edgeColors.length],
-          (Number(idx) / managers.length) * 2e-3,
-        ),
       );
     }
   }
@@ -101,22 +85,12 @@ export const useMaps = () => {
       placemark.events.add("click", mark.onClick);
       map.geoObjects.add(placemark);
     });
-
-    polygons.forEach((polygon) => {
-      const polygonObj = new ymaps.Polygon(
-        polygon.geometry,
-        polygon.properties,
-        polygon.options,
-      );
-      map.geoObjects.add(polygonObj);
-    });
   }, [ymaps]);
 
   return {
     mapRef,
     mapCenter,
     placeMarks,
-    polygons,
     selectedPlan,
     setSelectedPlanId,
   };
@@ -125,8 +99,8 @@ export const useMaps = () => {
 const planToPlaceMark = (plan: Plan, color: string, callback: Function) => {
   return {
     geometry: [
-      Number(plan.client.addresses[0].lat) + random(-1e-3, 1e-3),
-      Number(plan.client.addresses[0].lon) + random(-1e-3, 1e-3),
+      Number(plan.client.addresses[0].lat) + random(-1e-5, 1e-5),
+      Number(plan.client.addresses[0].lon) + random(-1e-5, 1e-5),
     ],
     properties: {
       // hintContent: plan.client.name,
@@ -146,36 +120,4 @@ const planToBalloonHTML = (plan: Plan) => {
             <p>Адрес: ${plan.client.addresses[0].street}</p>
         </div>
     `;
-};
-
-const managerPlansToPolygon = (
-  dayPlans: Plan[],
-  manager: Manager,
-  color: string,
-  displace = 0,
-) => {
-  const managerPlans = _.filter(dayPlans, (plan, _) =>
-    plan.managers.map((m) => m.id).includes(manager.id),
-  );
-  const managerCoordinates = managerPlans.map((plan) => [
-    Number(plan.client.addresses[0].lat) + displace,
-    Number(plan.client.addresses[0].lon) + displace,
-  ]);
-
-  if (managerCoordinates.length <= 1) return [];
-
-  const polygonCoords = hull(managerCoordinates, 50);
-  return [
-    {
-      geometry: [polygonCoords],
-      options: {
-        fillColor: color + "10",
-        strokeColor: color,
-        strokeWidth: 1.5,
-      },
-      properties: {
-        hintContent: managerFullName(manager),
-      },
-    },
-  ];
 };
