@@ -276,6 +276,11 @@ YANDEX_API_KEY = os.getenv("YANDEX_API_KEY")
 YANDEX_API_URL = os.getenv("YANDEX_API_URL")
 
 
+# 2GIS MAP Settings
+
+TWOGIS_API_KEY = os.getenv("TWOGIS_API_KEY")
+TWOGIS_API_URL = os.getenv("TWOGIS_API_URL")
+
 # Leaflet settings
 
 LEAFLET_CONFIG = {
