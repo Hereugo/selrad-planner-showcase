@@ -114,5 +114,5 @@ const planToBalloonHTML = (plan: Plan) => {
 };
 
 const getColor = (index: number, length: number) => {
-  return Color.hsl((index / length) * 100, 75, 50).hex();
+  return Color.hsl((index / length) * 359, 75, 50).hex();
 };
