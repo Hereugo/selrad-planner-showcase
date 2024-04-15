@@ -57,7 +57,7 @@ export const useCreatePlan = () => {
 
   const [assigned_date, setAssignedDate] = useState<string>();
   const [client, setClient] = useState<string>();
-  const [selectedManagers, setSelectedManagers] = useState<number[]>([]);
+  const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
   const [selectedWorklist, setSelectedWorklist] = useState<string[]>([]);
   const [shipment_cost, setShipmentCost] = useState<number>();
   const [box_count, setBoxCount] = useState<string>();
@@ -86,7 +86,7 @@ export const useCreatePlan = () => {
     });
   };
 
-  const switchManager = (manager: number) => {
+  const switchManager = (manager: string) => {
     setSelectedManagers((prev) => {
       if (prev.includes(manager)) {
         return prev.filter((m) => m !== manager);

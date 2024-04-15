@@ -95,7 +95,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
 
   const planUpdateMutation = usePlanUpdateMutation(initialPlan.id);
 
-  const switchManager = (manager: number) => {
+  const switchManager = (manager: string) => {
     setManagers((prev) => {
       if (prev.includes(manager)) {
         return prev.filter((m) => m !== manager);
