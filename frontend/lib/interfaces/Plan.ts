@@ -6,7 +6,7 @@ interface Plan {
   shipment_cost: number;
   comment: string;
   managers: Manager[];
-  box_count: string;
+  box_count: number;
 
   created_at: string;
   updated_at: string;
