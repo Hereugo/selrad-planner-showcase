@@ -27,14 +27,20 @@ class Client(models.Model):
         verbose_name="Дата обновления",
         editable=False,
     )
+    is_hidden_on_map = models.BooleanField(
+        verbose_name="Скрыть на карте",
+        help_text="Скрыть клиента на карте",
+        default=False,
+    )
 
-    addresses = models.ManyToManyField(
+    address = models.ForeignKey(
         "Address",
-        through="ClientAddress",
+        on_delete=models.PROTECT,
         related_name="clients",
-        verbose_name="Адреса клиента",
-        help_text="Выберите адреса клиента",
+        verbose_name="Адрес клиента",
+        help_text="Выберите адрес клиента",
         blank=True,
+        null=True,
     )
 
     def __str__(self):
@@ -56,6 +62,13 @@ class Address(gis_models.Model):
         max_length=255,
         verbose_name="Адрес клиента",
         help_text="Введите адрес клмента",
+    )
+    twogis_link = models.CharField(
+        max_length=255,
+        verbose_name="Ссылка на 2gis",
+        help_text="Введите ссылку на 2gis",
+        blank=True,
+        null=True,
     )
     lat = models.DecimalField(
         max_digits=9,
@@ -80,7 +93,6 @@ class Address(gis_models.Model):
         verbose_name="Дата обновления",
         editable=False,
     )
-
     point = gis_models.PointField(
         verbose_name="Точка",
         help_text="Точка адреса",
@@ -88,87 +100,32 @@ class Address(gis_models.Model):
         null=True,
         spatial_index=True,
     )
+    is_overridden = models.BooleanField(
+        verbose_name="Перезаписано",
+        help_text="Перезаписано",
+        default=False,
+    )
 
-    def update_coordinates(self):
-        """Update the coordinates of the address"""
-        street = self.street
-        # street = street.replace("^[A-Za-zА-Яа-яЁё.,]", " ")
+    def update_coordinates_by_link(self, link=None):
+        """Update the coordinates of the address by twogis link."""
+        link = link or self.twogis_link
 
-        if street is None:
-            return
-
-        # params = {
-        #     "apikey": settings.YANDEX_API_KEY,
-        #     "geocode": street,
-        #     "format": "json",
-        #     "lang": "ru_RU",
-        # }
-
-        # response = requests.get(settings.YANDEX_API_URL, params=params)
-
-        params = {"key": settings.TWOGIS_API_KEY, "q": street, "fields": "items.point"}
-
-        response = requests.get(settings.TWOGIS_API_URL, params=params)
-
-        data = response.json()
-
-        logger.info(data)
-
-        if "result" in data:
-            # if "response" in data:
-            try:
-                # lon, lat = map(
-                #     float,
-                #     data["response"]["GeoObjectCollection"]["featureMember"][0][
-                #         "GeoObject"
-                #     ]["Point"]["pos"].split(" "),
-                # )
-
-                lon, lat = (
-                    data["result"]["items"][0]["point"]["lon"],
-                    data["result"]["items"][0]["point"]["lat"],
-                )
-
-                logger.info("Lon and lat:", street, lon, lat)
-
-                if lon and lat:
-                    if not self.lat or not self.lon:
-                        logger.info("Location is empty for", street, "new:", lon, lat)
-                        self.point = Point(lon, lat, srid=4326)
-                    elif (
-                        abs(lat - float(self.lat)) > 0.0001
-                        or abs(lon - float(self.lon)) > 0.0001
-                    ):
-                        logger.info(
-                            "Location is different for",
-                            street,
-                            "old:",
-                            self.lon,
-                            self.lat,
-                            "new:",
-                            lon,
-                            lat,
-                        )
-                        self.point = Point(lon, lat, srid=4326)
-                else:
-                    logger.info("Location not found for ", street)
-            except Exception as e:
-                logger.error(
-                    f"Error while updating coordinates for {street}. Error: {e}"
-                )
+        # TODO:
+        # check if the link is a valid 2gis link
+        # extract params from the link
+        # assign the extracted params to the lat, lon, and point fields
+        pass
 
     def __str__(self):
-        return f"{self.street} - {self.lat}, {self.lon}"
+        return f"{self.pk} | {self.street}"
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
         self.updated_at = timezone.now()
 
-        if not self.point:
-            self.point = Point(float(self.lon), float(self.lat), srid=4326)
-        else:
-            self.lon = float(self.point.x)
-            self.lat = float(self.point.y)
+        if self.overriden:
+            self.lat = self.point.y
+            self.lon = self.point.x
 
         super().save(*args, **kwargs)
 
@@ -176,30 +133,3 @@ class Address(gis_models.Model):
         verbose_name = "Адрес"
         verbose_name_plural = "Адреса"
         ordering = ["street"]
-
-
-class ClientAddress(models.Model):
-    """Model ClientAddress"""
-
-    client = models.ForeignKey(
-        "Client",
-        on_delete=models.CASCADE,
-        related_name="client_addresses",
-        verbose_name="Клиент",
-        help_text="Выберите клиента",
-    )
-    address = models.ForeignKey(
-        "Address",
-        on_delete=models.CASCADE,
-        related_name="client_addresses",
-        verbose_name="Адрес",
-        help_text="Выберите адрес",
-    )
-
-    def __str__(self):
-        return f"{self.client.name} - {self.address.street}"
-
-    class Meta:
-        verbose_name = "Адрес клиента"
-        verbose_name_plural = "Адреса клиентов"
-        ordering = ["client__name"]

@@ -1,5 +1,6 @@
 import logging
 
+from django.db.models import F, ExpressionWrapper, DurationField
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import Distance
 from django.utils import timezone
@@ -18,7 +19,7 @@ from clients.models import Client
 
 from api.utils.custom_permissions import IsAuthenticated
 from api.utils.custom_paginations import PageLimitPagination
-from api.clients.serializers import ClientSerializer
+from api.clients.serializers import NearbyClientSerializer
 from .serializers import (
     PlanSerializer,
     PlanUpdateSerializer,
@@ -121,7 +122,6 @@ class PlanViewSet(ModelViewSet):
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 
-    # FIXME Переделать так клиент может иметь несколько адресов
     @extend_schema(
         methods=["get"],
         parameters=[
@@ -140,7 +140,7 @@ class PlanViewSet(ModelViewSet):
                 default=30,
             ),
         ],
-        responses={200: ClientSerializer(many=True)},
+        responses={200: NearbyClientSerializer(many=True)},
     )
     @action(
         detail=True,
@@ -150,21 +150,34 @@ class PlanViewSet(ModelViewSet):
     )
     def find_nearby(self, request, pk=None):
         """Найти ближайшие планы по текущему плану."""
-
         plan = get_object_or_404(Plan, pk=pk)
         radius = float(request.GET.get("radius", 0.5))
         time_threshold = int(request.GET.get("time_threshold", 30))
 
+        # get all clients that are in the radius of a circle [plan.client.address.point, radius]
         nearby_clients = Client.objects.filter(
-            addresses__point__distance_lte=(plan.address.point, Distance(km=radius))
-        ).exclude(pk=pk)
+            address__point__distance_lte=(
+                plan.client.address.point,
+                Distance(km=radius),
+            )
+        ).exclude(pk=plan.client.pk)
 
-        nearby_clients = nearby_clients.filter(
-            plans__assigned_date__lte=plan.assigned_date
-            - timezone.timedelta(days=time_threshold)
+        # get all clients that have plans in the time range [assigned_date - time_threshold, assigned_date]
+        a = nearby_clients.filter(
+            plans__assigned_date__gte=plan.assigned_date
+            - timezone.timedelta(days=time_threshold),
+            plans__assigned_date__lte=plan.assigned_date,
         )
+        # get all clients that have no plans
+        b = nearby_clients.filter(plans__isnull=True)
+        nearby_clinets = a | b
 
-        serializer = ClientSerializer(nearby_clients, many=True)
+        # remove all duplicates
+        nearby_clients = nearby_clients.distinct()
+
+        serializer = NearbyClientSerializer(
+            nearby_clients, many=True, context={"request": request, "plan_pk": pk}
+        )
         return Response(serializer.data)
 
 
