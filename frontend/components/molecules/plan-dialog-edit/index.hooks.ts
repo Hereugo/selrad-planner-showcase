@@ -130,7 +130,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
       managers: managers || [],
       worklist: worklist || [],
       shipment_cost: shipmentCost,
-      box_count: boxCount ?? "",
+      box_count: boxCount ?? 0,
       comment: comment ?? "",
     });
   };

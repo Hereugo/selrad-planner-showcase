@@ -53,7 +53,7 @@ interface planCreateMutationProps {
   managers: string[];
   worklist: string[];
   shipment_cost: number;
-  box_count: string;
+  box_count: number;
   comment: string;
 }
 
@@ -79,7 +79,7 @@ interface planUpdateMutation {
   managers: string[];
   worklist: string[];
   shipment_cost: number;
-  box_count: string;
+  box_count: number;
   comment: string;
 }
 

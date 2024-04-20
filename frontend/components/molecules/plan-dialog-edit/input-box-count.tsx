@@ -6,8 +6,8 @@ import { FC } from "react";
 interface BoxCountInputProps {
   id?: string;
   className?: string;
-  boxCount: string;
-  setBoxCount: (count: string) => void;
+  boxCount: number;
+  setBoxCount: (count: number) => void;
 }
 
 const BoxCountInput: FC<BoxCountInputProps> = ({
@@ -25,9 +25,9 @@ const BoxCountInput: FC<BoxCountInputProps> = ({
           value={boxCount}
           onChange={(e) => {
             if (e.target.value) {
-              setBoxCount(e.target.value);
+              setBoxCount(parseInt(e.target.value));
             } else {
-              setBoxCount("0");
+              setBoxCount(0);
             }
           }}
           type="text"

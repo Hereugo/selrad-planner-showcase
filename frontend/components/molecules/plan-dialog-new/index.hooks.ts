@@ -60,7 +60,7 @@ export const useCreatePlan = () => {
   const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
   const [selectedWorklist, setSelectedWorklist] = useState<string[]>([]);
   const [shipment_cost, setShipmentCost] = useState<number>();
-  const [box_count, setBoxCount] = useState<string>();
+  const [box_count, setBoxCount] = useState<number>();
   const [comment, setComment] = useState<string>();
 
   const planCreateMutation = usePlanCreateMutation();
@@ -81,7 +81,7 @@ export const useCreatePlan = () => {
       managers: selectedManagers || [],
       worklist: selectedWorklist || [],
       shipment_cost: shipment_cost ?? 0,
-      box_count: box_count ?? "",
+      box_count: box_count ?? 0,
       comment: comment ?? "",
     });
   };
