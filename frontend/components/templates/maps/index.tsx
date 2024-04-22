@@ -62,7 +62,7 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
                 {selectedPlan.client.name}
               </div>
               <div className="text-sm text-muted-foreground line-clamp-1 text-ellipsis">
-                {selectedPlan.client.addresses[0].street}
+                {selectedPlan.client.address.street}
               </div>
             </div>
 

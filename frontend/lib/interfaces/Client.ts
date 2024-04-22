@@ -3,12 +3,5 @@ interface Client {
   name: string;
   created_at: string;
   updated_at: string;
-  addresses: {
-    id: string;
-    street: string;
-    lon: string;
-    lat: string;
-    created_at: string;
-    updated_at: string;
-  }[];
+  address: Address;
 }

@@ -104,10 +104,8 @@ const planToPlaceMark = (plan: Plan, color: string, callback: Function) => {
 
   return {
     geometry: [
-      Number(plan.client.addresses[0].lat) +
-        getDisplacement(plan.created_at, false),
-      Number(plan.client.addresses[0].lon) +
-        getDisplacement(plan.created_at, true),
+      Number(plan.client.address.lat) + getDisplacement(plan.created_at, false),
+      Number(plan.client.address.lon) + getDisplacement(plan.created_at, true),
     ],
     properties: {
       // hintContent: plan.client.name,
@@ -128,7 +126,7 @@ const planToBalloonHTML = (plan: Plan) => {
   return `
         <div>
             <h3 class="text-lg font-semibold">${plan.client.name}</h3>
-            <p>Адрес: ${plan.client.addresses[0].street}</p>
+            <p>Адрес: ${plan.client.address.street}</p>
         </div>
     `;
 };
