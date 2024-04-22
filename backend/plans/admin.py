@@ -52,23 +52,6 @@ def export_report(modeladmin, request, queryset):
     )
 
 
-@admin.action(description="Скачать план")
-def export_plans(modeladmin, request, queryset):
-    if queryset.count() < 1:
-        modeladmin.message_user(request, "Не выбрано ни одного плана", level="ERROR")
-        return
-
-    plans = queryset.all()
-
-    response = PlanViewSet.export(PlanViewSet, request, plans)
-
-    if response.status_code != 200:
-        modeladmin.message_user(request, f"Не удалось скачать план", level="ERROR")
-        return
-
-    return response
-
-
 class PlanManagerInline(admin.TabularInline):
     model = Plan.managers.through
     extra = 1
@@ -86,9 +69,9 @@ class PlanAdmin(admin.ModelAdmin):
         "shipment_cost",
         "box_count",
         "client",
-        "address",
+        "client_address",
     )
-    search_fields = ("client__name",)
+    search_fields = ("client__name", "client__address", "assigned_date")
     list_filter = (
         "worklist",
         "assigned_date",
@@ -106,6 +89,11 @@ class PlanAdmin(admin.ModelAdmin):
         PlanManagerInline,
         PlanWorklistInline,
     ]
+
+    def client_address(self, obj):
+        return obj.client.address
+
+    client_address.short_description = "Адрес клиента"
 
     # for assignment_date also show its week day
     def assigned_date_formatted(self, obj):

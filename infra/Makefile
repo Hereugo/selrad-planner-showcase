@@ -12,20 +12,26 @@ down:
 	docker-compose -f docker-compose-dev.yml down
 logs:
 	docker-compose -f docker-compose-dev.yml logs
+
 migrate:
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py migrate
 
 superuser:
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py createsuperuser	
 loaddata:
-	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py loaddata ./data/19-04-2024.json; 
+	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py loaddata ./data/19-04-2024-new.json; 
 
 flush:
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py flush
 
-volume:
-	docker volume inspect selrad-planner-dev_db
+volume_down:
+	docker volume rm selrad-planner-dev_db_value
 
+volume:
+	docker volume inspect selrad-planner-dev_db_value
+
+bash:
+	docker-compose -f docker-compose-dev.yml exec backend bash
 shell:
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py shell
 

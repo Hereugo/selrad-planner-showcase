@@ -36,7 +36,6 @@ class PlanSerializer(serializers.ModelSerializer):
     id = serializers.StringRelatedField()
     worklist = WorklistSerializer(many=True)
     client = ClientSerializer()
-    address = AddressSerializer()
     managers = ManagerSerializer(many=True)
     box_count = serializers.IntegerField(read_only=True)
 
@@ -47,7 +46,6 @@ class PlanSerializer(serializers.ModelSerializer):
             "assigned_date",
             "worklist",
             "client",
-            "address",
             "shipment_cost",
             "comment",
             "managers",
@@ -76,10 +74,6 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         queryset=Client.objects.all(),
         required=False,
     )
-    address = serializers.PrimaryKeyRelatedField(
-        queryset=Address.objects.all(),
-        required=False,
-    )
     box_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -89,7 +83,6 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             "assigned_date",
             "worklist",
             "client",
-            "address",
             "shipment_cost",
             "comment",
             "managers",

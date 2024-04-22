@@ -94,14 +94,6 @@ class Plan(models.Model):
         on_delete=models.CASCADE,
         null=True,
     )
-    address = models.ForeignKey(
-        "clients.Address",
-        verbose_name="Адрес",
-        help_text="Выберите адрес",
-        related_name="plans",
-        on_delete=models.CASCADE,
-        null=True,
-    )
 
     def get_absolute_url(self):
         return reverse("plans")
