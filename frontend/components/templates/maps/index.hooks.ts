@@ -100,6 +100,8 @@ const planToPlaceMark = (plan: Plan, color: string, callback: Function) => {
         : "woman"
       : "marker";
 
+  const zIndex = iconType === "woman" ? 2 : 1;
+
   return {
     geometry: [
       Number(plan.client.addresses[0].lat) +
@@ -117,6 +119,7 @@ const planToPlaceMark = (plan: Plan, color: string, callback: Function) => {
       iconImageHref: getIconColored(iconType, color),
       iconImageSize: [40, 40],
       iconImageOffset: [-10, -10],
+      zIndex,
     },
   };
 };
