@@ -13,6 +13,7 @@ const urls = {
     clients: `${BASE_BACKEND_V1}/clients`,
     managers: `${BASE_BACKEND_V1}/managers`,
     worklist: `${BASE_BACKEND_V1}/worklist`,
+    plan_export: `${BASE_BACKEND_V1}/plans/export`,
   },
 };
 
