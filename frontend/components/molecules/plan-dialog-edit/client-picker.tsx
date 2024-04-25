@@ -73,7 +73,7 @@ const ClientPicker: FC<ClientPickerProps> = ({ id, client, setClient }) => {
                 <CommandItem
                   className="cursor-pointer"
                   key={client.id}
-                  title={client.addresses[0].street}
+                  title={client.address.street}
                   onSelect={() => {
                     setValue(client.id === value ? "" : client.id);
                     setOpen(false);
@@ -104,13 +104,13 @@ const ClientPicker: FC<ClientPickerProps> = ({ id, client, setClient }) => {
               !value && "text-muted-foreground",
             )}
             title={
-              clients.find((client) => client.id === value)?.addresses[0]
-                .street ?? ""
+              clients.find((client) => client.id === value)?.address.street ??
+              ""
             }
           >
             <span className="text-start truncate w-[25rem] max-w-[calc(100vw-8rem)]">
-              {clients.find((client) => client.id === value)?.addresses[0]
-                .street ?? ""}
+              {clients.find((client) => client.id === value)?.address.street ??
+                ""}
             </span>
             <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
