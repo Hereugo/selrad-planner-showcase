@@ -14,6 +14,7 @@ const urls = {
     managers: `${BASE_BACKEND_V1}/managers`,
     worklist: `${BASE_BACKEND_V1}/worklist`,
     plan_export: `${BASE_BACKEND_V1}/plans/export`,
+    plan_export_report: `${BASE_BACKEND_V1}/plans/export_report/`,
   },
 };
 

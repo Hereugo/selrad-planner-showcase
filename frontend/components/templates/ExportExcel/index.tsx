@@ -1,19 +1,72 @@
 "use client";
 
+import { FC, useState } from "react";
+import { handlePlanDownload, handleReportDownload } from "./index.hooks";
+import useFiltersContext from "@/components/molecules/side-bar/index.providers";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { FC } from "react";
-import { useDownloadExcel } from "./index.hooks";
+import { Loader2, Terminal } from "lucide-react";
 
 interface ExportExcelTemplateProps {}
 
 const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
-  const { handleDownload } = useDownloadExcel();
+  const { calendarRange, searchQuery, managerId, workId } = useFiltersContext();
+  const { toast } = useToast();
+
+  const [isPlanLoading, setIsPlanLoading] = useState(false);
+  const [isReportLoading, setIsReportLoading] = useState(false);
 
   return (
     <>
-      <Button onClick={handleDownload} className="w-full">
-        Скачать
-      </Button>
+      <div className="flex gap-4 mb-4">
+        <Button
+          onClick={() =>
+            handlePlanDownload({
+              setIsLoading: setIsPlanLoading,
+              calendarRange,
+              searchQuery,
+              managerId,
+              workId,
+              toast,
+            })
+          }
+          disabled={isPlanLoading}
+        >
+          Скачать план
+          {isPlanLoading && <Loader2 className="w-6 h-6 ml-2 animate-spin" />}
+        </Button>
+
+        <Button
+          onClick={() =>
+            handleReportDownload({
+              setIsLoading: setIsReportLoading,
+              managerId,
+              toast,
+            })
+          }
+          disabled={isReportLoading}
+        >
+          Скачать отчет
+          {isReportLoading && <Loader2 className="w-6 h-6 ml-2 animate-spin" />}
+        </Button>
+      </div>
+      {(searchQuery || managerId || workId) && (
+        <Alert variant="warning">
+          <Terminal className="h-4 w-4" />
+          <AlertTitle>Внимание!</AlertTitle>
+          <AlertDescription>
+            Включены фильтры, убедитесь что они правильно настроены перед
+            экспортом
+            <br />
+            <ul className="list-disc list-inside">
+              {searchQuery && <li>Поиск: {searchQuery}</li>}
+              {managerId && <li>Менеджер</li>}
+              {workId && <li>Работа</li>}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
     </>
   );
 };

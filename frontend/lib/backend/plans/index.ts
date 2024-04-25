@@ -126,7 +126,7 @@ interface planExportQueryProps {
   worklist_id?: string;
 }
 
-export const usePlanExportQuery = (props: planExportQueryProps = {}) => {
+export const planExportQuery = (props: planExportQueryProps = {}) => {
   const url = urls.base_backend.plan_export;
   const queryParams = [];
 
@@ -139,7 +139,22 @@ export const usePlanExportQuery = (props: planExportQueryProps = {}) => {
 
   const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
 
-  return useQuery(["usePlansQuery", urlWithParams], async () =>
-    fetchWithAuth<any>(urlWithParams),
-  );
+  return fetchWithAuth<Blob>(urlWithParams, {
+    responseType: "blob",
+  });
+};
+
+interface managerReportExportQueryProps {
+  manager_id: Manager["id"];
+}
+
+export const managerReportExportQuery = (
+  props: managerReportExportQueryProps,
+) => {
+  const url = urls.base_backend.plan_export_report;
+  const urlWithParams = `${url}/${props.manager_id}`;
+
+  return fetchWithAuth<Blob>(urlWithParams, {
+    responseType: "blob",
+  });
 };

@@ -11,7 +11,7 @@ interface SideBarProps {
 
 const SideBar: FC<SideBarProps> = ({ className }) => {
   return (
-    <div className={cn("border-r-2 z-50 p-4", className)}>
+    <div className={cn("border-r-2 z-50 px-4 py-6", className)}>
       <NewPlanButton />
 
       <Separator orientation="horizontal" className="my-4" />
