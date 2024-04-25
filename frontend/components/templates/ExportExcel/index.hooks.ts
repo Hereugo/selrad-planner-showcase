@@ -51,7 +51,7 @@ export const handlePlanDownload = ({
       setIsLoading(false);
     })
     .catch((e) => {
-      console.log(e);
+      console.error(e);
       setIsLoading(false);
       toast({
         title: "Ошибка, не удалось скачать план",
@@ -97,7 +97,7 @@ export const handleReportDownload = ({
       setIsLoading(false);
     })
     .catch((e) => {
-      console.log(e.request.text());
+      console.error(e);
       setIsLoading(false);
       toast({
         title: "Ошибка, не удалось скачать отчет",
