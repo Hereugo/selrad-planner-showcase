@@ -59,7 +59,11 @@ class PlanViewSet(ModelViewSet):
 
         return super().get_serializer_class()
 
-    @extend_schema(methods=["get"], description="Скачать план", filters=True)
+    @extend_schema(
+        methods=["get"],
+        description="Скачать план",
+        filters=True,
+    )
     @action(
         detail=False,
         methods=["get"],
