@@ -16,6 +16,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from plans.models import Plan, Worklist
 from clients.models import Client
+from managers.models import Manager
 
 from api.utils.custom_permissions import IsAuthenticated
 from api.utils.custom_paginations import PageLimitPagination
@@ -78,8 +79,16 @@ class PlanViewSet(ModelViewSet):
 
         buffer = generate_excelsheet_by_plan(plans)
 
-        # TODO Add from what daterange
-        filename = "планы.xlsx"
+        if plans.count() >= 1:
+            earliest_date = plans.earliest("assigned_date").assigned_date.strftime(
+                "%d-%m-%Y"
+            )
+            latest_date = plans.latest("assigned_date").assigned_date.strftime(
+                "%d-%m-%Y"
+            )
+            filename = f"планы c {earliest_date} по {latest_date}.xlsx"
+        else:
+            filename = "планы.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),
@@ -91,6 +100,7 @@ class PlanViewSet(ModelViewSet):
     @extend_schema(
         methods=["get"],
         description="Скачать отчет менеджера",
+        filters=True,
         parameters=[
             OpenApiParameter(
                 "manager_id",
@@ -112,12 +122,23 @@ class PlanViewSet(ModelViewSet):
         # Method export report is used here, because filters are applied here.
         if not plans:
             plans = self.filter_queryset(self.get_queryset())
+        else:
+            plans = self.filter_queryset(plans)
+
         manager = get_object_or_404(Manager, pk=manager_id)
 
         buffer = generate_excelsheet_by_manager(plans, manager)
 
-        # TODO Add from what daterange
-        filename = "отчет.xlsx"
+        if plans.count() >= 1:
+            earliest_date = plans.earliest("assigned_date").assigned_date.strftime(
+                "%d-%m-%Y"
+            )
+            latest_date = plans.latest("assigned_date").assigned_date.strftime(
+                "%d-%m-%Y"
+            )
+            filename = f"отчет {manager} c {earliest_date} по {latest_date}.xlsx"
+        else:
+            filename = f"отчет {manager}.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),

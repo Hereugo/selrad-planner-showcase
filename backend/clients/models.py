@@ -123,7 +123,7 @@ class Address(gis_models.Model):
         """Save the model instance. Update the updated_at field."""
         self.updated_at = timezone.now()
 
-        if self.overriden:
+        if self.is_overridden:
             self.lat = self.point.y
             self.lon = self.point.x
 

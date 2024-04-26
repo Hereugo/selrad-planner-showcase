@@ -150,8 +150,8 @@ class AddressAdmin(LeafletGeoAdmin, ExportCsvMixin):
                     return redirect("..")
 
                 # 0 - updated, 1 - created, 2 - override_dont_update_coordinates
-                client_count = (0, 0)
-                address_count = (0, 0, 0)
+                client_count = [0, 0]
+                address_count = [0, 0, 0]
                 for row in reader:
                     row["address"] = row["address"].strip()
                     row["name"] = row["name"].strip()

@@ -28,7 +28,7 @@ def generate_excelsheet_by_plan(plans):
     if "assigned_date_cell" not in workbook.style_names:
         date_style = openpyxl.styles.NamedStyle(name="assigned_date_cell")
         # set format to date with weekday
-        date_style.number_format = "DD.MM.YYYY"
+        date_style.number_format = "DD/MM/YYYY"
 
         # font color white, background color gray and bold
         date_style.font = openpyxl.styles.Font(color="FFFFFF", bold=True)
@@ -55,8 +55,14 @@ def generate_excelsheet_by_plan(plans):
 
         workbook.add_named_style(general_style)
 
-    earliest_date = plans.earliest("assigned_date").assigned_date
-    latest_date = plans.latest("assigned_date").assigned_date
+    if plans.count() >= 1:
+        earliest_date = plans.earliest("assigned_date").assigned_date.strftime(
+            "%d/%m/%Y"
+        )
+        latest_date = plans.latest("assigned_date").assigned_date.strftime("%d/%m/%Y")
+    else:
+        earliest_date = "--пусто--"
+        latest_date = "--пусто--"
 
     ws.cell(row=1, column=1).value = f"Планы на {earliest_date} - {latest_date}"
     ws.cell(row=1, column=1).style = "assigned_date_cell"
@@ -88,7 +94,7 @@ def generate_excelsheet_by_plan(plans):
 
         x = plan_count + 1
         ws.merge_cells(start_row=row, start_column=1, end_row=row + x, end_column=1)
-        ws.cell(row=row, column=1).value = assigned_date
+        ws.cell(row=row, column=1).value = assigned_date.strftime("%d %B, %Y")
         ws.cell(row=row, column=1).style = "assigned_date_cell"
 
         row += x + 1
@@ -121,7 +127,7 @@ def generate_excelsheet_by_manager(plans, manager):
     if "assigned_date_cell" not in workbook.style_names:
         date_style = openpyxl.styles.NamedStyle(name="assigned_date_cell")
         # set format to date with weekday
-        date_style.number_format = "DD.MM.YYYY"
+        date_style.number_format = "DD/MM/YYYY"
 
         # font color white, background color gray and bold
         date_style.font = openpyxl.styles.Font(color="FFFFFF", bold=True)
@@ -148,8 +154,14 @@ def generate_excelsheet_by_manager(plans, manager):
 
         workbook.add_named_style(general_style)
 
-    earliest_date = plans.earliest("assigned_date").assigned_date
-    latest_date = plans.latest("assigned_date").assigned_date
+    if plans.count() >= 1:
+        earliest_date = plans.earliest("assigned_date").assigned_date.strftime(
+            "%d/%m/%Y"
+        )
+        latest_date = plans.latest("assigned_date").assigned_date.strftime("%d/%m/%Y")
+    else:
+        earliest_date = "--пусто--"
+        latest_date = "--пусто--"
 
     ws.cell(row=1, column=1).value = f"ОТЧЕТ {manager}"
     ws.cell(row=2, column=1).value = f"ЗА ПЕРИОД С {earliest_date} - {latest_date}"
@@ -168,7 +180,7 @@ def generate_excelsheet_by_manager(plans, manager):
                 plan.client.name
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["address"]).value = (
-                plan.address.street
+                plan.client.address.street
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["worklist"]).value = ", ".join(
                 [str(w) for w in plan.worklist.all()]
