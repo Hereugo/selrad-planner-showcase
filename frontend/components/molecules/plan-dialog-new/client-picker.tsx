@@ -105,13 +105,13 @@ const ClientPicker: FC<ClientPickerProps> = ({ id, setClient }) => {
               !value && "text-muted-foreground",
             )}
             title={
-              clients.find((client) => client.id === value)?.address
-                .street ?? ""
+              clients.find((client) => client.id === value)?.address.street ??
+              ""
             }
           >
             <span className="text-start truncate w-[25rem] max-w-[calc(100vw-8rem)]">
-              {clients.find((client) => client.id === value)?.address
-                .street ?? ""}
+              {clients.find((client) => client.id === value)?.address.street ??
+                ""}
             </span>
             <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>

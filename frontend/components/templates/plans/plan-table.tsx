@@ -17,7 +17,7 @@ const PlanTable = () => {
 
   return (
     <>
-      <Table>
+      <Table className="mt-2">
         <TableHeader>
           <TableRow>
             <TableHead className="w-[150px]">Дата</TableHead>
