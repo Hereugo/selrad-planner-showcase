@@ -40,6 +40,7 @@ export const useMaps = () => {
     let plans = plansByDay[day];
 
     for (let plan of plans) {
+      if (plan.client.is_hidden_on_map) continue;
       placeMarks.push(
         planToPlaceMark(plan, getColor(i, dayKeys.length), () => {
           setSelectedPlanId((p) => (p !== plan.id ? plan.id : undefined));
