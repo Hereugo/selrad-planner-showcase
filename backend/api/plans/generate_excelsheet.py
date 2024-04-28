@@ -139,12 +139,13 @@ COL_DICT_REPORT = {
     "address": 2,
     "worklist": 3,
     "comment": 4,
-    "box_count": 5,
+    "shipment_cost": 5,
+    "box_count": 6,
 }
 
 
 def generate_excelsheet_by_manager(plans, manager):
-    workbook = openpyxl.load_workbook("./static/docs/standard_plan.xlsx")
+    workbook = openpyxl.load_workbook("./static/docs/standard_report.xlsx")
     ws = workbook.active
 
     if "head_cell" not in workbook.style_names:
@@ -158,6 +159,7 @@ def generate_excelsheet_by_manager(plans, manager):
     if "general_style" not in workbook.style_names:
         general_style = openpyxl.styles.NamedStyle(name="general_style")
         general_style.alignment.wrap_text = True
+        general_style.number_format = "### ### ### ### ### ### ### ### ### ### ##0"
 
         general_style.border = Border(
             left=Side(style="thin"),
@@ -175,7 +177,7 @@ def generate_excelsheet_by_manager(plans, manager):
         1,
         f"ОТЧЕТ {manager} С {earliest_date.strftime('%d.%m.%Y')} ПО {latest_date.strftime('%d.%m.%Y')}",
         1,
-        5,
+        4,
     )
 
     row = 3
@@ -190,7 +192,7 @@ def generate_excelsheet_by_manager(plans, manager):
             row,
             f"{assigned_date.strftime('%d.%m')} - {ru_week_name(assigned_date)}",
             1,
-            5,
+            4,
         )
         row += 2
         plan_count = 0
@@ -208,6 +210,12 @@ def generate_excelsheet_by_manager(plans, manager):
                 [str(w) for w in plan.worklist.all()]
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["comment"]).value = plan.comment
+            ws.cell(row=row + i, column=COL_DICT_REPORT["shipment_cost"]).value = (
+                plan.shipment_cost
+            )
+            ws.cell(row=row + i, column=COL_DICT_REPORT["shipment_cost"]).alignment = (
+                openpyxl.styles.Alignment(horizontal="right")
+            )
             ws.cell(row=row + i, column=COL_DICT_REPORT["box_count"]).value = (
                 plan.box_count
             )
