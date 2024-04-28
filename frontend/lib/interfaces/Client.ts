@@ -4,4 +4,5 @@ interface Client {
   created_at: string;
   updated_at: string;
   address: Address;
+  is_hidden_on_map: boolean;
 }

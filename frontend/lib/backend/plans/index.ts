@@ -144,15 +144,18 @@ export const planExportQuery = (props: planExportQueryProps = {}) => {
   });
 };
 
-interface managerReportExportQueryProps {
-  manager_id: Manager["id"];
-}
+export const managerReportExportQuery = (props: planExportQueryProps) => {
+  const baseUrl = urls.base_backend.plan_export_report;
+  const url = `${baseUrl}/${props.manager_id}`;
+  const queryParams = [];
 
-export const managerReportExportQuery = (
-  props: managerReportExportQueryProps,
-) => {
-  const url = urls.base_backend.plan_export_report;
-  const urlWithParams = `${url}/${props.manager_id}`;
+  if (props.date_after) queryParams.push(`date_after=${props.date_after}`);
+  if (props.date_before) queryParams.push(`date_before=${props.date_before}`);
+  if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
+  if (props.search) queryParams.push(`search=${props.search}`);
+  if (props.worklist_id) queryParams.push(`worklist_id=${props.worklist_id}`);
+
+  const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
 
   return fetchWithAuth<Blob>(urlWithParams, {
     responseType: "blob",
