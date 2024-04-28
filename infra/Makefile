@@ -24,6 +24,9 @@ loaddata:
 flush:
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py flush
 
+static_down:
+	docker volume rm selrad-planner-dev_static_value -f
+
 volume_down:
 	docker volume rm selrad-planner-dev_db_value
 

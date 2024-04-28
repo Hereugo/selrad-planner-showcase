@@ -77,18 +77,19 @@ class PlanViewSet(ModelViewSet):
         if not plans:
             plans = self.filter_queryset(self.get_queryset())
 
+        if plans.count() == 0:
+            return Response(
+                {"error": "Нет планов для выбранных фильтров."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         buffer = generate_excelsheet_by_plan(plans)
 
-        if plans.count() >= 1:
-            earliest_date = plans.earliest("assigned_date").assigned_date.strftime(
-                "%d-%m-%Y"
-            )
-            latest_date = plans.latest("assigned_date").assigned_date.strftime(
-                "%d-%m-%Y"
-            )
-            filename = f"планы c {earliest_date} по {latest_date}.xlsx"
-        else:
-            filename = "планы.xlsx"
+        earliest_date = plans.earliest("assigned_date").assigned_date.strftime(
+            "%d-%m-%Y"
+        )
+        latest_date = plans.latest("assigned_date").assigned_date.strftime("%d-%m-%Y")
+        filename = f"ПЛАНЫ С {earliest_date} ПО {latest_date}.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),
@@ -127,18 +128,21 @@ class PlanViewSet(ModelViewSet):
 
         manager = get_object_or_404(Manager, pk=manager_id)
 
+        plans = plans.filter(managers=manager)
+
+        if plans.count() == 0:
+            return Response(
+                {"error": "Нет планов для выбранных фильтров."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         buffer = generate_excelsheet_by_manager(plans, manager)
 
-        if plans.count() >= 1:
-            earliest_date = plans.earliest("assigned_date").assigned_date.strftime(
-                "%d-%m-%Y"
-            )
-            latest_date = plans.latest("assigned_date").assigned_date.strftime(
-                "%d-%m-%Y"
-            )
-            filename = f"отчет {manager} c {earliest_date} по {latest_date}.xlsx"
-        else:
-            filename = f"отчет {manager}.xlsx"
+        earliest_date = plans.earliest("assigned_date").assigned_date.strftime(
+            "%d-%m-%Y"
+        )
+        latest_date = plans.latest("assigned_date").assigned_date.strftime("%d-%m-%Y")
+        filename = f"ОТЧЕТ {manager} С {earliest_date} ПО {latest_date}.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),
