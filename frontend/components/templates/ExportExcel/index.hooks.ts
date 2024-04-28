@@ -60,17 +60,14 @@ export const handlePlanDownload = ({
     });
 };
 
-interface handleReportDownloadProps {
-  setIsLoading: Function;
-  toast: Function;
-  managerId: Manager["id"] | undefined;
-}
-
 export const handleReportDownload = ({
   setIsLoading,
   toast,
+  calendarRange,
+  searchQuery,
   managerId,
-}: handleReportDownloadProps) => {
+  workId,
+}: handlePlanDownloadProps) => {
   if (!managerId || managerId === "-1") {
     toast({
       title: "Выберите менеджера",
@@ -81,7 +78,21 @@ export const handleReportDownload = ({
 
   setIsLoading(true);
 
-  const data = managerReportExportQuery({ manager_id: managerId });
+  const data = managerReportExportQuery({
+    date_after: calendarRange?.from
+      ?.toLocaleDateString("ru-RU")
+      .split(".")
+      .reverse()
+      .join("-"),
+    date_before: calendarRange?.to
+      ?.toLocaleDateString("ru-RU")
+      .split(".")
+      .reverse()
+      .join("-"),
+    search: searchQuery,
+    manager_id: managerId,
+    worklist_id: workId,
+  });
 
   data
     .then((data) => {

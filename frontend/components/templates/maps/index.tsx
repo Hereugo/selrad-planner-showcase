@@ -15,7 +15,7 @@ import {
 import { cn, formatPrice, managerFullName } from "@/lib/utils";
 import { TengeReciept } from "@/components/icons/tenge-reciept";
 
-interface MapsTemplateProps { }
+interface MapsTemplateProps {}
 
 const MapsTemplate: FC<MapsTemplateProps> = () => {
   const { mapElementRef, selectedPlan, setSelectedPlanId, isPlansLoading } =
