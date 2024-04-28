@@ -92,7 +92,11 @@ def generate_excelsheet_by_plan(plans):
             5,
         )
 
-        plans_by_day = sorted(plans_by_day, key=lambda p: p.client.is_hidden_on_map)
+        plans_by_day = sorted(
+            plans_by_day,
+            key=lambda p: (not p.client.is_hidden_on_map, p.created_at),
+            reverse=True,
+        )
 
         row += 2
         plan_count = 0
@@ -182,7 +186,11 @@ def generate_excelsheet_by_manager(plans, manager):
 
     row = 3
     for assigned_date, plans_by_day in groupby(plans, key=lambda p: p.assigned_date):
-        plans_by_day = sorted(plans_by_day, key=lambda p: p.client.is_hidden_on_map)
+        plans_by_day = sorted(
+            plans_by_day,
+            key=lambda p: (not p.client.is_hidden_on_map, p.created_at),
+            reverse=True,
+        )
 
         if len(plans_by_day) == 0:
             continue
