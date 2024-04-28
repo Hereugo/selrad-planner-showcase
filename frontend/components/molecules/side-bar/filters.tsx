@@ -17,9 +17,9 @@ const Filters = () => {
 
       <Separator orientation="horizontal" />
 
-      <WorkFilter />
-
       <ManagerFilter />
+
+      <WorkFilter />
     </div>
   );
 };
