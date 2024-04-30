@@ -11,7 +11,7 @@ up:
 down:
 	docker-compose -f docker-compose-dev.yml down
 logs:
-	docker-compose -f docker-compose-dev.yml logs
+	docker-compose -f docker-compose-dev.yml logs --follow
 
 migrate:
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py migrate

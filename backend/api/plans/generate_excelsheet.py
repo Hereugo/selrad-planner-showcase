@@ -46,7 +46,7 @@ def gen_header(ws, row, title, sc, ec):
     ws.cell(row=row, column=1).style = "head_cell"
 
 
-def generate_excelsheet_by_plan(plans):
+def generate_excelsheet_by_plan(plans, earliest_date, latest_date):
     workbook = openpyxl.load_workbook("./static/docs/standard_plan.xlsx")
     ws = workbook.active
 
@@ -71,9 +71,6 @@ def generate_excelsheet_by_plan(plans):
         )
         workbook.add_named_style(general_style)
 
-    earliest_date = plans.earliest("assigned_date").assigned_date
-    latest_date = plans.latest("assigned_date").assigned_date
-
     gen_header(
         ws,
         1,
@@ -84,18 +81,20 @@ def generate_excelsheet_by_plan(plans):
 
     row = 3
     for assigned_date, plans_by_day in groupby(plans, key=lambda p: p.assigned_date):
+        plans_by_day = sorted(
+            plans_by_day,
+            key=lambda p: (p.client.is_hidden_on_map, p.created_at),
+        )
+
+        if len(plans_by_day) == 0:
+            continue
+
         gen_header(
             ws,
             row,
             f"{assigned_date.strftime('%d.%m')} - {ru_week_name(assigned_date)}",
             1,
             5,
-        )
-
-        plans_by_day = sorted(
-            plans_by_day,
-            key=lambda p: (not p.client.is_hidden_on_map, p.created_at),
-            reverse=True,
         )
 
         row += 2
@@ -148,7 +147,7 @@ COL_DICT_REPORT = {
 }
 
 
-def generate_excelsheet_by_manager(plans, manager):
+def generate_excelsheet_by_manager(plans, manager, earliest_date, latest_date):
     workbook = openpyxl.load_workbook("./static/docs/standard_report.xlsx")
     ws = workbook.active
 
@@ -173,9 +172,6 @@ def generate_excelsheet_by_manager(plans, manager):
         )
         workbook.add_named_style(general_style)
 
-    earliest_date = plans.earliest("assigned_date").assigned_date
-    latest_date = plans.latest("assigned_date").assigned_date
-
     gen_header(
         ws,
         1,
@@ -188,8 +184,7 @@ def generate_excelsheet_by_manager(plans, manager):
     for assigned_date, plans_by_day in groupby(plans, key=lambda p: p.assigned_date):
         plans_by_day = sorted(
             plans_by_day,
-            key=lambda p: (not p.client.is_hidden_on_map, p.created_at),
-            reverse=True,
+            key=lambda p: (p.client.is_hidden_on_map, p.created_at),
         )
 
         if len(plans_by_day) == 0:

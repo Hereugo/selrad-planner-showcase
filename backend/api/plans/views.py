@@ -74,8 +74,7 @@ class PlanViewSet(ModelViewSet):
     def export(self, request, plans=None):
         """Скачать план."""
 
-        if not plans:
-            plans = self.filter_queryset(self.get_queryset())
+        plans = self.filter_queryset(plans or self.get_queryset())
 
         if plans.count() == 0:
             return Response(
@@ -83,13 +82,25 @@ class PlanViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        buffer = generate_excelsheet_by_plan(plans)
+        logger.info("GET: ", request.GET)
 
-        earliest_date = plans.earliest("assigned_date").assigned_date.strftime(
-            "%d-%m-%Y"
-        )
-        latest_date = plans.latest("assigned_date").assigned_date.strftime("%d-%m-%Y")
-        filename = f"ПЛАНЫ С {earliest_date} ПО {latest_date}.xlsx"
+        # get date_before and date_after from filters
+        date_before = request.GET.get("date_before", None)
+        date_after = request.GET.get("date_after", None)
+
+        if not date_before:
+            date_before = plans.latest("assigned_date").assigned_date
+        else:
+            date_before = timezone.datetime.strptime(date_before, "%Y-%m-%d")
+
+        if not date_after:
+            date_after = plans.earliest("assigned_date").assigned_date
+        else:
+            date_after = timezone.datetime.strptime(date_after, "%Y-%m-%d")
+
+        buffer = generate_excelsheet_by_plan(plans, date_after, date_before)
+
+        filename = f"ПЛАНЫ С {date_after.strftime('%d-%m-%Y')} ПО {date_before.strftime('%d-%m-%Y')}.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),
@@ -120,15 +131,11 @@ class PlanViewSet(ModelViewSet):
     )
     def export_report(self, request, manager_id=None, plans=None):
         """Скачать отчет."""
-        # Method export report is used here, because filters are applied here.
-        if not plans:
-            plans = self.filter_queryset(self.get_queryset())
-        else:
-            plans = self.filter_queryset(plans)
-
         manager = get_object_or_404(Manager, pk=manager_id)
 
-        plans = plans.filter(managers=manager)
+        # Method export report is used here, because filters are applied here.
+        plans = self.filter_queryset(plans or self.get_queryset())
+        plans = plans.filter(managers__id=manager_id)
 
         if plans.count() == 0:
             return Response(
@@ -136,19 +143,32 @@ class PlanViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        buffer = generate_excelsheet_by_manager(plans, manager)
+        logger.info("GET: ", request.GET)
 
-        earliest_date = plans.earliest("assigned_date").assigned_date.strftime(
-            "%d-%m-%Y"
-        )
-        latest_date = plans.latest("assigned_date").assigned_date.strftime("%d-%m-%Y")
-        filename = f"ОТЧЕТ {manager} С {earliest_date} ПО {latest_date}.xlsx"
+        # get date_before and date_after from filters
+        date_before = request.GET.get("date_before", None)
+        date_after = request.GET.get("date_after", None)
+
+        if not date_before:
+            date_before = plans.latest("assigned_date").assigned_date
+        else:
+            date_before = timezone.datetime.strptime(date_before, "%Y-%m-%d")
+
+        if not date_after:
+            date_after = plans.earliest("assigned_date").assigned_date
+        else:
+            date_after = timezone.datetime.strptime(date_after, "%Y-%m-%d")
+
+        buffer = generate_excelsheet_by_manager(plans, manager, date_after, date_before)
+
+        filename = f"ОТЧЕТ {manager} С {date_after.strftime('%d-%m-%Y')} ПО {date_before.strftime('%d-%m-%Y')}.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
         return response
 
     @extend_schema(
