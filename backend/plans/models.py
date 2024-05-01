@@ -94,20 +94,21 @@ class Plan(models.Model):
         on_delete=models.CASCADE,
         null=True,
     )
-
-    def get_absolute_url(self):
-        return reverse("plans")
-
-    @property
-    def box_count(self):
-        """The box count, calculated from the shipment cost."""
-        return ceil(self.shipment_cost / 100_000)
+    box_count = models.IntegerField(
+        verbose_name="Количество коробок",
+        help_text="Введите количество коробок",
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return f"{self.assigned_date}"
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
+        if self.box_count is None:
+            self.box_count = ceil(self.shipment_cost / 100_000)
+
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)
 
