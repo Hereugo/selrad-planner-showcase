@@ -1,5 +1,6 @@
 import logging
 
+from django.utils import timezone
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
 
@@ -37,7 +38,6 @@ class PlanSerializer(serializers.ModelSerializer):
     worklist = WorklistSerializer(many=True)
     client = ClientSerializer()
     managers = ManagerSerializer(many=True)
-    box_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Plan
@@ -59,7 +59,6 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
     """Serializer for Plan model"""
 
     id = serializers.StringRelatedField()
-
     worklist = serializers.PrimaryKeyRelatedField(
         queryset=Worklist.objects.all(),
         many=True,
@@ -74,7 +73,6 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         queryset=Client.objects.all(),
         required=False,
     )
-    box_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Plan
@@ -90,7 +88,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "box_count", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
 
     def create_worklist(self, plan, worklist):
         plan_worklist = []
