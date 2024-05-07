@@ -89,6 +89,7 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
                   className="flex-1"
                   boxCount={boxCount}
                   setBoxCount={setBoxCount}
+                  assignedDate={assignedDate}
                 />
               </div>
             </div>
