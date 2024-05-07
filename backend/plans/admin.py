@@ -66,6 +66,7 @@ class PlanWorklistInline(admin.TabularInline):
 class PlanAdmin(admin.ModelAdmin):
     list_display = (
         "assigned_date_formatted",
+        "shipment_cost_formula",
         "shipment_cost",
         "box_count",
         "client",
