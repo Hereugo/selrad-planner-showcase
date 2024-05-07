@@ -4,6 +4,15 @@ from math import ceil
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
+from django.core.validators import ValidationError
+
+
+def validate_sum_string(value):
+    """Validate the sum string."""
+    # write a regex expression to validate a string that represents a sum of numbers each number could be a float
+    r = r"^[-+]?(\d+(\.\d*)?|\.\d+)(\s*[-+]\s*[-+]?(\d+(\.\d*)?|\.\d+))*$"
+    if not re.match(r, value):
+        raise ValidationError("Invalid sum string")
 
 
 class Worklist(models.Model):
@@ -57,6 +66,14 @@ class Plan(models.Model):
         help_text="Выберите список задач для выполнения",
         through="PlanWorklist",
         related_name="plans",
+    )
+    shipment_cost_formula = models.CharField(
+        verbose_name="Формула стоимости отгрузки",
+        help_text="Введите формулу стоимости отгрузки",
+        validators=[validate_sum_string],
+        default="",
+        blank=True,
+        null=True,
     )
     shipment_cost = models.DecimalField(
         verbose_name="Сумма отгрузки",
