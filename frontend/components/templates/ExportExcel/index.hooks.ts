@@ -1,5 +1,6 @@
 import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { planExportQuery, managerReportExportQuery } from "@/lib/backend/plans";
+import { decodeContentDisposition } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
 interface handlePlanDownloadProps {
@@ -40,10 +41,16 @@ export const handlePlanDownload = ({
   data
     .then((data) => {
       if (data?.data) {
+        console.log(data);
+        const filename = decodeContentDisposition(
+          data.headers["content-disposition"],
+        )
+          ?.split("filename=")[1]
+          .replace(/[^A-Za-zА-Яа-я\s0-9.-]/g, "");
         const url = window.URL.createObjectURL(new Blob([data.data]));
         const a = document.createElement("a");
         a.href = url;
-        a.download = "plans.xlsx";
+        a.download = filename || "plans.xlsx";
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -97,10 +104,15 @@ export const handleReportDownload = ({
   data
     .then((data) => {
       if (data?.data) {
+        const filename = decodeContentDisposition(
+          data.headers["content-disposition"],
+        )
+          ?.split("filename=")[1]
+          .replace(/[^A-Za-zА-Яа-я\s0-9.-]/g, "");
         const url = window.URL.createObjectURL(new Blob([data.data]));
         const a = document.createElement("a");
         a.href = url;
-        a.download = "report.xlsx";
+        a.download = filename || "report.xlsx";
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);

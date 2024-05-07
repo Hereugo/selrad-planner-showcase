@@ -45,3 +45,25 @@ export function formatPrice(price: number | undefined) {
   const priceStr = price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
   return `${priceStr} ${sign}`;
 }
+
+export function decodeContentDisposition(encodedString: string) {
+  // Extract encoding type and encoded filename
+  const matches = encodedString.match(/=\?([^?]+)\?(b|B)\?([^?]+)\?=/);
+  if (!matches || matches.length !== 4) {
+    return null; // Invalid input
+  }
+
+  const encoding = matches[1];
+  const encodedFilename = matches[3];
+
+  // Decode the filename based on the encoding type
+  let decodedFilename = "";
+  if (encoding.toLowerCase() === "utf-8") {
+    decodedFilename = decodeURIComponent(escape(window.atob(encodedFilename)));
+  } else {
+    // Add support for other encodings if needed
+    return null; // Unsupported encoding
+  }
+
+  return decodedFilename;
+}
