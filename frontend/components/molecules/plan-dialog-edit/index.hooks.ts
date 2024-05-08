@@ -89,7 +89,9 @@ export const useUpdatePlan = (initialPlan: Plan) => {
   const [worklist, setWorklist] = useState(
     initialPlan.worklist.map((work) => work.id),
   );
-  const [shipmentCost, setShipmentCost] = useState(initialPlan.shipment_cost);
+  const [shipmentCostFormula, setShipmentCostFormula] = useState(
+    initialPlan.shipment_cost_formula,
+  );
   const [boxCount, setBoxCount] = useState(initialPlan.box_count);
   const [comment, setComment] = useState(initialPlan.comment);
 
@@ -129,7 +131,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
       client: client,
       managers: managers || [],
       worklist: worklist || [],
-      shipment_cost: shipmentCost,
+      shipment_cost_formula: shipmentCostFormula,
       box_count: boxCount ?? 0,
       comment: comment ?? "",
     });
@@ -163,8 +165,8 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     setClient,
     managers,
     worklist,
-    shipmentCost,
-    setShipmentCost,
+    shipmentCostFormula,
+    setShipmentCostFormula,
     boxCount,
     setBoxCount,
     comment,

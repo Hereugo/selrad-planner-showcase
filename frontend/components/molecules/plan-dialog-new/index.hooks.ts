@@ -59,7 +59,7 @@ export const useCreatePlan = () => {
   const [client, setClient] = useState<string>();
   const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
   const [selectedWorklist, setSelectedWorklist] = useState<string[]>([]);
-  const [shipment_cost, setShipmentCost] = useState<number>();
+  const [shipmentCostFormula, setShipmentCostFormula] = useState<string>();
   const [box_count, setBoxCount] = useState<number>();
   const [comment, setComment] = useState<string>();
 
@@ -80,7 +80,7 @@ export const useCreatePlan = () => {
       client: client,
       managers: selectedManagers || [],
       worklist: selectedWorklist || [],
-      shipment_cost: shipment_cost ?? 0,
+      shipment_cost_formula: shipmentCostFormula ?? "0",
       box_count: box_count ?? 0,
       comment: comment ?? "",
     });
@@ -130,7 +130,7 @@ export const useCreatePlan = () => {
       setClient(undefined);
       setSelectedManagers([]);
       setSelectedWorklist([]);
-      setShipmentCost(undefined);
+      setShipmentCostFormula(undefined);
       setBoxCount(undefined);
       setComment(undefined);
     }
@@ -145,7 +145,7 @@ export const useCreatePlan = () => {
     setClient,
     switchManager,
     switchWork,
-    setShipmentCost,
+    setShipmentCostFormula,
     setBoxCount,
     setComment,
     handleCreatePlan,

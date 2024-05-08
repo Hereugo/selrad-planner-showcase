@@ -45,3 +45,16 @@ export function formatPrice(price: number | undefined) {
   const priceStr = price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
   return `${priceStr} ${sign}`;
 }
+
+export function parsePriceFormula(formula: string) {
+  if (!formula) return "0";
+
+  formula = formula.replace(/[^0-9\+\.]/g, ""); // remove all non-numeric characters except "+" and "."
+  formula = formula.replace(/\++/g, "+"); // replace multiple "+" with single "+"
+  if (formula.startsWith("+")) formula = formula.slice(1);
+  formula = formula
+    .split("+")
+    .map((x) => parseInt(x) || "")
+    .join("+"); // parse integers and join with "+"
+  return formula;
+}
