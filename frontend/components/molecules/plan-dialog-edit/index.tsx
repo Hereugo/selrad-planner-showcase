@@ -37,8 +37,8 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
     switchManager,
     worklist,
     switchWork,
-    shipmentCost,
-    setShipmentCost,
+    shipmentCostFormula,
+    setShipmentCostFormula,
     boxCount,
     setBoxCount,
     comment,
@@ -81,15 +81,14 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
                 <ShipmentCostInput
                   id="shipment_cost"
                   className="flex-1"
-                  shipmentCost={shipmentCost}
-                  setShipmentCost={setShipmentCost}
+                  shipmentCostFormula={shipmentCostFormula}
+                  setShipmentCostFormula={setShipmentCostFormula}
                 />
                 <BoxCountInput
                   id="box_count"
                   className="flex-1"
                   boxCount={boxCount}
                   setBoxCount={setBoxCount}
-                  assignedDate={assignedDate}
                 />
               </div>
             </div>

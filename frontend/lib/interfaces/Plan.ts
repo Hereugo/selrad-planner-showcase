@@ -4,6 +4,7 @@ interface Plan {
   worklist: Work[];
   client: Client;
   shipment_cost: number;
+  shipment_cost_formula: string;
   comment: string;
   managers: Manager[];
   box_count: number;
