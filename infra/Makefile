@@ -19,7 +19,7 @@ migrate:
 superuser:
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py createsuperuser	
 loaddata:
-	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py loaddata ./data/19-04-2024-new.json; 
+	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py loaddata ./data/08-05-2024.json; 
 
 flush:
 	docker-compose -f docker-compose-dev.yml exec backend python3 manage.py flush
