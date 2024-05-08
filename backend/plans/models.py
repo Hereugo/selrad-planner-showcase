@@ -1,11 +1,15 @@
 import re
 import uuid
+import logging
 from math import ceil
 
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 from django.core.validators import ValidationError
+
+
+logger = logging.getLogger(__name__)
 
 
 def validate_sum_string(value):
@@ -73,9 +77,7 @@ class Plan(models.Model):
         help_text="Введите формулу стоимости отгрузки",
         max_length=255,
         validators=[validate_sum_string],
-        default="",
-        blank=True,
-        null=True,
+        default="0",
     )
     comment = models.TextField(
         verbose_name="Комментарии",
@@ -127,9 +129,11 @@ class Plan(models.Model):
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
-        if self.box_count is None:
-            self.box_count = ceil(self.shipment_cost / 100_000)
-
+        try:
+            if self.box_count is None:
+                self.box_count = ceil(self.shipment_cost() / 100_000)
+        except Exception as e:
+            self.box_count = 0
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)
 
