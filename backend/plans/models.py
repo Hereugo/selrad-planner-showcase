@@ -9,6 +9,8 @@ from django.urls import reverse
 from django.core.validators import ValidationError
 
 
+logger = logging.getLogger(__name__)
+
 def validate_sum_string(value):
     """Validate the sum string."""
     # write a regex expression to validate a string that represents a sum of numbers each number could be a float
@@ -106,14 +108,12 @@ class Plan(models.Model):
         on_delete=models.CASCADE,
         null=True,
     )
-
-    def get_absolute_url(self):
-        return reverse("plans")
-
-    @property
-    def box_count(self):
-        """The box count, calculated from the shipment cost."""
-        return ceil(self.shipment_cost / 100_000)
+    box_count = models.IntegerField(
+        verbose_name="Количество коробок",
+        help_text="Введите количество коробок",
+        blank=True,
+        null=True,
+    )
 
     def shipment_cost(self):
         try:

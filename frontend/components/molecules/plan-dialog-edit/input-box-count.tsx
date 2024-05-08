@@ -8,6 +8,7 @@ interface BoxCountInputProps {
   className?: string;
   boxCount: number;
   setBoxCount: (count: number) => void;
+  assignedDate: string;
 }
 
 const BoxCountInput: FC<BoxCountInputProps> = ({
@@ -15,13 +16,14 @@ const BoxCountInput: FC<BoxCountInputProps> = ({
   className,
   boxCount,
   setBoxCount,
+  assignedDate,
 }) => {
   return (
     <div id={id} className={className}>
       <Label htmlFor="box_count">Количество коробок</Label>
       <div className="flex items-center text-muted-foreground">
         <Input
-          disabled
+          disabled={new Date(assignedDate) > new Date()}
           value={boxCount}
           onChange={(e) => {
             if (e.target.value) {
