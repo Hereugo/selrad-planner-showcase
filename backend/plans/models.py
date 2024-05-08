@@ -131,14 +131,11 @@ class Plan(models.Model):
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
-<<<<<<< HEAD
         try:
             if self.box_count is None:
                 self.box_count = ceil(self.shipment_cost() / 100_000)
         except Exception as e:
             self.box_count = 0
-=======
->>>>>>> refs/remotes/origin/main
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)
 
