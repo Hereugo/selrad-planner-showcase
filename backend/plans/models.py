@@ -1,9 +1,19 @@
+import re
 import uuid
 from math import ceil
 
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
+from django.core.validators import ValidationError
+
+
+def validate_sum_string(value):
+    """Validate the sum string."""
+    # write a regex expression to validate a string that represents a sum of numbers each number could be a float
+    r = r"^[-+]?(\d+(\.\d*)?|\.\d+)(\s*[-+]\s*[-+]?(\d+(\.\d*)?|\.\d+))*$"
+    if not re.match(r, value):
+        raise ValidationError("Invalid sum string")
 
 
 class Worklist(models.Model):
@@ -58,11 +68,14 @@ class Plan(models.Model):
         through="PlanWorklist",
         related_name="plans",
     )
-    shipment_cost = models.DecimalField(
-        verbose_name="Сумма отгрузки",
-        help_text="Ввидите сумму отгрузки",
-        max_digits=15,
-        decimal_places=2,
+    shipment_cost_formula = models.CharField(
+        verbose_name="Формула стоимости отгрузки",
+        help_text="Введите формулу стоимости отгрузки",
+        max_length=255,
+        validators=[validate_sum_string],
+        default="",
+        blank=True,
+        null=True,
     )
     comment = models.TextField(
         verbose_name="Комментарии",
@@ -102,6 +115,14 @@ class Plan(models.Model):
     def box_count(self):
         """The box count, calculated from the shipment cost."""
         return ceil(self.shipment_cost / 100_000)
+
+    def shipment_cost(self):
+        try:
+            sum = eval(self.shipment_cost_formula)
+        except Exception as e:
+            logger.error(f"Error while evaluating formula: {e}")
+            sum = "Ошибка при вычислении"
+        return sum
 
     def __str__(self):
         return f"{self.assigned_date}"

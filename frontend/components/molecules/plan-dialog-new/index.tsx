@@ -34,7 +34,7 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
     setClient,
     switchManager,
     switchWork,
-    setShipmentCost,
+    setShipmentCostFormula,
     setBoxCount,
     setComment,
     handleCreatePlan,
@@ -68,7 +68,7 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
                 <ShipmentCostInput
                   id="shipment_cost"
                   className="flex-1"
-                  setShipmentCost={setShipmentCost}
+                  setShipmentCostFormula={setShipmentCostFormula}
                 />
                 <BoxCountInput
                   id="box_count"
