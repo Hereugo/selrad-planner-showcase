@@ -9,9 +9,6 @@ from django.urls import reverse
 from django.core.validators import ValidationError
 
 
-logger = logging.getLogger(__name__)
-
-
 def validate_sum_string(value):
     """Validate the sum string."""
     # write a regex expression to validate a string that represents a sum of numbers each number could be a float
