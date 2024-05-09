@@ -37,7 +37,6 @@ class PlanSerializer(serializers.ModelSerializer):
     worklist = WorklistSerializer(many=True)
     client = ClientSerializer()
     managers = ManagerSerializer(many=True)
-    box_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Plan
@@ -60,7 +59,6 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
     """Serializer for Plan model"""
 
     id = serializers.StringRelatedField()
-
     worklist = serializers.PrimaryKeyRelatedField(
         queryset=Worklist.objects.all(),
         many=True,
@@ -75,7 +73,6 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         queryset=Client.objects.all(),
         required=False,
     )
-    box_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Plan
@@ -92,7 +89,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "box_count", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
 
     def create_worklist(self, plan, worklist):
         plan_worklist = []
@@ -111,6 +108,9 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         worklist = validated_data.pop("worklist", [])
         managers = validated_data.pop("managers", [])
+        
+        if "box_count" in validated_data and validated_data["box_count"] == 0:
+            validated_data["box_count"] = None
 
         plan = super().create(validated_data)
 

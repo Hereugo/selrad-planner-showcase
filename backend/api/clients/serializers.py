@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from clients.models import Client, Address
+from plans.models import Plan
 
 
 class AddressSerializer(serializers.ModelSerializer):
