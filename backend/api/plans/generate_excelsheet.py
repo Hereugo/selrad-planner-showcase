@@ -117,7 +117,7 @@ def generate_excelsheet_by_plan(plans, earliest_date, latest_date):
             )
             ws.cell(row=row + i, column=COL_DICT["comment"]).value = plan.comment
             ws.cell(row=row + i, column=COL_DICT["shipment_cost"]).value = (
-                plan.shipment_cost
+                plan.shipment_cost()
             )
             ws.cell(row=row + i, column=COL_DICT["shipment_cost"]).alignment = (
                 openpyxl.styles.Alignment(horizontal="right")
@@ -214,7 +214,7 @@ def generate_excelsheet_by_manager(plans, manager, earliest_date, latest_date):
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["comment"]).value = plan.comment
             ws.cell(row=row + i, column=COL_DICT_REPORT["shipment_cost"]).value = (
-                plan.shipment_cost
+                plan.shipment_cost()
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["shipment_cost"]).alignment = (
                 openpyxl.styles.Alignment(horizontal="right")
