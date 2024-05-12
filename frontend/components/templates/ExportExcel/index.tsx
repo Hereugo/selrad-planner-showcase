@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Loader2, Terminal } from "lucide-react";
 
-interface ExportExcelTemplateProps { }
+interface ExportExcelTemplateProps {}
 
 const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
   const { calendarRange, searchQuery, managerId, workId } = useFiltersContext();

@@ -58,7 +58,7 @@ export function parsePriceFormula(formula: string) {
     .join("+"); // parse integers and join with "+"
   return formula;
 }
-  
+
 export function decodeContentDisposition(encodedString: string) {
   // Extract encoding type and encoded filename
   const matches = encodedString.match(/=\?([^?]+)\?(b|B)\?([^?]+)\?=/);
@@ -72,7 +72,7 @@ export function decodeContentDisposition(encodedString: string) {
   // Decode the filename based on the encoding type
   let decodedFilename = "";
   if (encoding.toLowerCase() === "utf-8") {
-    decodedFilename = decodeURIComponent(encodeURI(window.atob(encodedFilename)));
+    decodedFilename = decodeURIComponent(escape(window.atob(encodedFilename)));
   } else {
     // Add support for other encodings if needed
     return null; // Unsupported encoding

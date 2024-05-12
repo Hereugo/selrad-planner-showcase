@@ -138,6 +138,11 @@ class Plan(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
+        permissions = [
+            ("export_plans", "Can export plans"),
+            ("change_old_plan", "Can change old plan"),
+            ("export_report", "Can export report"),
+        ]
         verbose_name = "План"
         verbose_name_plural = "Планы"
         ordering = ["assigned_date", "-created_at"]

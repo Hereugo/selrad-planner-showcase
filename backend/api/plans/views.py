@@ -30,6 +30,7 @@ from .serializers import (
     PlanUpdateSerializer,
     WorklistSerializer,
 )
+from .custom_permissions import CanChangeFuturePlans
 from .custom_filters import PlanFilter
 from .generate_excelsheet import (
     generate_excelsheet_by_plan,
@@ -59,9 +60,9 @@ class PlanViewSet(ModelViewSet):
     )
 
     def get_permissions(self):
-        permission_classes = [IsAuthenticated]
-        if self.action in ("list", "create", "update", "partial_update", "delete"):
-            permission_classes = [HasCRUDPermission]
+        permission_classes = [IsAuthenticated, HasCRUDPermission]
+        if self.action in ("update", "partial_update"):
+            permission_classes.append(CanChangeFuturePlans)
 
         logger.debug(f"Permission classes: {permission_classes}")
 
