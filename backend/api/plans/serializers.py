@@ -105,6 +105,8 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             plan_managers.append(PlanManager(plan=plan, manager=manager))
         PlanManager.objects.bulk_create(plan_managers, ignore_conflicts=True)
 
+
+
     def create(self, validated_data):
         worklist = validated_data.pop("worklist", [])
         managers = validated_data.pop("managers", [])

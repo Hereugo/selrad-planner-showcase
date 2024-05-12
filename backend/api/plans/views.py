@@ -18,7 +18,11 @@ from plans.models import Plan, Worklist
 from clients.models import Client
 from managers.models import Manager
 
-from api.utils.custom_permissions import IsAuthenticated
+from api.utils.custom_permissions import (
+    IsAuthenticated,
+    HasCRUDPermission,
+    permission_required,
+)
 from api.utils.custom_paginations import PageLimitPagination
 from api.clients.serializers import NearbyClientSerializer
 from .serializers import (
@@ -26,6 +30,7 @@ from .serializers import (
     PlanUpdateSerializer,
     WorklistSerializer,
 )
+from .custom_permissions import CanChangeFuturePlans
 from .custom_filters import PlanFilter
 from .generate_excelsheet import (
     generate_excelsheet_by_plan,
@@ -54,6 +59,17 @@ class PlanViewSet(ModelViewSet):
         "worklist__name",
     )
 
+    def get_permissions(self):
+        permission_classes = [IsAuthenticated]
+        if self.action in ("update", "partial_update"):
+            permission_classes.append(CanChangeFuturePlans)
+
+        permission_classes.append(HasCRUDPermission)
+
+        logger.debug(f"Permission classes: {permission_classes}")
+
+        return [permission() for permission in permission_classes]
+
     def get_serializer_class(self):
         if self.action in ("create", "update", "partial_update"):
             return PlanUpdateSerializer
@@ -71,6 +87,7 @@ class PlanViewSet(ModelViewSet):
         permission_classes=[IsAuthenticated],
         url_path="export",
     )
+    @permission_required("plans.export_plans")
     def export(self, request, plans=None):
         """Скачать план."""
 
@@ -130,6 +147,7 @@ class PlanViewSet(ModelViewSet):
         permission_classes=[IsAuthenticated],
         url_path=r"export_report/(?P<manager_id>\d+)",
     )
+    @permission_required("plans.export_report")
     def export_report(self, request, manager_id=None, plans=None):
         """Скачать отчет."""
         manager = get_object_or_404(Manager, pk=manager_id)

@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { useClientsQuery } from "@/lib/backend/clients";
 import { useManagersQuery } from "@/lib/backend/managers";
@@ -141,7 +142,10 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     if (planUpdateMutation.isError) {
       toast({
         title: "Ошибка",
-        description: "Ошибка при изменении плана",
+        description: axios.isAxiosError(planUpdateMutation.error)
+          ? planUpdateMutation.error.response?.data.error ||
+            "Ошибка при изменении плана"
+          : "Ошибка при изменении плана",
       });
     }
   }, [planUpdateMutation.isError, toast]);
@@ -193,7 +197,10 @@ export const useDeletePlan = (plan: Plan) => {
     if (planDeleteMutation.isError) {
       toast({
         title: "Ошибка",
-        description: "Ошибка при удалении плана",
+        description: axios.isAxiosError(planDeleteMutation.error)
+          ? planDeleteMutation.error.response?.data.error ||
+            "Ошибка при удалении плана"
+          : "Ошибка при удалении плана",
       });
     }
   }, [planDeleteMutation.isError, toast]);

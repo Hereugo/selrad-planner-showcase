@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { useClientsQuery } from "@/lib/backend/clients";
 import { useManagersQuery } from "@/lib/backend/managers";
@@ -110,7 +111,10 @@ export const useCreatePlan = () => {
     if (planCreateMutation.isError) {
       toast({
         title: "Ошибка",
-        description: "Ошибка при создании плана",
+        description: axios.isAxiosError(planCreateMutation.error)
+          ? planCreateMutation.error.response?.data.error ||
+            "Ошибка при создании плана"
+          : "Ошибка при создании плана",
       });
     }
   }, [planCreateMutation.isError, toast]);
