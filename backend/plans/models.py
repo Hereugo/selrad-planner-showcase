@@ -78,6 +78,8 @@ class Plan(models.Model):
         max_length=255,
         validators=[validate_sum_string],
         default="0",
+        null=True,
+        blank=True,
     )
     comment = models.TextField(
         verbose_name="Комментарии",

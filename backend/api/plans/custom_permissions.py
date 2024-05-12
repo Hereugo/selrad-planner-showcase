@@ -17,7 +17,7 @@ class CanChangeFuturePlans(permissions.BasePermission):
         if request.user.has_perm("plans.change_old_plan"):
             return True
 
-        if obj.assigned_date > timezone.now().date():
+        if obj.assigned_date < timezone.now().date():
             return False
 
         return True

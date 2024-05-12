@@ -60,9 +60,11 @@ class PlanViewSet(ModelViewSet):
     )
 
     def get_permissions(self):
-        permission_classes = [IsAuthenticated, HasCRUDPermission]
+        permission_classes = [IsAuthenticated]
         if self.action in ("update", "partial_update"):
             permission_classes.append(CanChangeFuturePlans)
+
+        permission_classes.append(HasCRUDPermission)
 
         logger.debug(f"Permission classes: {permission_classes}")
 
