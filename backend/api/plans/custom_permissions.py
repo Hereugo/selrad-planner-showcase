@@ -21,3 +21,16 @@ class CanChangeFuturePlans(permissions.BasePermission):
             return False
 
         return True
+
+
+class CanDeleteFuturePlans(permissions.BasePermission):
+    """Права доступа для удаление будущих планов."""
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.has_perm("plans.delete_old_plan"):
+            return True
+
+        if obj.assigned_date < timezone.now().date():
+            return False
+
+        return True
