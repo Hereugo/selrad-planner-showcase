@@ -143,6 +143,7 @@ class Plan(models.Model):
         permissions = [
             ("export_plans", "Can export plans"),
             ("change_old_plan", "Can change old plan"),
+            ("delete_old_plan", "Can delete old plan"),
             ("export_report", "Can export report"),
         ]
         verbose_name = "План"
