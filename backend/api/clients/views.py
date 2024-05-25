@@ -88,7 +88,7 @@ class ClientViewSet(ReadOnlyModelViewSet):
         )
         # get all clients that have no plans
         b = nearby_clients.filter(plans__isnull=True)
-        nearby_clinets = a | b
+        nearby_clients = a | b
 
         # remove all duplicates
         nearby_clients = nearby_clients.distinct()
