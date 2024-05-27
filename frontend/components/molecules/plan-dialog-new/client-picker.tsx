@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 interface ClientPickerProps {
   id?: string;
   setClient: (client: string) => void;
+  client?: string;
 }
 
 const filterFunc = (value: string, search: string) => {
@@ -35,9 +36,9 @@ const filterFunc = (value: string, search: string) => {
   );
 };
 
-const ClientPicker: FC<ClientPickerProps> = ({ id, setClient }) => {
+const ClientPicker: FC<ClientPickerProps> = ({ id, setClient, client }) => {
   const [open, setOpen] = useState<boolean>(false);
-  const [value, setValue] = useState<string>("");
+  const [value, setValue] = useState<string>(client ?? "");
 
   const { clients } = useClients();
 

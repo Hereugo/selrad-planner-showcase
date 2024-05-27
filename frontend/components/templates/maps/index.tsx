@@ -16,14 +16,7 @@ import { cn, formatPrice, managerFullName } from "@/lib/utils";
 import { TengeReciept } from "@/components/icons/tenge-reciept";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@radix-ui/react-label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import PlanDialogNew from "@/components/molecules/plan-dialog-new";
 
 interface MapsTemplateProps {}
 
@@ -35,11 +28,12 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
     isPlansLoading,
     isShowingClientsNearby,
     handleShowingClientsNearby,
-    nearbyClients,
     clientSearchRadius,
     setClientSearchRadius,
     minDaysSincePlan,
     setMinDaysSincePlan,
+    selectedNearbyClient,
+    setSelectedNearbyClient,
   } = useMaps();
 
   return (
@@ -181,40 +175,19 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
                     onValueChange={(value) => setMinDaysSincePlan(value[0])}
                   />
                 </div>
-
-                <Table className="mt-2">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Адрес</TableHead>
-                      <TableHead>Отгрузка</TableHead>
-                      <TableHead>Посещение</TableHead>
-                      <TableHead>Коробок</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {nearbyClients?.data.map(
-                      ({ client, last_plan, last_shipment_plan }, idx) => (
-                        <TableRow>
-                          <TableCell>{client.name}</TableCell>
-                          <TableCell>
-                            {last_plan?.assigned_date || "не было"}
-                          </TableCell>
-                          <TableCell>
-                            {last_shipment_plan?.assigned_date || "не было"}
-                          </TableCell>
-                          <TableCell>
-                            {last_shipment_plan?.box_count || "не было"}
-                          </TableCell>
-                        </TableRow>
-                      ),
-                    )}
-                  </TableBody>
-                </Table>
               </div>
             )}
           </div>
         )}
       </div>
+      {selectedNearbyClient && (
+        <PlanDialogNew
+          defaultIsOpen={true}
+          defaultHandleOpen={() => setSelectedNearbyClient(undefined)}
+          defaultClientId={selectedNearbyClient}
+          defaultAssignedDate={selectedPlan.assigned_date || undefined}
+        />
+      )}
     </div>
   );
 };

@@ -53,22 +53,34 @@ export const useWorks = () => {
   };
 };
 
-export const useCreatePlan = () => {
+interface createPlanProps {
+  defaultClientId?: string;
+  defaultAssignedDate?: string;
+  defaultIsOpen?: boolean;
+}
+
+export const useCreatePlan = ({
+  defaultClientId,
+  defaultAssignedDate,
+  defaultIsOpen,
+}: createPlanProps) => {
   const { toast } = useToast();
 
-  const [assigned_date, setAssignedDate] = useState<string>();
-  const [client, setClient] = useState<string>();
+  const [assignedDate, setAssignedDate] = useState<string | undefined>(
+    defaultAssignedDate,
+  );
+  const [client, setClient] = useState<string | undefined>(defaultClientId);
   const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
   const [selectedWorklist, setSelectedWorklist] = useState<string[]>([]);
   const [shipmentCostFormula, setShipmentCostFormula] = useState<string>();
-  const [box_count, setBoxCount] = useState<number>();
+  const [boxCount, setBoxCount] = useState<number>();
   const [comment, setComment] = useState<string>();
 
   const planCreateMutation = usePlanCreateMutation();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultIsOpen || false);
 
   const handleCreatePlan = () => {
-    if (!assigned_date || !client) {
+    if (!assignedDate || !client) {
       toast({
         title: "Ошибка при создании плана",
         description: "Заполните хотя бы дату и клиента",
@@ -77,12 +89,12 @@ export const useCreatePlan = () => {
     }
 
     return planCreateMutation.mutate({
-      assigned_date: assigned_date,
+      assigned_date: assignedDate,
       client: client,
       managers: selectedManagers || [],
       worklist: selectedWorklist || [],
       shipment_cost_formula: shipmentCostFormula ?? "0",
-      box_count: box_count ?? 0,
+      box_count: boxCount ?? 0,
       comment: comment ?? "",
     });
   };
@@ -146,7 +158,9 @@ export const useCreatePlan = () => {
     selectedWorklist,
     setIsOpen,
     setAssignedDate,
+    assignedDate,
     setClient,
+    client,
     switchManager,
     switchWork,
     setShipmentCostFormula,

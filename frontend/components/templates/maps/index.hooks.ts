@@ -31,12 +31,14 @@ export const useMaps = () => {
   };
   const [clientSearchRadius, setClientSearchRadius] = useState(2);
   const [minDaysSincePlan, setMinDaysSincePlan] = useState(10);
+  const [selectedNearbyClient, setSelectedNearbyClient] =
+    useState<Client["id"]>();
 
   const { data: nearbyClients } = useFindNearbyClientsQuery(
     {
       id: selectedPlan?.client.id || "",
       radius: clientSearchRadius,
-      from_date: new Date("2026-01-01").toISOString().split("T")[0],
+      from_date: new Date().toISOString().split("T")[0], // TODO: change to selected plan assigned date
       min_days_since_plan: minDaysSincePlan,
     },
     !!selectedPlan?.client && isShowingClientsNearby,
@@ -86,6 +88,9 @@ export const useMaps = () => {
                         <p>Количество коробок: ${last_shipment_plan?.box_count || "не было"}</p>
                     </div>
                 `,
+          },
+          onClick: () => {
+            setSelectedNearbyClient(client.id);
           },
         });
       },
@@ -157,6 +162,8 @@ export const useMaps = () => {
     setClientSearchRadius,
     minDaysSincePlan,
     setMinDaysSincePlan,
+    selectedNearbyClient,
+    setSelectedNearbyClient,
   };
 };
 

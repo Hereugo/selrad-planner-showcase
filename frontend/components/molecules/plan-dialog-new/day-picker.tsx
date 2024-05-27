@@ -16,11 +16,18 @@ import {
 
 interface DayPickerProps {
   id?: string;
-  setAssignedDate?: (date: string) => void;
+  assignedDate?: string;
+  setAssignedDate: (date: string) => void;
 }
 
-const DayPicker: FC<DayPickerProps> = ({ id, setAssignedDate }) => {
-  const [date, setDate] = useState<Date>();
+const DayPicker: FC<DayPickerProps> = ({
+  id,
+  assignedDate,
+  setAssignedDate,
+}) => {
+  const [date, setDate] = useState<Date | undefined>(
+    !!assignedDate ? new Date(assignedDate) : undefined,
+  );
 
   useEffect(() => {
     if (setAssignedDate) {

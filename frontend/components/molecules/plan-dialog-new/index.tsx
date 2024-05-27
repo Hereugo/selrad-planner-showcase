@@ -23,15 +23,27 @@ import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface PlanDialogNewProps {
-  children: ReactNode;
+  children?: ReactNode;
+  defaultClientId?: string;
+  defaultAssignedDate?: string;
+  defaultIsOpen?: boolean;
+  defaultHandleOpen?: (open: boolean) => void;
 }
 
-const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
+const PlanDialogNew: FC<PlanDialogNewProps> = ({
+  children,
+  defaultClientId,
+  defaultAssignedDate,
+  defaultIsOpen,
+  defaultHandleOpen,
+}) => {
   const {
     isOpen,
     setIsOpen,
     setAssignedDate,
+    assignedDate,
     setClient,
+    client,
     switchManager,
     switchWork,
     setShipmentCostFormula,
@@ -41,10 +53,16 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
     isLoading,
     selectedManagers,
     selectedWorklist,
-  } = useCreatePlan();
+  } = useCreatePlan({ defaultClientId, defaultAssignedDate, defaultIsOpen });
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (defaultHandleOpen) defaultHandleOpen(open);
+      }}
+    >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
@@ -56,12 +74,17 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({ children }) => {
                 <DayPicker
                   id="assigned_date"
                   setAssignedDate={setAssignedDate}
+                  assignedDate={assignedDate}
                 />
               </div>
 
               <div>
                 <Label htmlFor="client">Клиент</Label>
-                <ClientPicker id="client" setClient={setClient} />
+                <ClientPicker
+                  id="client"
+                  setClient={setClient}
+                  client={client}
+                />
               </div>
 
               <div className="flex gap-4 flex-row justify-stretch w-full">
