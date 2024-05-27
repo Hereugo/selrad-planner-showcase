@@ -80,11 +80,9 @@ class ClientViewSet(ReadOnlyModelViewSet):
             )
         ).exclude(pk=pk)
 
-        # get all clients that have plans in the time range [assigned_date - time_threshold, assigned_date]
         a = nearby_clients.filter(
             plans__assigned_date__lte=from_date
             - timezone.timedelta(days=min_days_since_plan),
-            # plans__assigned_date__lte=from_date,
         )
         # get all clients that have no plans
         b = nearby_clients.filter(plans__isnull=True)
@@ -92,6 +90,8 @@ class ClientViewSet(ReadOnlyModelViewSet):
 
         # remove all duplicates
         nearby_clients = nearby_clients.distinct()
+
+        nearby_clients = nearby_clients.filter(is_hidden_on_map=False)
 
         serializer = NearbyClientSerializer(nearby_clients, many=True)
 
