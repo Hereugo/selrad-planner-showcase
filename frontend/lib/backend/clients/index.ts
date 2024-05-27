@@ -36,3 +36,21 @@ export const useClientCreateMutation = () => {
     },
   });
 };
+
+export const useFindNearbyClientsQuery = (props: any, enabled: boolean) => {
+  const url = `${urls.base_backend.clients}/${props.id}/find_nearby/`;
+  const queryParams = [];
+
+  if (props.radius) queryParams.push(`radius=${props.radius}`);
+  if (props.from_date) queryParams.push(`from_date=${props.from_date}`);
+  if (props.min_days_since_plan)
+    queryParams.push(`min_days_since_plan=${props.min_days_since_plan}`);
+
+  const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
+
+  return useQuery(
+    ["useFindNearbyClientsQuery", urlWithParams],
+    async () => fetchWithAuth<NearbyClient[]>(urlWithParams),
+    { enabled },
+  );
+};

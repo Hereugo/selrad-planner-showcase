@@ -3,6 +3,7 @@ import _ from "lodash";
 import { useEffect, useRef, useState } from "react";
 import { useYMaps } from "@pbe/react-yandex-maps";
 import Color from "color";
+import { useFindNearbyClientsQuery } from "@/lib/backend/clients";
 
 export const useMaps = () => {
   const { plans, isLoading: isPlansLoading } = usePlans();
@@ -11,26 +12,47 @@ export const useMaps = () => {
     "Map",
     "Placemark",
     "Polygon",
+    "Circle",
     "control.ZoomControl",
+    "geoObject.addon.hint",
   ]);
   const [mapInstance, setMapInstance] = useState<ymaps.Map>();
 
   const [selectedPlanId, setSelectedPlanId] = useState<
     Plan["id"] | undefined
   >();
+  const selectedPlan =
+    plans.filter((p) => p.id === selectedPlanId)[0] || undefined;
   const mapCenter = [43.238949, 76.889709];
+
+  const [isShowingClientsNearby, setIsShowingClientsNearby] = useState(false);
+  const handleShowingClientsNearby = () => {
+    setIsShowingClientsNearby((s) => !s);
+  };
+  const [clientSearchRadius, setClientSearchRadius] = useState(2);
+  const [minDaysSincePlan, setMinDaysSincePlan] = useState(10);
+
+  const { data: nearbyClients } = useFindNearbyClientsQuery(
+    {
+      id: selectedPlan?.client.id || "",
+      radius: clientSearchRadius,
+      from_date: new Date("2026-01-01").toISOString().split("T")[0],
+      min_days_since_plan: minDaysSincePlan,
+    },
+    !!selectedPlan?.client && isShowingClientsNearby,
+  );
 
   const plansByDay = _.groupBy(plans, "assigned_date");
 
   const placeMarks: {
     geometry: number[];
     properties: {};
-    onClick: Function;
-    options: {
-      iconLayout: string;
-      iconImageHref: string;
-      iconImageSize: number[];
-      iconImageOffset: number[];
+    onClick?: Function;
+    options?: {
+      iconLayout?: string;
+      iconImageHref?: string;
+      iconImageSize?: number[];
+      iconImageOffset?: number[];
     };
   }[] = [];
 
@@ -47,6 +69,27 @@ export const useMaps = () => {
         }),
       );
     }
+  }
+
+  if (isShowingClientsNearby) {
+    nearbyClients?.data.forEach(
+      ({ client, last_plan, last_shipment_plan }, idx) => {
+        placeMarks.push({
+          geometry: [Number(client.address.lat), Number(client.address.lon)],
+          properties: {
+            hintContent: `
+                    <div>
+                        <h3 class="font-semibold">${client.name}</h3>
+                        <p>Адрес: ${client.address.street}</p>
+                        <p>Последние посещение: ${last_plan?.assigned_date || "не было"}</p>
+                        <p>Последняя отгрузка: ${last_shipment_plan?.assigned_date || "не было"}</p>
+                        <p>Количество коробок: ${last_shipment_plan?.box_count || "не было"}</p>
+                    </div>
+                `,
+          },
+        });
+      },
+    );
   }
 
   // setup
@@ -78,13 +121,42 @@ export const useMaps = () => {
       placemark.events.add("click", mark.onClick);
       mapInstance.geoObjects.add(placemark);
     });
+
+    if (selectedPlan && isShowingClientsNearby) {
+      const center = [
+        selectedPlan.client.address.lat,
+        selectedPlan.client.address.lon,
+      ];
+      const circle = new ymaps.Circle(
+        [center, clientSearchRadius * 1000],
+        {},
+        {
+          fillColor: "#ff000033",
+          strokeColor: "#ff0000",
+          strokeOpacity: 0.8,
+          strokeWidth: 2,
+        },
+      );
+      mapInstance.geoObjects.add(circle);
+    }
   }, [plans, mapInstance, ymaps, placeMarks]);
+
+  useEffect(() => {
+    setIsShowingClientsNearby(false);
+  }, [selectedPlanId]);
 
   return {
     mapElementRef,
-    selectedPlan: plans.filter((p) => p.id === selectedPlanId)[0] || undefined,
+    selectedPlan: selectedPlan,
     setSelectedPlanId,
     isPlansLoading,
+    isShowingClientsNearby,
+    handleShowingClientsNearby,
+    nearbyClients,
+    clientSearchRadius,
+    setClientSearchRadius,
+    minDaysSincePlan,
+    setMinDaysSincePlan,
   };
 };
 

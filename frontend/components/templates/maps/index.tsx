@@ -1,25 +1,46 @@
 "use client";
 
 import React, { FC } from "react";
-import { Polygon, Placemark, YMaps, Map } from "@pbe/react-yandex-maps";
 import { useMaps } from "./index.hooks";
 import PlanDialogEdit from "@/components/molecules/plan-dialog-edit";
 import { Button } from "@/components/ui/button";
 import {
   Circle,
   CircleXIcon,
-  Earth,
+  MapPin,
+  MapPinOff,
   PackageOpenIcon,
   PenBoxIcon,
 } from "lucide-react";
 import { cn, formatPrice, managerFullName } from "@/lib/utils";
 import { TengeReciept } from "@/components/icons/tenge-reciept";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@radix-ui/react-label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface MapsTemplateProps {}
 
 const MapsTemplate: FC<MapsTemplateProps> = () => {
-  const { mapElementRef, selectedPlan, setSelectedPlanId, isPlansLoading } =
-    useMaps();
+  const {
+    mapElementRef,
+    selectedPlan,
+    setSelectedPlanId,
+    isPlansLoading,
+    isShowingClientsNearby,
+    handleShowingClientsNearby,
+    nearbyClients,
+    clientSearchRadius,
+    setClientSearchRadius,
+    minDaysSincePlan,
+    setMinDaysSincePlan,
+  } = useMaps();
 
   return (
     <div className="flex h-full gap-4">
@@ -114,11 +135,83 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
                 </Button>
               </PlanDialogEdit>
 
-              <Button className="flex-1">
-                <Earth className="w-5 h-5 mr-2" />
-                Клиенты рядом
+              <Button className="flex-1" onClick={handleShowingClientsNearby}>
+                {isShowingClientsNearby ? (
+                  <>
+                    <MapPinOff className="w-5 h-5 mr-2" />
+                    Скрыть клиентов рядом
+                  </>
+                ) : (
+                  <>
+                    <MapPin className="w-5 h-5 mr-2" />
+                    Показать клиентов рядом
+                  </>
+                )}
               </Button>
             </div>
+            {isShowingClientsNearby && (
+              <div>
+                <div className="grid grid-cols-2 items-center gap-2 mb-4">
+                  <Label
+                    htmlFor="radius"
+                    className="text-sm font-semibold text-nowrap"
+                  >
+                    Радиус поиска: {clientSearchRadius} км
+                  </Label>
+                  <Slider
+                    id="radius"
+                    min={1}
+                    max={10}
+                    step={1}
+                    value={[clientSearchRadius]}
+                    onValueChange={(value) => setClientSearchRadius(value[0])}
+                  />
+                  <Label
+                    htmlFor="minDaysSincePlan"
+                    className="text-sm font-semibold text-nowrap"
+                  >
+                    С посещения: {minDaysSincePlan} дней
+                  </Label>
+                  <Slider
+                    id="minDaysSincePlan"
+                    min={1}
+                    max={30}
+                    step={1}
+                    value={[minDaysSincePlan]}
+                    onValueChange={(value) => setMinDaysSincePlan(value[0])}
+                  />
+                </div>
+
+                <Table className="mt-2">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Адрес</TableHead>
+                      <TableHead>Отгрузка</TableHead>
+                      <TableHead>Посещение</TableHead>
+                      <TableHead>Коробок</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {nearbyClients?.data.map(
+                      ({ client, last_plan, last_shipment_plan }, idx) => (
+                        <TableRow>
+                          <TableCell>{client.name}</TableCell>
+                          <TableCell>
+                            {last_plan?.assigned_date || "не было"}
+                          </TableCell>
+                          <TableCell>
+                            {last_shipment_plan?.assigned_date || "не было"}
+                          </TableCell>
+                          <TableCell>
+                            {last_shipment_plan?.box_count || "не было"}
+                          </TableCell>
+                        </TableRow>
+                      ),
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </div>
         )}
       </div>
