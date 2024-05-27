@@ -139,12 +139,12 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
                 {isShowingClientsNearby ? (
                   <>
                     <MapPinOff className="w-5 h-5 mr-2" />
-                    Скрыть клиентов рядом
+                    Скрыть клиентов
                   </>
                 ) : (
                   <>
                     <MapPin className="w-5 h-5 mr-2" />
-                    Показать клиентов рядом
+                    Клиенты рядом
                   </>
                 )}
               </Button>
