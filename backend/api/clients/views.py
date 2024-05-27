@@ -82,9 +82,9 @@ class ClientViewSet(ReadOnlyModelViewSet):
 
         # get all clients that have plans in the time range [assigned_date - time_threshold, assigned_date]
         a = nearby_clients.filter(
-            plans__assigned_date__gte=from_date
+            plans__assigned_date__lte=from_date
             - timezone.timedelta(days=min_days_since_plan),
-            plans__assigned_date__lte=from_date,
+            # plans__assigned_date__lte=from_date,
         )
         # get all clients that have no plans
         b = nearby_clients.filter(plans__isnull=True)
