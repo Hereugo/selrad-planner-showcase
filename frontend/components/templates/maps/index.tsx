@@ -164,7 +164,7 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
                     htmlFor="minDaysSincePlan"
                     className="text-sm font-semibold text-nowrap"
                   >
-                    С посещения: {minDaysSincePlan} дней
+                    С посещения: &gt; {minDaysSincePlan} дней
                   </Label>
                   <Slider
                     id="minDaysSincePlan"
