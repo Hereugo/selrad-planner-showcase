@@ -6,7 +6,7 @@ import Color from "color";
 import { useFindNearbyClientsQuery } from "@/lib/backend/clients";
 import { formatDate } from "@/lib/utils";
 
-export const useMaps = () => {
+export const useMaps = (mapsEnabled: boolean) => {
   const { plans, isLoading: isPlansLoading } = usePlans();
   const mapElementRef = useRef(null);
   const ymaps = useYMaps([
@@ -118,7 +118,9 @@ export const useMaps = () => {
   useEffect(() => {
     if (!ymaps || !mapElementRef.current) return;
     if (!mapInstance) return;
+
     clearMap(mapInstance);
+    if (!mapsEnabled) return;
 
     placeMarks.forEach((mark) => {
       const placemark = new ymaps.Placemark(
@@ -148,7 +150,7 @@ export const useMaps = () => {
       );
       mapInstance.geoObjects.add(circle);
     }
-  }, [plans, mapInstance, ymaps, placeMarks]);
+  }, [plans, mapInstance, ymaps, placeMarks, mapsEnabled]);
 
   useEffect(() => {
     setIsShowingClientsNearby(false);
