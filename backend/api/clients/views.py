@@ -80,10 +80,15 @@ class ClientViewSet(ReadOnlyModelViewSet):
             )
         ).exclude(pk=pk)
 
-        a = nearby_clients.filter(
-            plans__assigned_date__lte=from_date
-            - timezone.timedelta(days=min_days_since_plan),
-        )
+        exclude_clients = []
+        for nc in nearby_clients:
+            last_plan = nc.plans.order_by("-assigned_date").first()
+            offset = timezone.timedelta(days=min_days_since_plan)
+            if last_plan and last_plan.assigned_date > (from_date - offset).date():
+                exclude_clients.append(nc.pk)
+
+        a = nearby_clients.exclude(pk__in=exclude_clients)
+
         # get all clients that have no plans
         b = nearby_clients.filter(plans__isnull=True)
         nearby_clients = a | b
