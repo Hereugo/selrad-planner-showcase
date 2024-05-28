@@ -180,7 +180,7 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
           </div>
         )}
       </div>
-      {selectedNearbyClient && (
+      {selectedNearbyClient && selectedPlan && (
         <PlanDialogNew
           defaultIsOpen={true}
           defaultHandleOpen={() => setSelectedNearbyClient(undefined)}
