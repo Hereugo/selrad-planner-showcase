@@ -71,7 +71,6 @@ class ClientViewSet(ReadOnlyModelViewSet):
             request.GET.get("from_date", datetime.now().strftime("%Y-%m-%d")),
             "%Y-%m-%d",
         )
-
         # get all clients that are in the radius of a circle [plan.client.address.point, radius]
         nearby_clients = Client.objects.filter(
             address__point__distance_lte=(
