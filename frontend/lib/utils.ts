@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
+import { DateRange } from "react-day-picker";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -88,3 +89,11 @@ export const formatDate = (date: string) => {
     day: "numeric",
   });
 };
+
+export function calendarRangeDuration(range: DateRange) {
+  if (!range.from || !range.to) return 0;
+  const days = Math.ceil(
+    (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  return days;
+}

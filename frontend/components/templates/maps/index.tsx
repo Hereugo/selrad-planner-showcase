@@ -12,11 +12,18 @@ import {
   PackageOpenIcon,
   PenBoxIcon,
 } from "lucide-react";
-import { cn, formatPrice, managerFullName } from "@/lib/utils";
+import {
+  calendarRangeDuration,
+  cn,
+  formatPrice,
+  managerFullName,
+} from "@/lib/utils";
 import { TengeReciept } from "@/components/icons/tenge-reciept";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@radix-ui/react-label";
 import PlanDialogNew from "@/components/molecules/plan-dialog-new";
+import useFiltersContext from "@/components/molecules/side-bar/index.providers";
+import MaxDaysAlert from "./max-days-alert";
 
 interface MapsTemplateProps {}
 
@@ -35,6 +42,11 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
     selectedNearbyClient,
     setSelectedNearbyClient,
   } = useMaps();
+
+  const { calendarRange } = useFiltersContext();
+  if (calendarRange && calendarRangeDuration(calendarRange) >= 31) {
+    return <MaxDaysAlert />;
+  }
 
   return (
     <div className="flex h-full gap-4">
