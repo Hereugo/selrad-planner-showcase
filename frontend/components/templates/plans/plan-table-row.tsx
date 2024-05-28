@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { FC } from "react";
 import {
   cn,
+  formatDate,
   formatPrice,
   managerFullName,
   managerShortName,
@@ -56,11 +57,3 @@ const PlanTableRow: FC<PlanTableRowProps> = ({ plan, className }) => {
 };
 
 export default PlanTableRow;
-
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString("ru-RU", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};

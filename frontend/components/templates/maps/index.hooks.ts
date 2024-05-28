@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useYMaps } from "@pbe/react-yandex-maps";
 import Color from "color";
 import { useFindNearbyClientsQuery } from "@/lib/backend/clients";
+import { formatDate } from "@/lib/utils";
 
 export const useMaps = () => {
   const { plans, isLoading: isPlansLoading } = usePlans();
@@ -76,6 +77,9 @@ export const useMaps = () => {
   if (isShowingClientsNearby) {
     nearbyClients?.data.forEach(
       ({ client, last_plan, last_shipment_plan }, idx) => {
+        let last_shipment_date = last_shipment_plan?.assigned_date;
+        let last_plan_date = last_plan?.assigned_date;
+
         placeMarks.push({
           geometry: [Number(client.address.lat), Number(client.address.lon)],
           properties: {
@@ -83,8 +87,8 @@ export const useMaps = () => {
                     <div>
                         <h3 class="font-semibold">${client.name}</h3>
                         <p>Адрес: ${client.address.street}</p>
-                        <p>Последние посещение: ${last_plan?.assigned_date || "не было"}</p>
-                        <p>Последняя отгрузка: ${last_shipment_plan?.assigned_date || "не было"}</p>
+                        <p>Последние посещение: ${last_plan_date ? formatDate(last_plan_date) : "не было"}</p>
+                        <p>Последняя отгрузка: ${last_shipment_date ? formatDate(last_shipment_date) : "не было"}</p>
                         <p>Количество коробок: ${last_shipment_plan?.box_count || "не было"}</p>
                     </div>
                 `,

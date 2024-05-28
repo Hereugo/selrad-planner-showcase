@@ -80,3 +80,11 @@ export function decodeContentDisposition(encodedString: string) {
 
   return decodedFilename;
 }
+
+export const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString("ru-RU", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
