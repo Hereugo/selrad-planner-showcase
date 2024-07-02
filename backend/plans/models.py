@@ -28,6 +28,12 @@ class Worklist(models.Model):
         help_text="Введите название работы",
         max_length=255,
     )
+    meta_name = models.CharField(
+        verbose_name="Мета название работы",
+        help_text="Введите мета название работы",
+        max_length=255,
+        blank=True,
+    )
     description = models.TextField(
         verbose_name="Описание работы",
         help_text="Введите описание работы",

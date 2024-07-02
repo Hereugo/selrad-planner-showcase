@@ -82,7 +82,17 @@ export function decodeContentDisposition(encodedString: string) {
   return decodedFilename;
 }
 
-export function calendarRangeDuration(range: DateRange) {
+export const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString("ru-RU", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+export function calendarRangeDuration(range: DateRange | undefined) {
+  if (!range) return 1e6;
+  if (!range.from && !range.to) return 1e6;
   if (!range.from || !range.to) return 0;
   const days = Math.ceil(
     (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24),

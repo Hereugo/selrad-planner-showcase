@@ -127,6 +127,8 @@ class Address(gis_models.Model):
             self.lat = self.point.y
             self.lon = self.point.x
 
+        self.point = Point(float(self.lon or 0), float(self.lat or 0))
+
         super().save(*args, **kwargs)
 
     class Meta:

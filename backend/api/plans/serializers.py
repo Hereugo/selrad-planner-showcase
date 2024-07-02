@@ -105,12 +105,10 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             plan_managers.append(PlanManager(plan=plan, manager=manager))
         PlanManager.objects.bulk_create(plan_managers, ignore_conflicts=True)
 
-
-
     def create(self, validated_data):
         worklist = validated_data.pop("worklist", [])
         managers = validated_data.pop("managers", [])
-        
+
         if "box_count" in validated_data and validated_data["box_count"] == 0:
             validated_data["box_count"] = None
 
@@ -139,3 +137,37 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         return PlanSerializer(
             instance, context={"request": self.context.get("request")}
         ).data
+
+
+# HACK: This serializer should be declared in the clients serializer file, but
+# it is declared here to avoid circular imports.
+class NearbyClientSerializer(serializers.Serializer):
+    """Serializer for nearby clients"""
+
+    client = ClientSerializer()
+    last_plan = PlanSerializer()
+    last_shipment_plan = PlanSerializer()
+
+    def get_last_plan(self, client):
+        last_plan = (
+            Plan.objects.filter(client=client).order_by("-assigned_date").first()
+        )
+
+        return PlanSerializer(last_plan).data if last_plan else None
+
+    def get_last_shipment_plan(self, client):
+        last_shipment_plan = (
+            Plan.objects.filter(client=client)
+            .filter(worklist__meta_name="shipment")
+            .order_by("-assigned_date")
+            .first()
+        )
+
+        return PlanSerializer(last_shipment_plan).data if last_shipment_plan else None
+
+    def to_representation(self, instance):
+        return {
+            "client": ClientSerializer(instance).data,
+            "last_plan": self.get_last_plan(instance),
+            "last_shipment_plan": self.get_last_shipment_plan(instance),
+        }

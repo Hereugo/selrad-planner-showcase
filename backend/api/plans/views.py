@@ -1,8 +1,6 @@
 import logging
 
 from django.db.models import F, ExpressionWrapper, DurationField
-from django.contrib.gis.geos import Point
-from django.contrib.gis.measure import Distance
 from django.utils import timezone
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -15,7 +13,6 @@ from rest_framework.schemas.openapi import AutoSchema
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from plans.models import Plan, Worklist
-from clients.models import Client
 from managers.models import Manager
 
 from api.utils.custom_permissions import (
@@ -24,7 +21,6 @@ from api.utils.custom_permissions import (
     permission_required,
 )
 from api.utils.custom_paginations import PageLimitPagination
-from api.clients.serializers import NearbyClientSerializer
 from .serializers import (
     PlanSerializer,
     PlanUpdateSerializer,
@@ -191,64 +187,6 @@ class PlanViewSet(ModelViewSet):
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         response["Access-Control-Expose-Headers"] = "Content-Disposition"
         return response
-
-    @extend_schema(
-        methods=["get"],
-        parameters=[
-            OpenApiParameter(
-                "radius",
-                float,
-                OpenApiParameter.QUERY,
-                description="Радиус поиска в км",
-                default=0.5,
-            ),
-            OpenApiParameter(
-                "time_threshold",
-                int,
-                OpenApiParameter.QUERY,
-                description="Порог времени в днях",
-                default=30,
-            ),
-        ],
-        responses={200: NearbyClientSerializer(many=True)},
-    )
-    @action(
-        detail=True,
-        methods=["get"],
-        permission_classes=[IsAuthenticated],
-        url_path="find_nearby",
-    )
-    def find_nearby(self, request, pk=None):
-        """Найти ближайшие планы по текущему плану."""
-        plan = get_object_or_404(Plan, pk=pk)
-        radius = float(request.GET.get("radius", 0.5))
-        time_threshold = int(request.GET.get("time_threshold", 30))
-
-        # get all clients that are in the radius of a circle [plan.client.address.point, radius]
-        nearby_clients = Client.objects.filter(
-            address__point__distance_lte=(
-                plan.client.address.point,
-                Distance(km=radius),
-            )
-        ).exclude(pk=plan.client.pk)
-
-        # get all clients that have plans in the time range [assigned_date - time_threshold, assigned_date]
-        a = nearby_clients.filter(
-            plans__assigned_date__gte=plan.assigned_date
-            - timezone.timedelta(days=time_threshold),
-            plans__assigned_date__lte=plan.assigned_date,
-        )
-        # get all clients that have no plans
-        b = nearby_clients.filter(plans__isnull=True)
-        nearby_clinets = a | b
-
-        # remove all duplicates
-        nearby_clients = nearby_clients.distinct()
-
-        serializer = NearbyClientSerializer(
-            nearby_clients, many=True, context={"request": request, "plan_pk": pk}
-        )
-        return Response(serializer.data)
 
 
 class WorklistViewSet(ReadOnlyModelViewSet):
