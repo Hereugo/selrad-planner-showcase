@@ -52,6 +52,18 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
   return (
     <>
       {isTooManyDays && <MaxDaysAlert />}
+    <div className="flex h-full gap-4">
+      {isPlansLoading && (
+        <Circle className="absolute top-[calc(50%-1rem)] left-[calc(50%-1rem)] z-10 w-8 h-8 animate-ping text-gray-300" />
+      )}
+      <div
+        className={cn(
+          "flex-1 h-full rounded-lg overflow-clip duration-300",
+          selectedPlan ? "w-[calc(100%-24rem)]" : "w-full",
+        )}
+        style={{ minHeight: "500px" }}
+        ref={mapElementRef}
+      />
       <div
         className={cn(
           "flex h-full gap-4",
