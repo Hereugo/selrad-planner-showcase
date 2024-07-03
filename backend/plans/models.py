@@ -139,7 +139,7 @@ class Plan(models.Model):
         """Save the model instance. Update the updated_at field."""
         try:
             if self.box_count is None:
-                self.box_count = ceil(self.shipment_cost() / 100_000)
+                self.box_count = ceil(self.shipment_cost() / 93_000)
         except Exception as e:
             self.box_count = 0
         self.updated_at = timezone.now()

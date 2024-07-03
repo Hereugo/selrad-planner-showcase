@@ -36,7 +36,7 @@ cp .env.example .env
 | VAR   | Description    |
 |--------------- | --------------- |
 | YANDEX_API_KEY   | API key for yandex map. Follow instructions [here](https://yandex.com/dev/commercial/doc/en/concepts/jsapi-geocoder) to setup. |
-| YANDEX_API_URL | https://geocode-maps.yandex.ru/1.x/' API URL for yandex map geocoder. | 
+| YANDEX_API_URL | <https://geocode-maps.yandex.ru/1.x/>' API URL for yandex map geocoder. |
 | DJANGO_SECRET_KEY | Secret key every django project provides. |
 | DJANGO_DEBUG | True / False. (Optional) defaults to False. Setup project in Debug Mode |  
 | DB_ENGINE | 'django.contrib.gis.db.backends.postgis'. PostGis, Postgres with geo extension |
@@ -130,6 +130,60 @@ sudo docker pull hereugo/planner_frontend
 ```
 cd selrad-planner
 sudo docker compose -f docker-compose-prod.yml up -d --build
+```
+
+### Выгрузка данных с prod на local
+
+Enter remote server:
+
+```
+ssh ubuntu@YOUR_SERVER_HOST
+# provide ssh key to gain access
+```
+
+Goto backend's container terminal:
+
+```
+cd selrad-planner
+sudo docker compose -f docker-compose-prod.yml exec backend bash
+```
+
+Dump data to a local file:
+
+```
+python3 manage.py dumpdata -e contenttypes -e auth > <current-date>.json
+```
+
+Copy file from backend's container to remote server:
+
+```
+sudo docker compose -f docker-compose-prod.yml cp backend:/app/<current-date>.json ./data/
+```
+
+Copy file from remote server to local computer:
+
+```
+scp ubuntu@YOUR_SERVER_HOST:./selrad-planner/data/<current-date>.json ./
+```
+
+Change Makefile loaddata command to point at a new file:
+
+```
+loaddata:
+ docker-compose -f docker-compose-dev.yml exec backend python3 manage.py loaddata ./data/<current-date>.json 
+```
+
+Rebuild local containers with brand new data:
+
+```
+cd infra
+make build
+make down
+make volume_down
+make build
+make migrate
+make superuser
+make loaddata
 ```
 
 ### Endpoint-ы
