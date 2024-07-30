@@ -41,7 +41,7 @@ def update_coordinates_by_link(modeladmin, request, queryset):
 
     modeladmin.message_user(
         request,
-        f"Координаты успешно обновлены для {sucess_count} из {addresses.count()}",
+        f"Координаты успешно обновлены для {success_count} из {addresses.count()}",
         level="SUCCESS",
     )
 

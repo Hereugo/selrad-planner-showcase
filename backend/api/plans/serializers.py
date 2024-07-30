@@ -1,12 +1,11 @@
 import logging
 
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema_field
 
-from api.clients.serializers import ClientSerializer, AddressSerializer
+from api.clients.serializers import ClientSerializer
 from api.managers.serializers import ManagerSerializer
 
-from clients.models import Client, Address
+from clients.models import Client
 from managers.models import Manager
 from plans.models import Plan, Worklist, PlanWorklist, PlanManager
 
@@ -55,6 +54,25 @@ class PlanSerializer(serializers.ModelSerializer):
         )
 
 
+class TaskSerializer(serializers.ModelSerializer):
+    """Serializer for PlanWorklist model"""
+
+    id = serializers.StringRelatedField()
+    plan = PlanSerializer()
+    status = serializers.StringRelatedField()
+
+    class Meta:
+        model = PlanWorklist
+        fields = (
+            "id",
+            "plan",
+            "completed_by",
+            "status",
+            "updated_at",
+            "created_at",
+        )
+
+
 class PlanUpdateSerializer(serializers.ModelSerializer):
     """Serializer for Plan model"""
 
@@ -95,7 +113,6 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         plan_worklist = []
         for w in worklist:
             plan_worklist.append(PlanWorklist(plan=plan, worklist=w))
-        print(plan_worklist)
 
         PlanWorklist.objects.bulk_create(plan_worklist, ignore_conflicts=True)
 

@@ -1,12 +1,10 @@
 import re
-import uuid
 import logging
 from math import ceil
 
 from django.db import models
 from django.utils import timezone
-from django.urls import reverse
-from django.core.validators import ValidationError
+from django.core.exceptions import ValidationError
 
 
 logger = logging.getLogger(__name__)
@@ -47,6 +45,13 @@ class Worklist(models.Model):
     updated_at = models.DateTimeField(
         verbose_name="Дата обновления",
         editable=False,
+    )
+    statuses = models.ManyToManyField(
+        "Status",
+        verbose_name="Статусы",
+        help_text="Выберите статусы",
+        related_name="worklists",
+        through="WorklistStatus",
     )
 
     def __str__(self):
@@ -137,10 +142,10 @@ class Plan(models.Model):
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
-        try:
-            if self.box_count is None:
-                self.box_count = ceil(self.shipment_cost() / 93_000)
-        except Exception as e:
+        cost = self.shipment_cost()
+        if self.box_count is None and isinstance(cost, (int, float)):
+            self.box_count = ceil(cost / 93_000)
+        else:
             self.box_count = 0
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)
@@ -188,8 +193,79 @@ class PlanWorklist(models.Model):
     plan = models.ForeignKey(
         "Plan", on_delete=models.CASCADE, verbose_name="План", help_text="Выберите план"
     )
+    completed_by = models.ForeignKey(
+        "managers.Manager",
+        on_delete=models.SET_NULL,
+        verbose_name="Менеджер",
+        help_text="Выберите менеджера",
+        null=True,
+        blank=True,
+        related_name="completed_plan_worklists",
+    )
+    status = models.ForeignKey(
+        "Status",
+        on_delete=models.SET_NULL,
+        verbose_name="Статус",
+        help_text="Выберите статус",
+        null=True,
+        blank=True,
+    )
+    updated_at = models.DateTimeField(
+        verbose_name="Дата обновления",
+        editable=False,
+    )
+    created_at = models.DateTimeField(
+        verbose_name="Дата создания",
+        auto_now_add=True,
+        editable=False,
+    )
 
     class Meta:
         verbose_name = "Список задач для выполнения"
         verbose_name_plural = "Списки задач для выполнения"
         ordering = ("plan", "worklist")
+
+    def save(self, *args, **kwargs):
+        """Save the model instance. Update the updated_at field."""
+        self.updated_at = timezone.now()
+        super().save(*args, **kwargs)
+
+
+class Status(models.Model):
+    """Model Status"""
+
+    name = models.CharField(
+        verbose_name="Статус",
+        help_text="Введите статус",
+        max_length=255,
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Статус"
+        verbose_name_plural = "Статусы"
+        ordering = ["name"]
+
+
+class WorklistStatus(models.Model):
+    """Model WorklistStatus"""
+
+    worklist = models.ForeignKey(
+        "Worklist",
+        on_delete=models.CASCADE,
+        verbose_name="Список задач для выполнения",
+        help_text="Выберите список задач для выполнения",
+    )
+    status = models.ForeignKey(
+        "Status",
+        on_delete=models.CASCADE,
+        verbose_name="Статус",
+        help_text="Выберите статус",
+    )
+
+    class Meta:
+        verbose_name = "Статус списка задач"
+        verbose_name_plural = "Статусы списка задач"
+        ordering = ("worklist", "status")

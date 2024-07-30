@@ -45,22 +45,6 @@ class HasCRUDPermission(BasePermission):
         app_label = view.queryset.model._meta.app_label
         model_name = view.queryset.model._meta.model_name
 
-        # logger.debug(f"app_label: {app_label}")
-        # logger.debug(f"model_name: {model_name}")
-        # logger.debug(f"request.method: {request.method}")
-        # logger.debug(f"request.user: {request.user}")
-        # logger.debug(
-        #     f"view request.user.has_perm: {request.user.has_perm(f'{app_label}.view_{model_name}')}"
-        # )
-        # logger.debug(
-        #     f"add request.user.has_perm: {request.user.has_perm(f'{app_label}.add_{model_name}')}"
-        # )
-        # logger.debug(
-        #     f"change request.user.has_perm: {request.user.has_perm(f'{app_label}.change_{model_name}')}"
-        # )
-        # logger.debug(
-        #     f"delete request.user.has_perm: {request.user.has_perm(f'{app_label}.delete_{model_name}')}"
-        # )
         if request.method == "GET":
             return request.user.has_perm(f"{app_label}.view_{model_name}")
         if request.method == "POST":

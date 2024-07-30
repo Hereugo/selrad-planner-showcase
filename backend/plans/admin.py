@@ -2,7 +2,7 @@ import logging
 from django.contrib import admin
 from django.shortcuts import render
 
-from plans.models import Plan, Worklist
+from plans.models import Plan, Worklist, Status
 from managers.models import Manager
 
 from api.plans.views import PlanViewSet
@@ -19,7 +19,7 @@ def export_plans(modeladmin, request, queryset):
 
     plans = queryset.all()
 
-    response = PlanViewSet.export(PlanViewSet, request, plans)
+    response = PlanViewSet.export(request, plans)
 
     if response.status_code != 200:
         modeladmin.message_user(request, f"Не удалось скачать план", level="ERROR")
@@ -32,9 +32,7 @@ def export_plans(modeladmin, request, queryset):
 def export_report(modeladmin, request, queryset):
     plans = queryset.all()
     if "apply" in request.POST:
-        response = PlanViewSet.export_report(
-            PlanViewSet, request, request.POST["manager"], plans
-        )
+        response = PlanViewSet.export_report(request, request.POST["manager"], plans)
 
         if response.status_code != 200:
             modeladmin.message_user(request, f"Не удалось скачать отчет", level="ERROR")
@@ -50,6 +48,11 @@ def export_report(modeladmin, request, queryset):
             "latest_date": plans.latest("assigned_date").assigned_date,
         },
     )
+
+
+class WorklistStatusInline(admin.TabularInline):
+    model = Worklist.statuses.through
+    extra = 1
 
 
 class PlanManagerInline(admin.TabularInline):
@@ -116,3 +119,18 @@ class WorklistAdmin(admin.ModelAdmin):
         "updated_at",
         "created_at",
     )
+
+    inlines = [
+        WorklistStatusInline,
+    ]
+
+
+@admin.register(Status)
+class StatusAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "name",
+    )
+    search_fields = ("name",)
+    list_filter = ("name",)
+    empty_value_display = "--пусто--"

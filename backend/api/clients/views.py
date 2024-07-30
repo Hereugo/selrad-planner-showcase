@@ -3,11 +3,10 @@ from datetime import datetime
 
 
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
+from datetime import timedelta
 from django.contrib.gis.measure import Distance
 from rest_framework.decorators import action
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework.schemas.openapi import AutoSchema
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
@@ -82,7 +81,7 @@ class ClientViewSet(ReadOnlyModelViewSet):
         exclude_clients = []
         for nc in nearby_clients:
             last_plan = nc.plans.order_by("-assigned_date").first()
-            offset = timezone.timedelta(days=min_days_since_plan)
+            offset = timedelta(days=min_days_since_plan)
             if last_plan and last_plan.assigned_date > (from_date - offset).date():
                 exclude_clients.append(nc.pk)
 

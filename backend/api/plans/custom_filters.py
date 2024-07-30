@@ -1,13 +1,32 @@
-from django_filters import FilterSet, DateFilter, NumberFilter
-from django.db.models import Q, Value
-from django.db.models.functions import Concat
+from django_filters import FilterSet, DateFilter, NumberFilter, ModelChoiceFilter
 
-from plans.models import Plan
+from managers.models import Manager
+from plans.models import Plan, PlanWorklist
+
+
+class TaskFilter(FilterSet):
+    start_date = DateFilter(field_name="plan__assigned_date", lookup_expr=("gte"))
+    end_date = DateFilter(field_name="plan__assigned_date", lookup_expr=("lte"))
+    manager = ModelChoiceFilter(
+        queryset=Manager.objects.all(),
+        field_name="plan__managers__id",
+        to_field_name="id",
+        conjoined=True,
+        always_filter=True,
+    )
+
+    class Meta:
+        model = PlanWorklist
+        fields = [
+            "manager",
+            "start_date",
+            "end_date",
+        ]
 
 
 class PlanFilter(FilterSet):
-    date_after = DateFilter(field_name="assigned_date", lookup_expr=("gte"))
-    date_before = DateFilter(field_name="assigned_date", lookup_expr=("lte"))
+    start_date = DateFilter(field_name="assigned_date", lookup_expr=("gte"))
+    end_date = DateFilter(field_name="assigned_date", lookup_expr=("lte"))
     worklist_id = NumberFilter(field_name="worklist_id", method="filter_worklist_id")
     manager_id = NumberFilter(field_name="manager_id", method="filter_manager_id")
 
@@ -24,8 +43,8 @@ class PlanFilter(FilterSet):
     class Meta:
         model = Plan
         fields = [
-            "date_after",
-            "date_before",
+            "start_date",
+            "end_date",
             "worklist_id",
             "manager_id",
         ]

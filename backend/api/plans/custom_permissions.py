@@ -1,11 +1,7 @@
 import logging
 from django.utils import timezone
 
-from functools import wraps
 from rest_framework import permissions
-from rest_framework.permissions import BasePermission
-from rest_framework.response import Response
-
 
 logger = logging.getLogger(__name__)
 

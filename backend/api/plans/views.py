@@ -1,18 +1,18 @@
 import logging
 
-from django.db.models import F, ExpressionWrapper, DurationField
-from django.utils import timezone
+from datetime import datetime
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.permissions import BasePermission
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.schemas.openapi import AutoSchema
+from rest_framework.mixins import ListModelMixin
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from plans.models import Plan, Worklist
+from plans.models import Plan, Worklist, PlanWorklist
 from managers.models import Manager
 
 from api.utils.custom_permissions import (
@@ -25,9 +25,10 @@ from .serializers import (
     PlanSerializer,
     PlanUpdateSerializer,
     WorklistSerializer,
+    TaskSerializer,
 )
 from .custom_permissions import CanChangeFuturePlans, CanDeleteFuturePlans
-from .custom_filters import PlanFilter
+from .custom_filters import PlanFilter, TaskFilter
 from .generate_excelsheet import (
     generate_excelsheet_by_plan,
     generate_excelsheet_by_manager,
@@ -35,6 +36,15 @@ from .generate_excelsheet import (
 
 
 logger = logging.getLogger(__name__)
+
+
+class TaskViewSet(ListModelMixin, GenericViewSet):
+    """API для работы с задачами."""
+
+    queryset = PlanWorklist.objects.all()
+    serializer_class = TaskSerializer
+    filterset_class = TaskFilter
+    pagination_class = None
 
 
 class PlanViewSet(ModelViewSet):
@@ -56,7 +66,7 @@ class PlanViewSet(ModelViewSet):
     )
 
     def get_permissions(self):
-        permission_classes = [IsAuthenticated]
+        permission_classes: list[type[BasePermission]] = [IsAuthenticated]
         if self.action in ("update", "partial_update"):
             permission_classes.append(CanChangeFuturePlans)
         elif self.action == "destroy":
@@ -78,6 +88,7 @@ class PlanViewSet(ModelViewSet):
         methods=["get"],
         description="Скачать план",
         filters=True,
+        summary="Скачать план",
     )
     @action(
         detail=False,
@@ -97,25 +108,22 @@ class PlanViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        logger.info("GET: ", request.GET)
+        start_date = request.GET.get("start_date", None)
+        end_date = request.GET.get("end_date", None)
 
-        # get date_before and date_after from filters
-        date_before = request.GET.get("date_before", None)
-        date_after = request.GET.get("date_after", None)
-
-        if not date_before:
-            date_before = plans.latest("assigned_date").assigned_date
+        if not start_date:
+            start_date = plans.latest("assigned_date").assigned_date
         else:
-            date_before = timezone.datetime.strptime(date_before, "%Y-%m-%d")
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
 
-        if not date_after:
-            date_after = plans.earliest("assigned_date").assigned_date
+        if not end_date:
+            end_date = plans.earliest("assigned_date").assigned_date
         else:
-            date_after = timezone.datetime.strptime(date_after, "%Y-%m-%d")
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
-        buffer = generate_excelsheet_by_plan(plans, date_after, date_before)
+        buffer = generate_excelsheet_by_plan(plans, end_date, start_date)
 
-        filename = f"ПЛАНЫ С {date_after.strftime('%d-%m-%Y')} ПО {date_before.strftime('%d-%m-%Y')}.xlsx"
+        filename = f"ПЛАНЫ С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),
@@ -138,6 +146,7 @@ class PlanViewSet(ModelViewSet):
                 required=True,
             )
         ],
+        summary="Скачать отчет менеджера",
     )
     @action(
         detail=False,
@@ -160,25 +169,22 @@ class PlanViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        logger.info("GET: ", request.GET)
+        start_date = request.GET.get("start_date", None)
+        end_date = request.GET.get("end_date", None)
 
-        # get date_before and date_after from filters
-        date_before = request.GET.get("date_before", None)
-        date_after = request.GET.get("date_after", None)
-
-        if not date_before:
-            date_before = plans.latest("assigned_date").assigned_date
+        if not start_date:
+            start_date = plans.latest("assigned_date").assigned_date
         else:
-            date_before = timezone.datetime.strptime(date_before, "%Y-%m-%d")
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
 
-        if not date_after:
-            date_after = plans.earliest("assigned_date").assigned_date
+        if not end_date:
+            end_date = plans.earliest("assigned_date").assigned_date
         else:
-            date_after = timezone.datetime.strptime(date_after, "%Y-%m-%d")
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
-        buffer = generate_excelsheet_by_manager(plans, manager, date_after, date_before)
+        buffer = generate_excelsheet_by_manager(plans, manager, end_date, start_date)
 
-        filename = f"ОТЧЕТ {manager} С {date_after.strftime('%d-%m-%Y')} ПО {date_before.strftime('%d-%m-%Y')}.xlsx"
+        filename = f"ОТЧЕТ {manager} С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),
