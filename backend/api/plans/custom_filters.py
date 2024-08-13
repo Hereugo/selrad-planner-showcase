@@ -2,7 +2,7 @@ from django_filters import FilterSet, DateFilter, ModelMultipleChoiceFilter
 
 
 from managers.models import Manager
-from plans.models import Plan, PlanWorklist, WorkItem
+from plans.models import Plan, PlanWorkItem, WorkItem
 
 
 class TaskFilter(FilterSet):
@@ -10,7 +10,7 @@ class TaskFilter(FilterSet):
     end_date = DateFilter(field_name="plan__assigned_date", lookup_expr=("lte"))
 
     class Meta:
-        model = PlanWorklist
+        model = PlanWorkItem
         fields = [
             "start_date",
             "end_date",

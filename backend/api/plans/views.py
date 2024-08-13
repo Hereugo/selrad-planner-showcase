@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from plans.models import Plan, WorkItem, PlanWorklist
+from plans.models import Plan, WorkItem, PlanWorkItem
 from managers.models import Manager
 
 from api.utils.custom_permissions import (
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 class TaskViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
     """API для работы с задачами."""
 
-    queryset = PlanWorklist.objects.all()
+    queryset = PlanWorkItem.objects.all()
     serializer_class = TaskSerializer
     filterset_class = TaskFilter
     pagination_class = None

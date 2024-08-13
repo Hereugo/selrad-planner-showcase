@@ -8,7 +8,7 @@ from api.managers.serializers import ManagerSerializer
 
 from clients.models import Client
 from managers.models import Manager
-from plans.models import Plan, WorkItem, PlanWorklist, PlanManager, Status
+from plans.models import Plan, WorkItem, PlanWorkItem, PlanManager, Status
 
 
 logger = logging.getLogger(__name__)
@@ -71,14 +71,14 @@ class PlanSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    """Serializer for PlanWorklist model"""
+    """Serializer for PlanWorkItem model"""
 
     id = serializers.StringRelatedField()
     plan = PlanSerializer()
     status = StatusSerializer()
 
     class Meta:
-        model = PlanWorklist
+        model = PlanWorkItem
         fields = (
             "id",
             "plan",
@@ -90,7 +90,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class TaskUpdateSerializer(serializers.ModelSerializer):
-    """Serializer for PlanWorklist model"""
+    """Serializer for PlanWorkItem model"""
 
     id = serializers.StringRelatedField()
     plan = PlanSerializer(read_only=True)
@@ -102,7 +102,7 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = PlanWorklist
+        model = PlanWorkItem
         fields = (
             "id",
             "plan",
@@ -158,9 +158,9 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
     def create_work_items(self, plan, work_items):
         plan_work_items = []
         for w in work_items:
-            plan_work_items.append(PlanWorklist(plan=plan, work_item=w))
+            plan_work_items.append(PlanWorkItem(plan=plan, work_item=w))
 
-        PlanWorklist.objects.bulk_create(plan_work_items, ignore_conflicts=True)
+        PlanWorkItem.objects.bulk_create(plan_work_items, ignore_conflicts=True)
 
     def create_managers(self, plan, managers):
         plan_managers = []
@@ -183,7 +183,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         return plan
 
     def update(self, instance, validated_data):
-        PlanWorklist.objects.filter(plan=instance).delete()
+        PlanWorkItem.objects.filter(plan=instance).delete()
         PlanManager.objects.filter(plan=instance).delete()
 
         if "work_items" in validated_data:

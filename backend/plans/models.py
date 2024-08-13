@@ -51,7 +51,7 @@ class WorkItem(models.Model):
         verbose_name="Статусы",
         help_text="Выберите статусы",
         related_name="work_items",
-        through="WorklistStatus",
+        through="WorkItemStatus",
     )
 
     def __str__(self):
@@ -80,7 +80,7 @@ class Plan(models.Model):
         "WorkItem",
         verbose_name="Список задач для выполнения",
         help_text="Выберите список задач для выполнения",
-        through="PlanWorklist",
+        through="PlanWorkItem",
         related_name="plans",
     )
     shipment_cost_formula = models.CharField(
@@ -180,8 +180,8 @@ class PlanManager(models.Model):
         ordering = ("plan", "manager")
 
 
-class PlanWorklist(models.Model):
-    """Model PlanWorklist"""
+class PlanWorkItem(models.Model):
+    """Model PlanWorkItem"""
 
     work_item = models.ForeignKey(
         "WorkItem",
@@ -249,8 +249,8 @@ class Status(models.Model):
         ordering = ["name"]
 
 
-class WorklistStatus(models.Model):
-    """Model WorklistStatus"""
+class WorkItemStatus(models.Model):
+    """Model WorkItemStatus"""
 
     work_item = models.ForeignKey(
         "WorkItem",
