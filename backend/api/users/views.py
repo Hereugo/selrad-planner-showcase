@@ -8,7 +8,7 @@ from rest_framework.viewsets import GenericViewSet
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 
-from api.managers.serializers import GeoPointCreateSerializer
+from api.managers.serializers import GeoPointCreateSerializer, GeoPointSerializer
 
 from api.utils.custom_permissions import IsAuthenticated
 
@@ -27,9 +27,6 @@ class UserViewSet(mixins.ListModelMixin, GenericViewSet):
     pagination_class = None
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        return User.objects.filter(id=self.request.user.id)
-
     @extend_schema(
         methods=["get"],
         summary="Получение данных текущего пользователя.",
@@ -47,14 +44,16 @@ class UserViewSet(mixins.ListModelMixin, GenericViewSet):
 
     @extend_schema(
         request=GeoPointCreateSerializer,
-        methods=["post"],
-        summary="Создание новой геоточки.",
-        responses={201: GeoPointCreateSerializer},
+        methods=["POST"],
+        summary="Создание новой геоточки для текущего пользователя.",
+        description='поле "manager" не передается в запросе, оно заполняется автоматически.',
+        responses={201: GeoPointSerializer},
     )
     @action(
         detail=False,
         methods=["POST"],
         url_path="me/add_geopoint",
+        permission_classes=[IsAuthenticated],
     )
     def add_geopoint(self, request):
         """Создание новой геоточки."""

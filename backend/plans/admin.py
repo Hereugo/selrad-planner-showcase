@@ -2,7 +2,7 @@ import logging
 from django.contrib import admin
 from django.shortcuts import render
 
-from plans.models import Plan, Worklist, Status
+from plans.models import Plan, WorkItem, Status
 from managers.models import Manager
 
 from api.plans.views import PlanViewSet
@@ -50,8 +50,8 @@ def export_report(modeladmin, request, queryset):
     )
 
 
-class WorklistStatusInline(admin.TabularInline):
-    model = Worklist.statuses.through
+class WorkItemStatusInline(admin.TabularInline):
+    model = WorkItem.statuses.through
     extra = 1
 
 
@@ -60,8 +60,8 @@ class PlanManagerInline(admin.TabularInline):
     extra = 1
 
 
-class PlanWorklistInline(admin.TabularInline):
-    model = Plan.worklist.through
+class PlanWorkItemInline(admin.TabularInline):
+    model = Plan.work_items.through
     extra = 1
 
 
@@ -77,7 +77,7 @@ class PlanAdmin(admin.ModelAdmin):
     )
     search_fields = ("client__name", "client__address", "assigned_date")
     list_filter = (
-        "worklist",
+        "work_items",
         "assigned_date",
     )
     empty_value_display = "--пусто--"
@@ -91,7 +91,7 @@ class PlanAdmin(admin.ModelAdmin):
 
     inlines = [
         PlanManagerInline,
-        PlanWorklistInline,
+        PlanWorkItemInline,
     ]
 
     def client_address(self, obj):
@@ -106,8 +106,8 @@ class PlanAdmin(admin.ModelAdmin):
     assigned_date_formatted.short_description = "Дата назначения"
 
 
-@admin.register(Worklist)
-class WorklistAdmin(admin.ModelAdmin):
+@admin.register(WorkItem)
+class WorkItemAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "description",
@@ -121,7 +121,7 @@ class WorklistAdmin(admin.ModelAdmin):
     )
 
     inlines = [
-        WorklistStatusInline,
+        WorkItemStatusInline,
     ]
 
 

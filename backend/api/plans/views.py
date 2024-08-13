@@ -9,10 +9,10 @@ from rest_framework.permissions import BasePermission
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.mixins import ListModelMixin
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from plans.models import Plan, Worklist, PlanWorklist
+from plans.models import Plan, WorkItem, PlanWorklist
 from managers.models import Manager
 
 from api.utils.custom_permissions import (
@@ -24,8 +24,9 @@ from api.utils.custom_paginations import PageLimitPagination
 from .serializers import (
     PlanSerializer,
     PlanUpdateSerializer,
-    WorklistSerializer,
+    WorkItemSerializer,
     TaskSerializer,
+    TaskUpdateSerializer,
 )
 from .custom_permissions import CanChangeFuturePlans, CanDeleteFuturePlans
 from .custom_filters import PlanFilter, TaskFilter
@@ -38,13 +39,26 @@ from .generate_excelsheet import (
 logger = logging.getLogger(__name__)
 
 
-class TaskViewSet(ListModelMixin, GenericViewSet):
+class TaskViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
     """API для работы с задачами."""
 
     queryset = PlanWorklist.objects.all()
     serializer_class = TaskSerializer
     filterset_class = TaskFilter
     pagination_class = None
+
+    def get_serializer_class(self):
+        if self.action in ("update", "partial_update"):
+            return TaskUpdateSerializer
+
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        """
+        Переопределение метода для фильтрации задач по менеджеру текущего пользователя.
+        """
+        qs = super().get_queryset()
+        return qs.filter(plan__managers__user=self.request.user)
 
 
 class PlanViewSet(ModelViewSet):
@@ -62,7 +76,7 @@ class PlanViewSet(ModelViewSet):
     search_fields = (
         "client__name",
         "managers__first_name",
-        "worklist__name",
+        "work_items__name",
     )
 
     def get_permissions(self):
@@ -195,9 +209,9 @@ class PlanViewSet(ModelViewSet):
         return response
 
 
-class WorklistViewSet(ReadOnlyModelViewSet):
+class WorkItemViewSet(ReadOnlyModelViewSet):
     """API для работы с рабочими списками."""
 
-    queryset = Worklist.objects.all()
-    serializer_class = WorklistSerializer
-    pagiation_class = None
+    queryset = WorkItem.objects.all()
+    serializer_class = WorkItemSerializer
+    pagination_class = None

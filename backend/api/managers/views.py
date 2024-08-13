@@ -1,5 +1,11 @@
 import logging
 
+from drf_spectacular.utils import (
+    extend_schema_view,
+    extend_schema,
+    OpenApiParameter,
+)
+
 from rest_framework import mixins
 from rest_framework.viewsets import GenericViewSet
 
@@ -12,6 +18,19 @@ from .custom_filters import ManagerFilter
 logger = logging.getLogger(__name__)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        description="Получить список менеджеров",
+        filters=True,
+        parameters=[
+            OpenApiParameter(
+                name="geo_limit",
+                type=int,
+                required=False,
+            )
+        ],
+    ),
+)
 class ManagerViewSet(mixins.ListModelMixin, GenericViewSet):
     """API для работы с менеджерами."""
 

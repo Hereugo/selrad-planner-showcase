@@ -27,15 +27,15 @@ class RoleAdmin(admin.ModelAdmin):
 class GeoPointAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "lat",
-        "lon",
+        "latitude",
+        "longitude",
         "accuracy",
         "speed",
         "heading",
         "manager",
         "created_at",
     )
-    search_fields = ("lat", "lon", "point", "manager", "created_at")
+    search_fields = ("latitude", "longitude", "point", "manager", "created_at")
     empty_value_display = "--пусто--"
     readonly_fields = ("created_at",)
 

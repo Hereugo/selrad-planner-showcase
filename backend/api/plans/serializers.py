@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Optional
 
 from rest_framework import serializers
 
@@ -7,23 +8,38 @@ from api.managers.serializers import ManagerSerializer
 
 from clients.models import Client
 from managers.models import Manager
-from plans.models import Plan, Worklist, PlanWorklist, PlanManager
+from plans.models import Plan, WorkItem, PlanWorklist, PlanManager, Status
 
 
 logger = logging.getLogger(__name__)
 
 
-class WorklistSerializer(serializers.ModelSerializer):
-    """Serializer for Worklist model"""
+class StatusSerializer(serializers.ModelSerializer):
+    """Serializer for Status model"""
 
     id = serializers.StringRelatedField()
 
     class Meta:
-        model = Worklist
+        model = Status
+        fields = (
+            "id",
+            "name",
+        )
+
+
+class WorkItemSerializer(serializers.ModelSerializer):
+    """Serializer for WorkItem model"""
+
+    id = serializers.StringRelatedField()
+    statuses = StatusSerializer(many=True)
+
+    class Meta:
+        model = WorkItem
         fields = (
             "id",
             "name",
             "description",
+            "statuses",
             "created_at",
             "updated_at",
         )
@@ -33,7 +49,7 @@ class PlanSerializer(serializers.ModelSerializer):
     """Serializer for Plan model"""
 
     id = serializers.StringRelatedField()
-    worklist = WorklistSerializer(many=True)
+    work_items = WorkItemSerializer(many=True)
     client = ClientSerializer()
     managers = ManagerSerializer(many=True)
 
@@ -42,7 +58,7 @@ class PlanSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "assigned_date",
-            "worklist",
+            "work_items",
             "client",
             "shipment_cost_formula",
             "shipment_cost",
@@ -59,7 +75,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     id = serializers.StringRelatedField()
     plan = PlanSerializer()
-    status = serializers.StringRelatedField()
+    status = StatusSerializer()
 
     class Meta:
         model = PlanWorklist
@@ -73,12 +89,42 @@ class TaskSerializer(serializers.ModelSerializer):
         )
 
 
+class TaskUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for PlanWorklist model"""
+
+    id = serializers.StringRelatedField()
+    plan = PlanSerializer(read_only=True)
+    completed_by = serializers.PrimaryKeyRelatedField(
+        queryset=Manager.objects.all(), required=False
+    )
+    status = serializers.PrimaryKeyRelatedField(
+        queryset=Status.objects.all(), required=False
+    )
+
+    class Meta:
+        model = PlanWorklist
+        fields = (
+            "id",
+            "plan",
+            "completed_by",
+            "status",
+            "updated_at",
+            "created_at",
+        )
+        read_only_fields = ("id", "plan", "created_at", "updated_at")
+
+    def to_representation(self, instance):
+        return TaskSerializer(
+            instance, context={"request": self.context.get("request")}
+        ).data
+
+
 class PlanUpdateSerializer(serializers.ModelSerializer):
     """Serializer for Plan model"""
 
     id = serializers.StringRelatedField()
-    worklist = serializers.PrimaryKeyRelatedField(
-        queryset=Worklist.objects.all(),
+    work_items = serializers.PrimaryKeyRelatedField(
+        queryset=WorkItem.objects.all(),
         many=True,
         required=False,
     )
@@ -97,7 +143,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "assigned_date",
-            "worklist",
+            "work_items",
             "client",
             "shipment_cost_formula",
             "shipment_cost",
@@ -109,12 +155,12 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "created_at", "updated_at")
 
-    def create_worklist(self, plan, worklist):
-        plan_worklist = []
-        for w in worklist:
-            plan_worklist.append(PlanWorklist(plan=plan, worklist=w))
+    def create_work_items(self, plan, work_items):
+        plan_work_items = []
+        for w in work_items:
+            plan_work_items.append(PlanWorklist(plan=plan, work_item=w))
 
-        PlanWorklist.objects.bulk_create(plan_worklist, ignore_conflicts=True)
+        PlanWorklist.objects.bulk_create(plan_work_items, ignore_conflicts=True)
 
     def create_managers(self, plan, managers):
         plan_managers = []
@@ -123,7 +169,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         PlanManager.objects.bulk_create(plan_managers, ignore_conflicts=True)
 
     def create(self, validated_data):
-        worklist = validated_data.pop("worklist", [])
+        work_items = validated_data.pop("work_items", [])
         managers = validated_data.pop("managers", [])
 
         if "box_count" in validated_data and validated_data["box_count"] == 0:
@@ -131,7 +177,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
 
         plan = super().create(validated_data)
 
-        self.create_worklist(plan, worklist)
+        self.create_work_items(plan, work_items)
         self.create_managers(plan, managers)
 
         return plan
@@ -140,9 +186,9 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         PlanWorklist.objects.filter(plan=instance).delete()
         PlanManager.objects.filter(plan=instance).delete()
 
-        if "worklist" in validated_data:
-            worklist = validated_data.pop("worklist", [])
-            self.create_worklist(instance, worklist)
+        if "work_items" in validated_data:
+            work_items = validated_data.pop("work_items", [])
+            self.create_work_items(instance, work_items)
 
         if "managers" in validated_data:
             managers = validated_data.pop("managers", [])
@@ -165,14 +211,14 @@ class NearbyClientSerializer(serializers.Serializer):
     last_plan = PlanSerializer()
     last_shipment_plan = PlanSerializer()
 
-    def get_last_plan(self, client):
+    def get_last_plan(self, client) -> Optional[PlanSerializer]:
         last_plan = (
             Plan.objects.filter(client=client).order_by("-assigned_date").first()
         )
 
-        return PlanSerializer(last_plan).data if last_plan else None
+        return PlanSerializer(last_plan) if last_plan else None
 
-    def get_last_shipment_plan(self, client):
+    def get_last_shipment_plan(self, client) -> Optional[PlanSerializer]:
         last_shipment_plan = (
             Plan.objects.filter(client=client)
             .filter(worklist__meta_name="shipment")
@@ -180,11 +226,20 @@ class NearbyClientSerializer(serializers.Serializer):
             .first()
         )
 
-        return PlanSerializer(last_shipment_plan).data if last_shipment_plan else None
+        return PlanSerializer(last_shipment_plan) if last_shipment_plan else None
 
     def to_representation(self, instance):
-        return {
-            "client": ClientSerializer(instance).data,
-            "last_plan": self.get_last_plan(instance),
-            "last_shipment_plan": self.get_last_shipment_plan(instance),
-        }
+        data: dict[str, dict[Any, Any]] = {}
+
+        data["client"] = ClientSerializer(instance).data
+
+        last_plan = self.get_last_plan(instance)
+        last_shipment_plan = self.get_last_shipment_plan(instance)
+
+        if last_plan:
+            data["last_plan"] = last_plan.data
+
+        if last_shipment_plan:
+            data["last_shipment_plan"] = last_shipment_plan.data
+
+        return data

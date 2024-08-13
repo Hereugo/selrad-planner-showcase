@@ -18,8 +18,8 @@ def validate_sum_string(value):
         raise ValidationError("Invalid sum string")
 
 
-class Worklist(models.Model):
-    """Model Worklist"""
+class WorkItem(models.Model):
+    """Model WorkItem"""
 
     name = models.CharField(
         verbose_name="Название работы",
@@ -47,10 +47,10 @@ class Worklist(models.Model):
         editable=False,
     )
     statuses = models.ManyToManyField(
-        "Status",
+        to="Status",
         verbose_name="Статусы",
         help_text="Выберите статусы",
-        related_name="worklists",
+        related_name="work_items",
         through="WorklistStatus",
     )
 
@@ -76,8 +76,8 @@ class Plan(models.Model):
         verbose_name="Время назначения",
         help_text="Выберите время назначения",
     )
-    worklist = models.ManyToManyField(
-        "Worklist",
+    work_items = models.ManyToManyField(
+        "WorkItem",
         verbose_name="Список задач для выполнения",
         help_text="Выберите список задач для выполнения",
         through="PlanWorklist",
@@ -106,7 +106,6 @@ class Plan(models.Model):
         verbose_name="Дата обновления",
         editable=False,
     )
-
     managers = models.ManyToManyField(
         "managers.Manager",
         verbose_name="Менеджеры плана",
@@ -184,8 +183,8 @@ class PlanManager(models.Model):
 class PlanWorklist(models.Model):
     """Model PlanWorklist"""
 
-    worklist = models.ForeignKey(
-        "Worklist",
+    work_item = models.ForeignKey(
+        "WorkItem",
         on_delete=models.CASCADE,
         verbose_name="Список задач для выполнения",
         help_text="Выберите список задач для выполнения",
@@ -211,19 +210,20 @@ class PlanWorklist(models.Model):
         blank=True,
     )
     updated_at = models.DateTimeField(
-        verbose_name="Дата обновления",
-        editable=False,
+        verbose_name="Дата обновления", editable=False, blank=True, null=True
     )
     created_at = models.DateTimeField(
         verbose_name="Дата создания",
         auto_now_add=True,
         editable=False,
+        blank=True,
+        null=True,
     )
 
     class Meta:
         verbose_name = "Список задач для выполнения"
         verbose_name_plural = "Списки задач для выполнения"
-        ordering = ("plan", "worklist")
+        ordering = ("-plan", "work_item")
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
@@ -252,8 +252,8 @@ class Status(models.Model):
 class WorklistStatus(models.Model):
     """Model WorklistStatus"""
 
-    worklist = models.ForeignKey(
-        "Worklist",
+    work_item = models.ForeignKey(
+        "WorkItem",
         on_delete=models.CASCADE,
         verbose_name="Список задач для выполнения",
         help_text="Выберите список задач для выполнения",
@@ -268,4 +268,4 @@ class WorklistStatus(models.Model):
     class Meta:
         verbose_name = "Статус списка задач"
         verbose_name_plural = "Статусы списка задач"
-        ordering = ("worklist", "status")
+        ordering = ("work_item", "status")

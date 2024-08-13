@@ -3,6 +3,8 @@ import logging
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from api.managers.serializers import RoleSerializer
+
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -11,7 +13,8 @@ logger = logging.getLogger(__name__)
 class UserSerializer(serializers.ModelSerializer):
     """Сериализация пользователя"""
 
-    role = serializers.SerializerMethodField()
+    id = serializers.StringRelatedField()
+    roles = RoleSerializer(source="manager.roles", many=True, read_only=True)
     permissions = serializers.SerializerMethodField()
 
     class Meta:
@@ -22,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "permissions",
-            "role",
+            "roles",
         )
         read_only_fields = (
             "id",
@@ -31,9 +34,6 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "permissions",
         )
-
-    def get_role(self, obj):
-        return obj.manager.role.name if obj.manager else None
 
     def get_permissions(self, obj):
         return obj.get_all_permissions()

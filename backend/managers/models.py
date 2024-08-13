@@ -8,14 +8,14 @@ user = get_user_model()
 
 
 class GeoPoint(models.Model):
-    lat = models.DecimalField(
+    latitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
         verbose_name="Широта",
         help_text="Введите широту адреса",
         default=0,
     )
-    lon = models.DecimalField(
+    longitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
         verbose_name="Долгота",
