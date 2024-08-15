@@ -8,40 +8,25 @@ from api.managers.serializers import ManagerSerializer
 
 from clients.models import Client
 from managers.models import Manager
-from plans.models import Plan, WorkItem, PlanWorkItem, PlanManager, Status
+from plans.models import Plan, WorkItem, PlanWorkItem, PlanManager
 
 
 logger = logging.getLogger(__name__)
-
-
-class StatusSerializer(serializers.ModelSerializer):
-    """Serializer for Status model"""
-
-    id = serializers.StringRelatedField()
-
-    class Meta:
-        model = Status
-        fields = (
-            "id",
-            "name",
-        )
 
 
 class WorkItemSerializer(serializers.ModelSerializer):
     """Serializer for WorkItem model"""
 
     id = serializers.StringRelatedField()
-    statuses = StatusSerializer(many=True)
 
     class Meta:
         model = WorkItem
         fields = (
             "id",
             "name",
+            "meta_name",
             "description",
-            "statuses",
             "created_at",
-            "updated_at",
         )
 
 
@@ -68,55 +53,6 @@ class PlanSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-
-
-class TaskSerializer(serializers.ModelSerializer):
-    """Serializer for PlanWorkItem model"""
-
-    id = serializers.StringRelatedField()
-    plan = PlanSerializer()
-    status = StatusSerializer()
-
-    class Meta:
-        model = PlanWorkItem
-        fields = (
-            "id",
-            "plan",
-            "completed_by",
-            "status",
-            "updated_at",
-            "created_at",
-        )
-
-
-class TaskUpdateSerializer(serializers.ModelSerializer):
-    """Serializer for PlanWorkItem model"""
-
-    id = serializers.StringRelatedField()
-    plan = PlanSerializer(read_only=True)
-    completed_by = serializers.PrimaryKeyRelatedField(
-        queryset=Manager.objects.all(), required=False
-    )
-    status = serializers.PrimaryKeyRelatedField(
-        queryset=Status.objects.all(), required=False
-    )
-
-    class Meta:
-        model = PlanWorkItem
-        fields = (
-            "id",
-            "plan",
-            "completed_by",
-            "status",
-            "updated_at",
-            "created_at",
-        )
-        read_only_fields = ("id", "plan", "created_at", "updated_at")
-
-    def to_representation(self, instance):
-        return TaskSerializer(
-            instance, context={"request": self.context.get("request")}
-        ).data
 
 
 class PlanUpdateSerializer(serializers.ModelSerializer):
@@ -157,8 +93,18 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
 
     def create_work_items(self, plan, work_items):
         plan_work_items = []
-        for w in work_items:
-            plan_work_items.append(PlanWorkItem(plan=plan, work_item=w))
+        for work_item in work_items:
+            content_object = None
+
+            if work_item.content_type:
+                model_class = work_item.content_type.model_class()
+                content_object = model_class.objects.create(work_item=work_item)
+
+            plan_work_items.append(
+                PlanWorkItem(
+                    plan=plan, work_item=work_item, content_object=content_object
+                )
+            )
 
         PlanWorkItem.objects.bulk_create(plan_work_items, ignore_conflicts=True)
 

@@ -9,8 +9,12 @@ from rest_framework.permissions import BasePermission
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.mixins import ListModelMixin, UpdateModelMixin
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    extend_schema_view,
+)
 
 from plans.models import Plan, WorkItem, PlanWorkItem
 from managers.models import Manager
@@ -25,9 +29,9 @@ from .serializers import (
     PlanSerializer,
     PlanUpdateSerializer,
     WorkItemSerializer,
-    TaskSerializer,
-    TaskUpdateSerializer,
 )
+from .work_items_serializers import TaskSerializer, TaskUpdatePolymorphicSerializer
+
 from .custom_permissions import CanChangeFuturePlans, CanDeleteFuturePlans
 from .custom_filters import PlanFilter, TaskFilter
 from .generate_excelsheet import (
@@ -37,28 +41,6 @@ from .generate_excelsheet import (
 
 
 logger = logging.getLogger(__name__)
-
-
-class TaskViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
-    """API для работы с задачами."""
-
-    queryset = PlanWorkItem.objects.all()
-    serializer_class = TaskSerializer
-    filterset_class = TaskFilter
-    pagination_class = None
-
-    def get_serializer_class(self):
-        if self.action in ("update", "partial_update"):
-            return TaskUpdateSerializer
-
-        return super().get_serializer_class()
-
-    def get_queryset(self):
-        """
-        Переопределение метода для фильтрации задач по менеджеру текущего пользователя.
-        """
-        qs = super().get_queryset()
-        return qs.filter(plan__managers__user=self.request.user)
 
 
 class PlanViewSet(ModelViewSet):
@@ -87,8 +69,6 @@ class PlanViewSet(ModelViewSet):
             permission_classes.append(CanDeleteFuturePlans)
 
         permission_classes.append(HasCRUDPermission)
-
-        logger.debug(f"Permission classes: {permission_classes}")
 
         return [permission() for permission in permission_classes]
 
@@ -215,3 +195,41 @@ class WorkItemViewSet(ReadOnlyModelViewSet):
     queryset = WorkItem.objects.all()
     serializer_class = WorkItemSerializer
     pagination_class = None
+
+
+@extend_schema_view(
+    update=extend_schema(
+        request=TaskUpdatePolymorphicSerializer,
+        responses=TaskSerializer,
+    ),
+    partial_update=extend_schema(
+        request=TaskUpdatePolymorphicSerializer,
+        responses=TaskSerializer,
+    ),
+)
+class TaskViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
+    """API для работы с задачами."""
+
+    queryset = PlanWorkItem.objects.filter(work_item__show_on_main_page=True)
+    serializer_class = TaskSerializer
+    filterset_class = TaskFilter
+    pagination_class = None
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(plan__managers__user=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        task_instance: PlanWorkItem = self.get_object()
+
+        work_item_serializer = TaskUpdatePolymorphicSerializer(
+            task_instance.content_object,
+            data=request.data,
+            context={"request": request},
+        )
+        work_item_serializer.is_valid(raise_exception=True)
+        work_item_serializer.save()
+
+        task_serializer = TaskSerializer(task_instance)
+
+        return Response(task_serializer.data)

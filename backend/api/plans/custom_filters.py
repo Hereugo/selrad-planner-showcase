@@ -2,7 +2,7 @@ from django_filters import FilterSet, DateFilter, ModelMultipleChoiceFilter
 
 
 from managers.models import Manager
-from plans.models import Plan, PlanWorkItem, WorkItem
+from plans.models import Plan, WorkItem, PlanWorkItem
 
 
 class TaskFilter(FilterSet):

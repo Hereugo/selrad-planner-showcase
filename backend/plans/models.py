@@ -3,8 +3,12 @@ import logging
 from math import ceil
 
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+
+from work_items.models import BaseWorkItem
 
 
 logger = logging.getLogger(__name__)
@@ -20,6 +24,9 @@ def validate_sum_string(value):
 
 class WorkItem(models.Model):
     """Model WorkItem"""
+
+    # https://www.reddit.com/r/django/comments/103uufa/can_you_limit_the_list_of_entities_to_associate/
+    target_limit = models.Q(app_label="work_items", model="shipment")
 
     name = models.CharField(
         verbose_name="Название работы",
@@ -37,30 +44,27 @@ class WorkItem(models.Model):
         help_text="Введите описание работы",
         blank=True,
     )
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        limit_choices_to=target_limit,
+        blank=True,
+        null=True,
+    )
     created_at = models.DateTimeField(
         verbose_name="Дата создания",
         auto_now_add=True,
         editable=False,
     )
-    updated_at = models.DateTimeField(
-        verbose_name="Дата обновления",
-        editable=False,
-    )
-    statuses = models.ManyToManyField(
-        to="Status",
-        verbose_name="Статусы",
-        help_text="Выберите статусы",
-        related_name="work_items",
-        through="WorkItemStatus",
+
+    show_on_main_page = models.BooleanField(
+        verbose_name="На главной странице мобильного приложения (selrad app)",
+        help_text="Отображать на главной странице мобильного приложения (selrad app)",
+        default=False,
     )
 
     def __str__(self):
-        return self.name
-
-    def save(self, *args, **kwargs):
-        """Save the model instance. Update the updated_at field."""
-        self.updated_at = timezone.now()
-        super().save(*args, **kwargs)
+        return self.name + " | " + self.meta_name
 
     class Meta:
         verbose_name = "Список задач для выполнения"
@@ -142,10 +146,11 @@ class Plan(models.Model):
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
         cost = self.shipment_cost()
-        if self.box_count is None and isinstance(cost, (int, float)):
-            self.box_count = ceil(cost / 93_000)
-        else:
-            self.box_count = 0
+        if self.box_count is None:
+            if isinstance(cost, (int, float)):
+                self.box_count = ceil(cost / 93_000)
+            else:
+                self.box_count = 0
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)
 
@@ -158,7 +163,7 @@ class Plan(models.Model):
         ]
         verbose_name = "План"
         verbose_name_plural = "Планы"
-        ordering = ["assigned_date", "-created_at"]
+        ordering = ["-assigned_date", "-created_at"]
 
 
 class PlanManager(models.Model):
@@ -192,80 +197,30 @@ class PlanWorkItem(models.Model):
     plan = models.ForeignKey(
         "Plan", on_delete=models.CASCADE, verbose_name="План", help_text="Выберите план"
     )
-    completed_by = models.ForeignKey(
-        "managers.Manager",
-        on_delete=models.SET_NULL,
-        verbose_name="Менеджер",
-        help_text="Выберите менеджера",
-        null=True,
-        blank=True,
-        related_name="completed_plan_worklists",
-    )
-    status = models.ForeignKey(
-        "Status",
-        on_delete=models.SET_NULL,
-        verbose_name="Статус",
-        help_text="Выберите статус",
-        null=True,
-        blank=True,
-    )
-    updated_at = models.DateTimeField(
-        verbose_name="Дата обновления", editable=False, blank=True, null=True
-    )
-    created_at = models.DateTimeField(
-        verbose_name="Дата создания",
-        auto_now_add=True,
-        editable=False,
-        blank=True,
-        null=True,
-    )
 
-    class Meta:
-        verbose_name = "Список задач для выполнения"
-        verbose_name_plural = "Списки задач для выполнения"
-        ordering = ("-plan", "work_item")
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, blank=True, null=True
+    )
+    object_id = models.PositiveIntegerField(blank=True, null=True)
+    content_object = GenericForeignKey("content_type", "object_id")
 
     def save(self, *args, **kwargs):
-        """Save the model instance. Update the updated_at field."""
-        self.updated_at = timezone.now()
-        super().save(*args, **kwargs)
+        # content_type assigned from work_item because it cannot be referenced
+        # directly in GenericForeignKey field.
 
+        # This is only for Admin panel case.
+        # Since PlanWorkItem is created in bulk_create, and doesnt call save method.
+        if self.work_item.content_type != None and self.content_object == None:
+            model_class: BaseWorkItem = self.work_item.content_type.model_class()
 
-class Status(models.Model):
-    """Model Status"""
+            self.content_object = model_class.objects.create(
+                work_item=self.work_item,
+            )
 
-    name = models.CharField(
-        verbose_name="Статус",
-        help_text="Введите статус",
-        max_length=255,
-    )
-
-    def __str__(self):
-        return self.name
+        return super().save(*args, **kwargs)
 
     class Meta:
-        verbose_name = "Статус"
-        verbose_name_plural = "Статусы"
-        ordering = ["name"]
-
-
-class WorkItemStatus(models.Model):
-    """Model WorkItemStatus"""
-
-    work_item = models.ForeignKey(
-        "WorkItem",
-        on_delete=models.CASCADE,
-        verbose_name="Список задач для выполнения",
-        help_text="Выберите список задач для выполнения",
-    )
-    status = models.ForeignKey(
-        "Status",
-        on_delete=models.CASCADE,
-        verbose_name="Статус",
-        help_text="Выберите статус",
-    )
-
-    class Meta:
-        verbose_name = "Статус списка задач"
-        verbose_name_plural = "Статусы списка задач"
-        ordering = ("work_item", "status")
+        indexes = [
+            models.Index(fields=["plan", "work_item"]),
+            models.Index(fields=["content_type", "object_id"]),
+        ]

@@ -2,7 +2,7 @@ import logging
 from django.contrib import admin
 from django.shortcuts import render
 
-from plans.models import Plan, WorkItem, Status
+from plans.models import Plan, WorkItem
 from managers.models import Manager
 
 from api.plans.views import PlanViewSet
@@ -48,11 +48,6 @@ def export_report(modeladmin, request, queryset):
             "latest_date": plans.latest("assigned_date").assigned_date,
         },
     )
-
-
-class WorkItemStatusInline(admin.TabularInline):
-    model = WorkItem.statuses.through
-    extra = 1
 
 
 class PlanManagerInline(admin.TabularInline):
@@ -109,28 +104,16 @@ class PlanAdmin(admin.ModelAdmin):
 @admin.register(WorkItem)
 class WorkItemAdmin(admin.ModelAdmin):
     list_display = (
-        "name",
-        "description",
-    )
-    search_fields = ("name",)
-    list_filter = ("name",)
-    empty_value_display = "--пусто--"
-    readonly_fields = (
-        "updated_at",
-        "created_at",
-    )
-
-    inlines = [
-        WorkItemStatusInline,
-    ]
-
-
-@admin.register(Status)
-class StatusAdmin(admin.ModelAdmin):
-    list_display = (
         "id",
         "name",
+        "meta_name",
+        "description",
+        "content_type",
+        "created_at",
     )
-    search_fields = ("name",)
-    list_filter = ("name",)
+    search_fields = (
+        "name",
+        "meta_name",
+    )
     empty_value_display = "--пусто--"
+    readonly_fields = ("created_at",)

@@ -62,11 +62,11 @@ class GeoPoint(models.Model):
     )
 
     def __str__(self):
-        return f"{self.pk} | {self.lat} | {self.lon}"
+        return f"{self.pk} | {self.latitude} | {self.longitude}"
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
-        self.point = Point(float(self.lon), float(self.lat))
+        self.point = Point(float(self.longitude), float(self.latitude))
 
         super().save(*args, **kwargs)
 

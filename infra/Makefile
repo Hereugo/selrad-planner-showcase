@@ -10,6 +10,9 @@ up:
 	docker-compose -f docker-compose-dev.yml up -d
 down:
 	docker-compose -f docker-compose-dev.yml down
+stop:
+	docker-compose -f docker-compose-dev.yml stop
+
 logs:
 	docker-compose -f docker-compose-dev.yml logs --follow
 

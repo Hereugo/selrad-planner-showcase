@@ -8,6 +8,8 @@ from managers.models import Manager, GeoPoint, Role
 class GeoPointSerializer(serializers.ModelSerializer):
     id = serializers.StringRelatedField()
     manager = serializers.StringRelatedField()
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
 
     class Meta:
         model = GeoPoint
@@ -52,11 +54,9 @@ class ManagerSerializer(serializers.ModelSerializer):
     @extend_schema_field(GeoPointSerializer(many=True))
     def get_geopoints(self, obj):
         request: Optional[Request] = self.context.get("request")
-        if not request:
-            raise serializers.ValidationError("Request object is required")
 
         # limit the number of geopoints returned
-        geo_limit = int(request.query_params.get("geo_limit", 5))
+        geo_limit = int(request.query_params.get("geo_limit", 5) if request else 5)
 
         qs = obj.geopoints.all()[:geo_limit]
 
