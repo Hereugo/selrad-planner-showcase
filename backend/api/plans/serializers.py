@@ -129,14 +129,13 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         return plan
 
     def update(self, instance, validated_data):
-        PlanWorkItem.objects.filter(plan=instance).delete()
-        PlanManager.objects.filter(plan=instance).delete()
-
         if "work_items" in validated_data:
+            PlanWorkItem.objects.filter(plan=instance).delete()
             work_items = validated_data.pop("work_items", [])
             self.create_work_items(instance, work_items)
 
         if "managers" in validated_data:
+            PlanManager.objects.filter(plan=instance).delete()
             managers = validated_data.pop("managers", [])
             self.create_managers(instance, managers)
 

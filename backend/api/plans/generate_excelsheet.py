@@ -3,7 +3,7 @@ import logging
 from itertools import groupby
 
 import openpyxl
-from openpyxl.styles import Border, Side
+from openpyxl.styles import Border, Side, NamedStyle, Font, PatternFill, Alignment
 
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ COL_DICT = {
     "client": 1,
     "address": 2,
     "manager": 3,
-    "worklist": 4,
+    "work_items": 4,
     "comment": 5,
     "shipment_cost": 6,
     "box_count": 7,
@@ -48,18 +48,18 @@ def gen_header(ws, row, title, sc, ec):
 
 def generate_excelsheet_by_plan(plans, earliest_date, latest_date):
     workbook = openpyxl.load_workbook("./static/docs/standard_plan.xlsx")
-    ws = workbook.active
+    ws = workbook.active or workbook.create_sheet("Sheet1")
 
     if "head_cell" not in workbook.style_names:
-        head_style = openpyxl.styles.NamedStyle(name="head_cell")
-        head_style.font = openpyxl.styles.Font(color="000000", size=10)
-        head_style.fill = openpyxl.styles.PatternFill(
+        head_style = NamedStyle(name="head_cell")
+        head_style.font = Font(color="000000", size=10)
+        head_style.fill = PatternFill(
             start_color="FFFF00", end_color="FFFF00", fill_type="solid"
         )
         workbook.add_named_style(head_style)
 
     if "general_style" not in workbook.style_names:
-        general_style = openpyxl.styles.NamedStyle(name="general_style")
+        general_style = NamedStyle(name="general_style")
         general_style.alignment.wrap_text = True
         general_style.number_format = "### ### ### ### ### ### ### ### ### ### ##0"
 
@@ -112,19 +112,19 @@ def generate_excelsheet_by_plan(plans, earliest_date, latest_date):
             ws.cell(row=row + i, column=COL_DICT["manager"]).value = ", ".join(
                 [str(m) for m in plan.managers.all()]
             )
-            ws.cell(row=row + i, column=COL_DICT["worklist"]).value = ", ".join(
-                [str(w) for w in plan.worklist.all()]
+            ws.cell(row=row + i, column=COL_DICT["work_items"]).value = ", ".join(
+                [str(w) for w in plan.work_items.all()]
             )
             ws.cell(row=row + i, column=COL_DICT["comment"]).value = plan.comment
             ws.cell(row=row + i, column=COL_DICT["shipment_cost"]).value = (
                 plan.shipment_cost()
             )
             ws.cell(row=row + i, column=COL_DICT["shipment_cost"]).alignment = (
-                openpyxl.styles.Alignment(horizontal="right")
+                Alignment(horizontal="right")
             )
             ws.cell(row=row + i, column=COL_DICT["box_count"]).value = plan.box_count
-            ws.cell(row=row + i, column=COL_DICT["box_count"]).alignment = (
-                openpyxl.styles.Alignment(horizontal="right")
+            ws.cell(row=row + i, column=COL_DICT["box_count"]).alignment = Alignment(
+                horizontal="right"
             )
 
             plan_count += 1
@@ -140,7 +140,7 @@ def generate_excelsheet_by_plan(plans, earliest_date, latest_date):
 COL_DICT_REPORT = {
     "client": 1,
     "address": 2,
-    "worklist": 3,
+    "work_items": 3,
     "comment": 4,
     "shipment_cost": 5,
     "box_count": 6,
@@ -149,18 +149,18 @@ COL_DICT_REPORT = {
 
 def generate_excelsheet_by_manager(plans, manager, earliest_date, latest_date):
     workbook = openpyxl.load_workbook("./static/docs/standard_report.xlsx")
-    ws = workbook.active
+    ws = workbook.active or workbook.create_sheet("Sheet1")
 
     if "head_cell" not in workbook.style_names:
-        head_style = openpyxl.styles.NamedStyle(name="head_cell")
-        head_style.font = openpyxl.styles.Font(color="000000", size=10)
-        head_style.fill = openpyxl.styles.PatternFill(
+        head_style = NamedStyle(name="head_cell")
+        head_style.font = Font(color="000000", size=10)
+        head_style.fill = PatternFill(
             start_color="FFFF00", end_color="FFFF00", fill_type="solid"
         )
         workbook.add_named_style(head_style)
 
     if "general_style" not in workbook.style_names:
-        general_style = openpyxl.styles.NamedStyle(name="general_style")
+        general_style = NamedStyle(name="general_style")
         general_style.alignment.wrap_text = True
         general_style.number_format = "### ### ### ### ### ### ### ### ### ### ##0"
 
@@ -209,21 +209,21 @@ def generate_excelsheet_by_manager(plans, manager, earliest_date, latest_date):
             ws.cell(row=row + i, column=COL_DICT_REPORT["address"]).value = (
                 plan.client.address.street
             )
-            ws.cell(row=row + i, column=COL_DICT_REPORT["worklist"]).value = ", ".join(
-                [str(w) for w in plan.worklist.all()]
+            ws.cell(row=row + i, column=COL_DICT_REPORT["work_items"]).value = (
+                ", ".join([str(w) for w in plan.work_items.all()])
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["comment"]).value = plan.comment
             ws.cell(row=row + i, column=COL_DICT_REPORT["shipment_cost"]).value = (
                 plan.shipment_cost()
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["shipment_cost"]).alignment = (
-                openpyxl.styles.Alignment(horizontal="right")
+                Alignment(horizontal="right")
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["box_count"]).value = (
                 plan.box_count
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["box_count"]).alignment = (
-                openpyxl.styles.Alignment(horizontal="right")
+                Alignment(horizontal="right")
             )
 
             plan_count += 1

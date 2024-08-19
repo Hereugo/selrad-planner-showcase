@@ -1,6 +1,7 @@
 # Description: Serializers for work items models.
 # Note each work item serializer must have "work_item" field
 # since PolyMorphicModelSerializer uses this field to determine the model type.
+
 import logging
 from typing import Any
 
@@ -64,6 +65,10 @@ class ShipmentSerializer(BaseWorkItemSerializer):
 
     status_choices = serializers.SerializerMethodField()
 
+    box_count = serializers.IntegerField(allow_null=True)
+    status = serializers.CharField(allow_null=True)
+    comment = serializers.CharField(allow_null=True)
+
     class Meta(BaseWorkItemSerializer.Meta):
         model = Shipment
         fields = BaseWorkItemSerializer.Meta.fields + (
@@ -82,7 +87,7 @@ class ShipmentUpdateSerializer(BaseWorkItemUpdateSerializer):
     """Serializer for Shipment model"""
 
     status = serializers.ChoiceField(
-        allow_blank=True, choices=Shipment.CHOICES, required=False
+        allow_null=True, choices=Shipment.CHOICES, required=False
     )
 
     class Meta(BaseWorkItemUpdateSerializer.Meta):

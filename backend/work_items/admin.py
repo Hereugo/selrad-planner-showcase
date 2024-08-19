@@ -10,5 +10,13 @@ class BaseWorkItemAdmin(admin.ModelAdmin):
 
 @admin.register(Shipment)
 class ShipmentAdmin(admin.ModelAdmin):
-    list_display = ("id", "box_count", "completed_by", "created_at", "updated_at")
+    list_display = (
+        "id",
+        "box_count",
+        "status",
+        "comment",
+        "completed_by",
+        "created_at",
+        "updated_at",
+    )
     empty_value_display = "--пусто--"

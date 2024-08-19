@@ -14,6 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализация пользователя"""
 
     id = serializers.StringRelatedField()
+    manager_id = serializers.StringRelatedField(source="manager.id")
     roles = RoleSerializer(source="manager.roles", many=True, read_only=True)
     permissions = serializers.SerializerMethodField()
 
@@ -21,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             "id",
+            "manager_id",
             "email",
             "first_name",
             "last_name",

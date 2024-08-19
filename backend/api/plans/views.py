@@ -2,6 +2,7 @@ import logging
 
 from datetime import datetime
 from django.http import HttpResponse
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status
@@ -34,6 +35,7 @@ from .work_items_serializers import TaskSerializer, TaskUpdatePolymorphicSeriali
 
 from .custom_permissions import CanChangeFuturePlans, CanDeleteFuturePlans
 from .custom_filters import PlanFilter, TaskFilter
+from .generate_dispatch_list import generate_dispatch_list
 from .generate_excelsheet import (
     generate_excelsheet_by_plan,
     generate_excelsheet_by_manager,
@@ -80,6 +82,64 @@ class PlanViewSet(ModelViewSet):
 
     @extend_schema(
         methods=["get"],
+        description="Получить диспетчерский лист",
+        summary="Получить диспетчерский лист",
+        filters=True,
+        parameters=[
+            OpenApiParameter(
+                "comment",
+                str,
+                description="Комментарий",
+            ),
+            OpenApiParameter(
+                "manager_id",
+                str,
+                OpenApiParameter.PATH,
+                description="id менеджера",
+                required=True,
+            ),
+        ],
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="dispatch_list/(?P<manager_id>\d+)",
+    )
+    @permission_required("plans.get_dispatch_list")
+    def dispatch_list(self, request, manager_id=None):
+        start_date = request.query_params.get("start_date", None)
+        end_date = request.query_params.get("end_date", None)
+        comment = request.query_params.get("comment", "")
+
+        plans: QuerySet[Plan] = self.filter_queryset(self.get_queryset())
+        manager: Manager = get_object_or_404(Manager, id=manager_id)
+
+        if not start_date:
+            start_date = plans.latest("assigned_date").assigned_date
+        else:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+
+        if not end_date:
+            end_date = plans.earliest("assigned_date").assigned_date
+        else:
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+
+        buffer = generate_dispatch_list(plans, manager, comment, start_date, end_date)
+        filename: str = (
+            f"ДИСПЕТЧЕРСКИЙ ЛИСТ С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
+        )
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+    @extend_schema(
+        methods=["get"],
         description="Скачать план",
         filters=True,
         summary="Скачать план",
@@ -115,7 +175,7 @@ class PlanViewSet(ModelViewSet):
         else:
             end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
-        buffer = generate_excelsheet_by_plan(plans, end_date, start_date)
+        buffer = generate_excelsheet_by_plan(plans, start_date, end_date)
 
         filename = f"ПЛАНЫ С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
 
@@ -213,7 +273,7 @@ class TaskViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericV
     queryset = PlanWorkItem.objects.filter(work_item__show_on_main_page=True)
     serializer_class = TaskSerializer
     filterset_class = TaskFilter
-    pagination_class = None
+    pagination_class = PageLimitPagination
 
     def get_queryset(self):
         qs = super().get_queryset()
