@@ -183,6 +183,12 @@ class PlanManager(models.Model):
         verbose_name = "Менеджер плана"
         verbose_name_plural = "Менеджеры плана"
         ordering = ("plan", "manager")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["plan", "manager"],
+                name="unique_plan_manager",
+            )
+        ]
 
 
 class PlanWorkItem(models.Model):
@@ -223,4 +229,10 @@ class PlanWorkItem(models.Model):
         indexes = [
             models.Index(fields=["plan", "work_item"]),
             models.Index(fields=["content_type", "object_id"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["plan", "work_item"],
+                name="unique_plan_work_item",
+            )
         ]
