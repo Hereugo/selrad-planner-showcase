@@ -6,7 +6,7 @@ import {
   usePlanDeleteMutation,
   usePlanUpdateMutation,
 } from "@/lib/backend/plans";
-import { useWorklistsQuery } from "@/lib/backend/worklist";
+import { useWorkItemsQuery } from "@/lib/backend/work_items";
 import { formatClientName } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
@@ -44,12 +44,12 @@ export const useManagers = () => {
 };
 
 export const useWorks = () => {
-  const { data, error, isLoading } = useWorklistsQuery();
+  const { data, error, isLoading } = useWorkItemsQuery();
 
-  const worklist = data?.data ?? [];
+  const workItems = data?.data ?? [];
 
   return {
-    worklist,
+    workItems,
     error,
     isLoading,
   };
@@ -87,8 +87,8 @@ export const useUpdatePlan = (initialPlan: Plan) => {
   const [managers, setManagers] = useState(
     initialPlan.managers.map((manager) => manager.id),
   );
-  const [worklist, setWorklist] = useState(
-    initialPlan.worklist.map((work) => work.id),
+  const [workItems, setWorkItem] = useState(
+    initialPlan.work_items.map((workItem) => workItem.id),
   );
   const [shipmentCostFormula, setShipmentCostFormula] = useState(
     initialPlan.shipment_cost_formula,
@@ -108,12 +108,12 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     });
   };
 
-  const switchWork = (work: string) => {
-    setWorklist((prev) => {
-      if (prev.includes(work)) {
-        return prev.filter((w) => w !== work);
+  const switchWork = (id: WorkItem["id"]) => {
+    setWorkItem((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((w) => w !== id);
       } else {
-        return [...prev, work];
+        return [...prev, id];
       }
     });
   };
@@ -131,7 +131,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
       assigned_date: assignedDate,
       client: client,
       managers: managers || [],
-      worklist: worklist || [],
+      work_items: workItems || [],
       shipment_cost_formula: shipmentCostFormula,
       box_count: boxCount ?? 0,
       comment: comment ?? "",
@@ -168,7 +168,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     client,
     setClient,
     managers,
-    worklist,
+    workItems,
     shipmentCostFormula,
     setShipmentCostFormula,
     boxCount,

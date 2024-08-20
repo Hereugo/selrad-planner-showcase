@@ -14,7 +14,7 @@ import { FC, ReactNode } from "react";
 import DayPicker from "./day-picker";
 import ClientPicker from "./client-picker";
 import SelectManagers from "./select-managers";
-import SelectWorkList from "./select-worklist";
+import SelectWorkItem from "./select-workitem";
 import ShipmentCostInput from "./input-shipment-cost";
 import BoxCountInput from "./input-box-count";
 import CommentInput from "./input-comment";
@@ -52,7 +52,7 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
     handleCreatePlan,
     isLoading,
     selectedManagers,
-    selectedWorklist,
+    selectedWorkItem,
   } = useCreatePlan({ defaultClientId, defaultAssignedDate, defaultIsOpen });
 
   return (
@@ -112,11 +112,11 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="worklist">Работы</Label>
-                <SelectWorkList
-                  id="worklist"
+                <Label htmlFor="workItems">Работы</Label>
+                <SelectWorkItem
+                  id="workItems"
                   switchWork={switchWork}
-                  selectedWorklist={selectedWorklist}
+                  selectedWorkItem={selectedWorkItem}
                 />
               </div>
             </div>

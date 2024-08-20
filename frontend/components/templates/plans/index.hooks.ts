@@ -3,23 +3,23 @@ import { usePlansQuery } from "@/lib/backend/plans";
 
 export const usePlans = () => {
   const { calendarRange, searchQuery, managerId, workId } = useFiltersContext();
-  const date_after = calendarRange?.from
+  const start_date = calendarRange?.from
     ?.toLocaleDateString("ru-RU")
     .split(".")
     .reverse()
     .join("-");
-  const date_before = calendarRange?.to
+  const end_date = calendarRange?.to
     ?.toLocaleDateString("ru-RU")
     .split(".")
     .reverse()
     .join("-");
 
   const { data, error, isLoading } = usePlansQuery({
-    date_after: date_after,
-    date_before: date_before,
+    start_date: start_date,
+    end_date: end_date,
     search: searchQuery,
     manager_id: managerId,
-    worklist_id: workId,
+    work_items: workId ? [workId] : undefined,
   });
 
   const plans = (data?.data || []).sort((a, b) => {

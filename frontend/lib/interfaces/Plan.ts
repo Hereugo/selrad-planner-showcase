@@ -1,7 +1,7 @@
 interface Plan {
   id: string;
   assigned_date: string;
-  worklist: Work[];
+  work_items: WorkItem[];
   client: Client;
   shipment_cost: number;
   shipment_cost_formula: string;

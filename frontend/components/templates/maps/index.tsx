@@ -118,10 +118,10 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
               <div>
                 <div className="font-semibold">Работы:</div>
                 <div className="grid grid-cols-3">
-                  {selectedPlan.worklist
+                  {selectedPlan.work_items
                     .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((work) => (
-                      <div key={work.id}>{work.name}</div>
+                    .map((workItem) => (
+                      <div key={workItem.id}>{workItem.name}</div>
                     ))}
                 </div>
               </div>
