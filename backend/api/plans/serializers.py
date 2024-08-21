@@ -4,7 +4,7 @@ from typing import Any, Optional
 from rest_framework import serializers
 
 from api.clients.serializers import ClientSerializer
-from api.managers.serializers import ManagerSerializer
+from api.users.serializers import ManagerSerializer
 
 from clients.models import Client
 from managers.models import Manager
@@ -24,9 +24,6 @@ class WorkItemSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "meta_name",
-            "description",
-            "created_at",
         )
 
 
@@ -176,7 +173,7 @@ class NearbyClientSerializer(serializers.Serializer):
     def get_last_shipment_plan(self, client) -> Optional[PlanSerializer]:
         last_shipment_plan = (
             Plan.objects.filter(client=client)
-            .filter(worklist__meta_name="shipment")
+            .filter(work_items__content_type__model="shipment")
             .order_by("-assigned_date")
             .first()
         )

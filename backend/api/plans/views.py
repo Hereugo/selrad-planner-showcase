@@ -112,8 +112,17 @@ class PlanViewSet(ModelViewSet):
         end_date = request.query_params.get("end_date", None)
         comment = request.query_params.get("comment", "")
 
-        plans: QuerySet[Plan] = self.filter_queryset(self.get_queryset())
         manager: Manager = get_object_or_404(Manager, id=manager_id)
+
+        # If manager is not a driver, then he can't get dispatch list.
+        if not manager.is_driver:
+            return Response(
+                {"error": "Менеджер не является водителем."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        plans: QuerySet[Plan] = self.filter_queryset(self.get_queryset())
+        plans = plans.filter(managers__id=manager_id)
 
         if not start_date:
             start_date = plans.latest("assigned_date").assigned_date
@@ -211,7 +220,7 @@ class PlanViewSet(ModelViewSet):
     @permission_required("plans.export_report")
     def export_report(self, request, manager_id=None, plans=None):
         """Скачать отчет."""
-        manager = get_object_or_404(Manager, pk=manager_id)
+        manager: Manager = get_object_or_404(Manager, pk=manager_id)
 
         # Method export report is used here, because filters are applied here.
         plans = self.filter_queryset(plans or self.get_queryset())
@@ -270,7 +279,10 @@ class WorkItemViewSet(ReadOnlyModelViewSet):
 class TaskViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     """API для работы с задачами."""
 
-    queryset = PlanWorkItem.objects.filter(work_item__show_on_main_page=True)
+    # Показывать только задачи с отгрузками
+    queryset = PlanWorkItem.objects.filter(
+        work_item__content_type__model__in=("shipment",)
+    )
     serializer_class = TaskSerializer
     filterset_class = TaskFilter
     pagination_class = PageLimitPagination

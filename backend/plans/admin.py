@@ -106,14 +106,9 @@ class WorkItemAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
-        "meta_name",
-        "description",
         "content_type",
         "created_at",
     )
-    search_fields = (
-        "name",
-        "meta_name",
-    )
+    search_fields = ("name", "content_type__model")
     empty_value_display = "--пусто--"
     readonly_fields = ("created_at",)

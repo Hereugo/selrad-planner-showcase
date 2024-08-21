@@ -33,17 +33,6 @@ class WorkItem(models.Model):
         help_text="Введите название работы",
         max_length=255,
     )
-    meta_name = models.CharField(
-        verbose_name="Мета название работы",
-        help_text="Введите мета название работы",
-        max_length=255,
-        blank=True,
-    )
-    description = models.TextField(
-        verbose_name="Описание работы",
-        help_text="Введите описание работы",
-        blank=True,
-    )
     content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
@@ -57,14 +46,12 @@ class WorkItem(models.Model):
         editable=False,
     )
 
-    show_on_main_page = models.BooleanField(
-        verbose_name="На главной странице мобильного приложения (selrad app)",
-        help_text="Отображать на главной странице мобильного приложения (selrad app)",
-        default=False,
-    )
-
     def __str__(self):
-        return self.name + " | " + self.meta_name
+        return (
+            self.name + " | " + self.content_type.model_class().__name__
+            if self.content_type
+            else "--пусто--"
+        )
 
     class Meta:
         verbose_name = "Список задач для выполнения"
