@@ -97,7 +97,7 @@ class Manager(models.Model):
         verbose_name="Водитель",
         default=False,
     )
-    is_keeper = models.BooleanField(
+    is_warehouser = models.BooleanField(
         help_text="Является ли менеджер кладовщиком",
         verbose_name="Кладовщик",
         default=False,
@@ -109,7 +109,15 @@ class Manager(models.Model):
     )
 
     def __str__(self):
-        return f"{self.name}"
+        name = self.name
+        roles = ""
+        if self.is_driver:
+            roles += Manager.is_driver.field.verbose_name + " "
+        if self.is_warehouser:
+            roles += Manager.is_warehouser.field.verbose_name + " "
+        if self.is_manager:
+            roles += Manager.is_manager.field.verbose_name + " "
+        return f"{name} | {roles} | {'Скрыт' if self.is_hidden else 'Виден'}"
 
     class Meta:
         verbose_name = "Менеджер"

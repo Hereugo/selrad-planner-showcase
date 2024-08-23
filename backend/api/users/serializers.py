@@ -52,7 +52,10 @@ class ManagerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Manager
-        exclude = ("user", "is_hidden", "is_driver", "is_manager", "is_keeper")
+        exclude = (
+            "user",
+            "is_hidden",
+        )
 
     @extend_schema_field(GeoPointSerializer(many=True))
     def get_geopoints(self, obj):

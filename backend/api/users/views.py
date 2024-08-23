@@ -125,13 +125,13 @@ class UserViewSet(GenericViewSet):
     @action(
         detail=False,
         methods=["get"],
-        url_path="keepers",
+        url_path="warehousers",
         permission_classes=[IsAuthenticated],
     )
-    def keepers(self, request):
+    def warehousers(self, request):
         """Получить всех складовщиков."""
         queryset = self.filter_queryset(self.get_queryset())
-        queryset = queryset.filter(is_keeper=True)
+        queryset = queryset.filter(is_warehouser=True)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

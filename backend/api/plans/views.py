@@ -99,6 +99,13 @@ class PlanViewSet(ModelViewSet):
                 required=True,
             ),
         ],
+        responses={
+            200: {
+                "content": {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {}
+                },
+            }
+        },
     )
     @action(
         detail=False,
@@ -125,18 +132,18 @@ class PlanViewSet(ModelViewSet):
         plans = plans.filter(managers__id=manager_id)
 
         if not start_date:
-            start_date = plans.latest("assigned_date").assigned_date
+            start_date = plans.earliest("assigned_date").assigned_date
         else:
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
 
         if not end_date:
-            end_date = plans.earliest("assigned_date").assigned_date
+            end_date = plans.latest("assigned_date").assigned_date
         else:
             end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
         buffer = generate_dispatch_list(plans, manager, comment, start_date, end_date)
         filename: str = (
-            f"ДИСПЕТЧЕРСКИЙ ЛИСТ С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
+            f"ДИСПЕТЧЕРСКИЙ ЛИСТ {manager.name} С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
         )
 
         response = HttpResponse(
@@ -247,7 +254,7 @@ class PlanViewSet(ModelViewSet):
 
         buffer = generate_excelsheet_by_manager(plans, manager, end_date, start_date)
 
-        filename = f"ОТЧЕТ {manager} С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
+        filename = f"ОТЧЕТ {manager.name} С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),

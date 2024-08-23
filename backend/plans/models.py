@@ -47,11 +47,7 @@ class WorkItem(models.Model):
     )
 
     def __str__(self):
-        return (
-            self.name + " | " + self.content_type.model_class().__name__
-            if self.content_type
-            else "--пусто--"
-        )
+        return f"{self.name} | {self.content_type.model_class().__name__ if self.content_type else '--пусто--'}"
 
     class Meta:
         verbose_name = "Список задач для выполнения"
@@ -147,6 +143,7 @@ class Plan(models.Model):
             ("change_old_plan", "Can change old plan"),
             ("delete_old_plan", "Can delete old plan"),
             ("export_report", "Can export report"),
+            ("get_dispatch_list", "Can export dispatch list"),
         ]
         verbose_name = "План"
         verbose_name_plural = "Планы"

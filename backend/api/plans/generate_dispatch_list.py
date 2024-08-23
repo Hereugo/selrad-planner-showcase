@@ -1,11 +1,12 @@
 from io import BytesIO
+from PIL import Image
+from tempfile import TemporaryFile
 from datetime import datetime
 
-from django.db.models import QuerySet
+import pandas as pd
+from html2image import Html2Image
 
-import openpyxl
-from openpyxl.styles import NamedStyle
-from openpyxl.styles import Border, Side
+from django.db.models import QuerySet
 
 from plans.models import Plan
 from managers.models import Manager
@@ -18,46 +19,59 @@ def generate_dispatch_list(
     start_date: datetime,
     end_date: datetime,
 ):
-    workbook = openpyxl.load_workbook("./static/docs/standard_dispatch_list.xlsx")
-    ws = workbook.active or workbook.create_sheet("Sheet1")
+    l = {
+        "№\nп/п": [],
+        "Клиент": [],
+        "Кол-во коробок": [],
+        "Место Отгрузки": [],
+        "Контактное лицо": [],
+        "Доп информация": [],
+    }
+    for i, plan in enumerate(plans, start=1):
+        l["№\nп/п"].append(i)
+        l["Клиент"].append(plan.client.name)
+        l["Кол-во коробок"].append(plan.box_count)
+        l["Место Отгрузки"].append(plan.client.address.street)
+        l["Контактное лицо"].append(", ".join([m.name for m in plan.managers.all()]))
+        l["Доп информация"].append(plan.comment)
 
-    if "general_style" not in workbook.style_names:
-        general_style = NamedStyle(name="general_style")
-        general_style.alignment.wrap_text = True
-
-        general_style.border = Border(
-            left=Side(style="thin"),
-            right=Side(style="thin"),
-            top=Side(style="thin"),
-            bottom=Side(style="thin"),
-        )
-        workbook.add_named_style(general_style)
-
-    # Setup title:
-    ws.cell(row=1, column=1).value = f"Диспетчерсктй лист {manager}"
-
-    # Listing all parameters:
-    ws.cell(row=2, column=1).value = "Параметры:"
-    ws.cell(row=3, column=1).value = (
-        f"Период: {start_date.strftime('%d-%m-%Y')} с {end_date.strftime('%d-%m-%Y')}"
-    )
-    ws.cell(row=4, column=1).value = f"Менеджер: {manager}"
-
-    # Setup table data:
-    row_offset: int = 7
-    for i, plan in enumerate(plans, start=row_offset):
-        ws.cell(row=i, column=1).value = i - row_offset + 1
-        ws.cell(row=i, column=2).value = plan.client.name
-        ws.cell(row=i, column=3).value = plan.box_count
-        ws.cell(row=i, column=4).value = plan.client.address.street
-        ws.cell(row=i, column=5).value = ", ".join(
-            [str(m) for m in plan.managers.all()]
-        )
-        ws.cell(row=i, column=7).value = plan.comment
-
-    ws.cell(row=len(plans) + row_offset + 2, column=1).value = comment
+    df = pd.DataFrame(l)
 
     buffer = BytesIO()
-    workbook.save(buffer)
+    hti = Html2Image(
+        browser_executable="google-chrome",
+        custom_flags=["--no-sandbox", "--hide-scrollbars", "--quiet"],
+        output_path="./static/temp/",
+    )
+    with TemporaryFile(mode="w+") as f:
+        df.to_html(f, index=False)
+        f.seek(0)
+
+        html_str = f"""
+        <h1>Диспетчерсктй лист {manager.name}</h1>
+        <span>Параметры:</span><br />
+        <span>Период: {start_date.strftime("%d.%m.%Y")} с {end_date.strftime("%d.%m.%Y")}</span><br />
+        <span>Менеджер: {manager.name}</span><br />
+        <br />
+        {f.read()}
+        <h2>{comment}</h2>
+        """
+
+        css_str = "table,th{border:1px solid #000,background-color:white;}*{box-sizing:border-box;font-family:Arial,sans-serif;background-color:white;}table{border-collapse:collapse;width:100%}th{background-color:#d3d3d3;font-size:14px;font-weight:700;text-align:left}td,th{padding:8px}tr th:first-child{width:24px;max-width:24px}tr th:nth-child(2),tr th:nth-child(4){width:300px;max-width:300px}tr th:nth-child(3){width:50px;max-width:50px}tr td:nth-child(3){font-size:20px;font-weight:700;text-align:center}tr th:nth-child(5){width:200px;max-width:200px}tr th:nth-child(6){width:100px;max-width:100px}"
+
+        calc_height = 500 + len(df) * 40
+
+        img = hti.screenshot(
+            html_str,
+            css_str=css_str,
+            save_as="html_table.png",
+            size=(1920, calc_height),
+        )
+
+        image = Image.open(img[0])
+        image.save(buffer, format="png", optimize=True, quality=95)
+        buffer.seek(0)
+
+    # delete html_table
 
     return buffer

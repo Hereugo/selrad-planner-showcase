@@ -110,10 +110,10 @@ def generate_excelsheet_by_plan(plans, earliest_date, latest_date):
                 plan.client.address.street
             )
             ws.cell(row=row + i, column=COL_DICT["manager"]).value = ", ".join(
-                [str(m) for m in plan.managers.all()]
+                [m.name for m in plan.managers.all()]
             )
             ws.cell(row=row + i, column=COL_DICT["work_items"]).value = ", ".join(
-                [str(w) for w in plan.work_items.all()]
+                [w.name for w in plan.work_items.all()]
             )
             ws.cell(row=row + i, column=COL_DICT["comment"]).value = plan.comment
             ws.cell(row=row + i, column=COL_DICT["shipment_cost"]).value = (
@@ -210,7 +210,7 @@ def generate_excelsheet_by_manager(plans, manager, earliest_date, latest_date):
                 plan.client.address.street
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["work_items"]).value = (
-                ", ".join([str(w) for w in plan.work_items.all()])
+                ", ".join([w.name for w in plan.work_items.all()])
             )
             ws.cell(row=row + i, column=COL_DICT_REPORT["comment"]).value = plan.comment
             ws.cell(row=row + i, column=COL_DICT_REPORT["shipment_cost"]).value = (

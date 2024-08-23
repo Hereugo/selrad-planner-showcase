@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 from rest_framework import serializers
 
@@ -88,8 +88,31 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "created_at", "updated_at")
 
-    def create_work_items(self, plan, work_items):
-        plan_work_items = []
+    def validate(self, attrs):
+        # If work_items contains a "shipment" type, then only one manager should be assgined as driver
+        work_items: List[WorkItem] = attrs.get("work_items", [])
+        managers: List[Manager] = attrs.get("managers", [])
+
+        if any(
+            work_item.content_type.model_class().__name__.lower() == "shipment"
+            for work_item in work_items
+            if work_item.content_type
+        ):
+            drivers: List[Manager] = list(filter(lambda x: x.is_driver, managers))
+
+            if len(drivers) > 1:
+                raise serializers.ValidationError(
+                    f"При наличии отгрузки, должен быть назначен только один водитель. Водители: {', '.join([d.name for d in drivers])}"
+                )
+            elif len(drivers) == 0:
+                raise serializers.ValidationError(
+                    "При наличии отгрузки, должен быть назначен хотя бы один водитель"
+                )
+
+        return super().validate(attrs)
+
+    def create_work_items(self, plan: Plan, work_items: List[WorkItem]):
+        plan_work_items: List[PlanWorkItem] = []
         for work_item in work_items:
             content_object = None
 
@@ -105,29 +128,29 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
 
         PlanWorkItem.objects.bulk_create(plan_work_items, ignore_conflicts=True)
 
-    def create_managers(self, plan, managers):
-        plan_managers = []
+    def create_managers(self, plan: Plan, managers: List[Manager]):
+        plan_managers: List[PlanManager] = []
         for manager in managers:
             plan_managers.append(PlanManager(plan=plan, manager=manager))
         PlanManager.objects.bulk_create(plan_managers, ignore_conflicts=True)
 
     def create(self, validated_data):
-        work_items = validated_data.pop("work_items", [])
-        managers = validated_data.pop("managers", [])
+        work_items: List[WorkItem] = validated_data.pop("work_items", [])
+        managers: List[Manager] = validated_data.pop("managers", [])
 
         if "box_count" in validated_data and validated_data["box_count"] == 0:
             validated_data["box_count"] = None
 
-        plan = super().create(validated_data)
+        plan: Plan = super().create(validated_data)
 
         self.create_work_items(plan, work_items)
         self.create_managers(plan, managers)
 
         return plan
 
-    def update(self, instance, validated_data):
+    def update(self, instance: Plan, validated_data):
         if "work_items" in validated_data:
-            work_items = validated_data.pop("work_items", [])
+            work_items: List[WorkItem] = validated_data.pop("work_items", [])
             PlanWorkItem.objects.filter(plan=instance).exclude(
                 work_item__in=work_items
             ).delete()
@@ -137,7 +160,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             self.create_work_items(instance, work_items)
 
         if "managers" in validated_data:
-            managers = validated_data.pop("managers", [])
+            managers: List[Manager] = validated_data.pop("managers", [])
             PlanManager.objects.filter(plan=instance).exclude(
                 manager__in=managers
             ).delete()
@@ -148,7 +171,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
 
         return super().update(instance, validated_data)
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: Plan):
         return PlanSerializer(
             instance, context={"request": self.context.get("request")}
         ).data

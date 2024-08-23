@@ -28,14 +28,13 @@ class ManagerAdmin(admin.ModelAdmin):
         "is_hidden",
         "is_manager",
         "is_driver",
-        "is_keeper",
+        "is_warehouser",
     )
     search_fields = (
         "name",
-        "last_name",
         "is_hidden",
         "is_manager",
         "is_driver",
-        "is_keeper",
+        "is_warehouser",
     )
     empty_value_display = "--пусто--"
