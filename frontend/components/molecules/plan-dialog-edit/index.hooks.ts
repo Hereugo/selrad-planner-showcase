@@ -1,14 +1,14 @@
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { useClientsQuery } from "@/lib/backend/clients";
-import { useManagersQuery } from "@/lib/backend/managers";
 import {
   usePlanDeleteMutation,
   usePlanUpdateMutation,
 } from "@/lib/backend/plans";
-import { useWorklistsQuery } from "@/lib/backend/worklist";
+import { useWorkItemsQuery } from "@/lib/backend/work_items";
 import { formatClientName } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { useManagersQuery } from "@/lib/backend/users/managers";
 
 export const useClients = () => {
   const { data, error, isLoading } = useClientsQuery();
@@ -30,10 +30,8 @@ export const useClients = () => {
 export const useManagers = () => {
   const { data, error, isLoading } = useManagersQuery();
 
-  const managers = (data?.data ?? []).sort(
-    (a, b) =>
-      a.first_name.localeCompare(b.first_name) ||
-      a.last_name.localeCompare(b.last_name),
+  const managers = (data?.data ?? []).sort((a, b) =>
+    a.name.localeCompare(b.name),
   );
 
   return {
@@ -44,12 +42,12 @@ export const useManagers = () => {
 };
 
 export const useWorks = () => {
-  const { data, error, isLoading } = useWorklistsQuery();
+  const { data, error, isLoading } = useWorkItemsQuery();
 
-  const worklist = data?.data ?? [];
+  const workItems = data?.data ?? [];
 
   return {
-    worklist,
+    workItems,
     error,
     isLoading,
   };
@@ -87,8 +85,8 @@ export const useUpdatePlan = (initialPlan: Plan) => {
   const [managers, setManagers] = useState(
     initialPlan.managers.map((manager) => manager.id),
   );
-  const [worklist, setWorklist] = useState(
-    initialPlan.worklist.map((work) => work.id),
+  const [workItems, setWorkItem] = useState(
+    initialPlan.work_items.map((workItem) => workItem.id),
   );
   const [shipmentCostFormula, setShipmentCostFormula] = useState(
     initialPlan.shipment_cost_formula,
@@ -108,12 +106,12 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     });
   };
 
-  const switchWork = (work: string) => {
-    setWorklist((prev) => {
-      if (prev.includes(work)) {
-        return prev.filter((w) => w !== work);
+  const switchWork = (id: WorkItem["id"]) => {
+    setWorkItem((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((w) => w !== id);
       } else {
-        return [...prev, work];
+        return [...prev, id];
       }
     });
   };
@@ -131,7 +129,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
       assigned_date: assignedDate,
       client: client,
       managers: managers || [],
-      worklist: worklist || [],
+      work_items: workItems || [],
       shipment_cost_formula: shipmentCostFormula,
       box_count: boxCount ?? 0,
       comment: comment ?? "",
@@ -168,7 +166,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     client,
     setClient,
     managers,
-    worklist,
+    workItems,
     shipmentCostFormula,
     setShipmentCostFormula,
     boxCount,

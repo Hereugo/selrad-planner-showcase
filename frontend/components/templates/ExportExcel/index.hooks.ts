@@ -23,19 +23,19 @@ export const handlePlanDownload = ({
   setIsLoading(true);
 
   const data = planExportQuery({
-    date_after: calendarRange?.from
+    start_date: calendarRange?.from
       ?.toLocaleDateString("ru-RU")
       .split(".")
       .reverse()
       .join("-"),
-    date_before: calendarRange?.to
+    end_date: calendarRange?.to
       ?.toLocaleDateString("ru-RU")
       .split(".")
       .reverse()
       .join("-"),
     search: searchQuery,
     manager_id: managerId,
-    worklist_id: workId,
+    work_items: workId ? [workId] : undefined,
   });
 
   data
@@ -86,19 +86,19 @@ export const handleReportDownload = ({
   setIsLoading(true);
 
   const data = managerReportExportQuery({
-    date_after: calendarRange?.from
+    start_date: calendarRange?.from
       ?.toLocaleDateString("ru-RU")
       .split(".")
       .reverse()
       .join("-"),
-    date_before: calendarRange?.to
+    end_date: calendarRange?.to
       ?.toLocaleDateString("ru-RU")
       .split(".")
       .reverse()
       .join("-"),
     search: searchQuery,
     manager_id: managerId,
-    worklist_id: workId,
+    work_items: workId ? [workId] : undefined,
   });
 
   data

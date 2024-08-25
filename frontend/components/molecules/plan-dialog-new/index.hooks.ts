@@ -1,12 +1,12 @@
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { useClientsQuery } from "@/lib/backend/clients";
-import { useManagersQuery } from "@/lib/backend/managers";
 import { usePlanCreateMutation } from "@/lib/backend/plans";
-import { useWorklistsQuery } from "@/lib/backend/worklist";
+import { useWorkItemsQuery } from "@/lib/backend/work_items";
 import { formatClientName } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { highlightPlanRow } from "../plan-dialog-edit/index.hooks";
+import { useManagersQuery } from "@/lib/backend/users/managers";
 
 export const useClients = () => {
   const { data, error, isLoading } = useClientsQuery();
@@ -28,10 +28,8 @@ export const useClients = () => {
 export const useManagers = () => {
   const { data, error, isLoading } = useManagersQuery();
 
-  const managers = (data?.data ?? []).sort(
-    (a, b) =>
-      a.first_name.localeCompare(b.first_name) ||
-      a.last_name.localeCompare(b.last_name),
+  const managers = (data?.data ?? []).sort((a, b) =>
+    a.name.localeCompare(b.name),
   );
 
   return {
@@ -42,12 +40,12 @@ export const useManagers = () => {
 };
 
 export const useWorks = () => {
-  const { data, error, isLoading } = useWorklistsQuery();
+  const { data, error, isLoading } = useWorkItemsQuery();
 
-  const worklist = data?.data ?? [];
+  const workItems = data?.data ?? [];
 
   return {
-    worklist,
+    workItems,
     error,
     isLoading,
   };
@@ -71,7 +69,7 @@ export const useCreatePlan = ({
   );
   const [client, setClient] = useState<string | undefined>(defaultClientId);
   const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
-  const [selectedWorklist, setSelectedWorklist] = useState<string[]>([]);
+  const [selectedWorkItem, setSelectedWorkItem] = useState<string[]>([]);
   const [shipmentCostFormula, setShipmentCostFormula] = useState<string>();
   const [boxCount, setBoxCount] = useState<number>();
   const [comment, setComment] = useState<string>();
@@ -92,7 +90,7 @@ export const useCreatePlan = ({
       assigned_date: assignedDate,
       client: client,
       managers: selectedManagers || [],
-      worklist: selectedWorklist || [],
+      work_items: selectedWorkItem || [],
       shipment_cost_formula: shipmentCostFormula ?? "0",
       box_count: boxCount ?? 0,
       comment: comment ?? "",
@@ -109,12 +107,12 @@ export const useCreatePlan = ({
     });
   };
 
-  const switchWork = (work: string) => {
-    setSelectedWorklist((prev) => {
-      if (prev.includes(work)) {
-        return prev.filter((w) => w !== work);
+  const switchWork = (id: WorkItem["id"]) => {
+    setSelectedWorkItem((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((w) => w !== id);
       } else {
-        return [...prev, work];
+        return [...prev, id];
       }
     });
   };
@@ -145,7 +143,7 @@ export const useCreatePlan = ({
       setAssignedDate(undefined);
       setClient(undefined);
       setSelectedManagers([]);
-      setSelectedWorklist([]);
+      setSelectedWorkItem([]);
       setShipmentCostFormula(undefined);
       setBoxCount(undefined);
       setComment(undefined);
@@ -155,7 +153,7 @@ export const useCreatePlan = ({
   return {
     isOpen,
     selectedManagers,
-    selectedWorklist,
+    selectedWorkItem,
     setIsOpen,
     setAssignedDate,
     assignedDate,

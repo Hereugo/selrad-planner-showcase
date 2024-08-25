@@ -11,10 +11,14 @@ const urls = {
   base_backend: {
     plans: `${BASE_BACKEND_V1}/plans`,
     clients: `${BASE_BACKEND_V1}/clients`,
-    managers: `${BASE_BACKEND_V1}/managers`,
-    worklist: `${BASE_BACKEND_V1}/worklist`,
+    work_items: `${BASE_BACKEND_V1}/work_items`,
     plan_export: `${BASE_BACKEND_V1}/plans/export`,
     plan_export_report: `${BASE_BACKEND_V1}/plans/export_report/`,
+    managers: `${BASE_BACKEND_V1}/users/managers`,
+    warehousers: `${BASE_BACKEND_V1}/users/warehousers`,
+    drivers: `${BASE_BACKEND_V1}/users/drivers`,
+    me: `${BASE_BACKEND_V1}/users/me`,
+    users: `${BASE_BACKEND_V1}/users`,
   },
 };
 

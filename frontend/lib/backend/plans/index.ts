@@ -8,28 +8,29 @@ import {
 } from "../httpCalls";
 
 interface plansQueryProps {
-  date_after?: string;
-  date_before?: string;
+  start_date?: string;
+  end_date?: string;
   limit?: number;
   ordering?: string;
   page?: number;
   search?: string;
   manager_id?: string;
-  worklist_id?: string;
+  work_items?: WorkItem["id"][];
 }
 
 export const usePlansQuery = (props: plansQueryProps = {}) => {
   const url = urls.base_backend.plans;
   const queryParams = [];
 
-  if (props.date_after) queryParams.push(`date_after=${props.date_after}`);
-  if (props.date_before) queryParams.push(`date_before=${props.date_before}`);
+  if (props.start_date) queryParams.push(`start_date=${props.start_date}`);
+  if (props.end_date) queryParams.push(`end_date=${props.end_date}`);
   if (props.limit) queryParams.push(`limit=${props.limit}`);
   if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
   if (props.page) queryParams.push(`page=${props.page}`);
   if (props.search) queryParams.push(`search=${props.search}`);
   if (props.manager_id) queryParams.push(`manager_id=${props.manager_id}`);
-  if (props.worklist_id) queryParams.push(`worklist_id=${props.worklist_id}`);
+  if (props.work_items)
+    queryParams.push(`work_items=${props.work_items.join(",")}`);
 
   const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
 
@@ -50,8 +51,8 @@ export const usePlanQuery = (id: string) => {
 interface planCreateMutationProps {
   assigned_date: string;
   client: string;
-  managers: string[];
-  worklist: string[];
+  managers: Manager["id"][];
+  work_items: WorkItem["id"][];
   shipment_cost_formula: string;
   box_count: number;
   comment: string;
@@ -77,7 +78,7 @@ interface planUpdateMutation {
   assigned_date: string;
   client: string;
   managers: string[];
-  worklist: string[];
+  work_items: string[];
   // shipment_cost: number;
   shipment_cost_formula: string;
   box_count: number;
@@ -119,24 +120,25 @@ export const usePlanDeleteMutation = (id: string) => {
 };
 
 interface planExportQueryProps {
-  date_after?: string;
-  date_before?: string;
+  start_date?: string;
+  end_date?: string;
   manager_id?: string;
   ordering?: string;
   search?: string;
-  worklist_id?: string;
+  work_items?: WorkItem["id"][];
 }
 
 export const planExportQuery = (props: planExportQueryProps = {}) => {
   const url = urls.base_backend.plan_export;
   const queryParams = [];
 
-  if (props.date_after) queryParams.push(`date_after=${props.date_after}`);
-  if (props.date_before) queryParams.push(`date_before=${props.date_before}`);
+  if (props.start_date) queryParams.push(`start_date=${props.start_date}`);
+  if (props.end_date) queryParams.push(`end_date=${props.end_date}`);
   if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
   if (props.search) queryParams.push(`search=${props.search}`);
   if (props.manager_id) queryParams.push(`manager_id=${props.manager_id}`);
-  if (props.worklist_id) queryParams.push(`worklist_id=${props.worklist_id}`);
+  if (props.work_items)
+    queryParams.push(`work_items=${props.work_items.join(",")}`);
 
   const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
 
@@ -150,11 +152,12 @@ export const managerReportExportQuery = (props: planExportQueryProps) => {
   const url = `${baseUrl}/${props.manager_id}`;
   const queryParams = [];
 
-  if (props.date_after) queryParams.push(`date_after=${props.date_after}`);
-  if (props.date_before) queryParams.push(`date_before=${props.date_before}`);
+  if (props.start_date) queryParams.push(`start_date=${props.start_date}`);
+  if (props.end_date) queryParams.push(`end_date=${props.end_date}`);
   if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
   if (props.search) queryParams.push(`search=${props.search}`);
-  if (props.worklist_id) queryParams.push(`worklist_id=${props.worklist_id}`);
+  if (props.work_items)
+    queryParams.push(`work_items=${props.work_items.join(",")}`);
 
   const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
 

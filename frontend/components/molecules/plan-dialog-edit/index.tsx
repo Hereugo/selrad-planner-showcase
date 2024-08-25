@@ -14,7 +14,7 @@ import { FC, ReactNode } from "react";
 import DayPicker from "./day-picker";
 import ClientPicker from "./client-picker";
 import SelectManagers from "./select-managers";
-import SelectWorkList from "./select-worklist";
+import SelectWorkList from "./select-workitem";
 import ShipmentCostInput from "./input-shipment-cost";
 import BoxCountInput from "./input-box-count";
 import CommentInput from "./input-comment";
@@ -35,7 +35,7 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
     setClient,
     managers,
     switchManager,
-    worklist,
+    workItems,
     switchWork,
     shipmentCostFormula,
     setShipmentCostFormula,
@@ -105,10 +105,10 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="worklist">Работы</Label>
+                <Label htmlFor="workitem">Работы</Label>
                 <SelectWorkList
-                  id="worklist"
-                  worklist={worklist}
+                  id="workitem"
+                  workItems={workItems}
                   switchWork={switchWork}
                 />
               </div>

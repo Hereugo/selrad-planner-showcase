@@ -14,7 +14,7 @@ import { useWorks } from "../plan-dialog-edit/index.hooks";
 
 const WorkFilter = () => {
   const { workId, setWorkId } = useFiltersContext();
-  const { worklist } = useWorks();
+  const { workItems } = useWorks();
 
   const handleSelectWork = (newWorkId: string) => {
     setWorkId((oldWorkId) => {
@@ -38,9 +38,9 @@ const WorkFilter = () => {
         <SelectContent side="right">
           <SelectItem value="undefined">Все</SelectItem>
           <SelectItem value="-1">Не выбрано</SelectItem>
-          {worklist.map((work) => (
-            <SelectItem key={work.id} value={work.id}>
-              {toTitle(work.name)}
+          {workItems.map((workItem) => (
+            <SelectItem key={workItem.id} value={workItem.id}>
+              {toTitle(workItem.name)}
             </SelectItem>
           ))}
         </SelectContent>
