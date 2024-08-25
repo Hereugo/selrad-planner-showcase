@@ -1,12 +1,12 @@
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { useClientsQuery } from "@/lib/backend/clients";
-import { useManagersQuery } from "@/lib/backend/managers";
 import { usePlanCreateMutation } from "@/lib/backend/plans";
 import { useWorkItemsQuery } from "@/lib/backend/work_items";
 import { formatClientName } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { highlightPlanRow } from "../plan-dialog-edit/index.hooks";
+import { useManagersQuery } from "@/lib/backend/users/managers";
 
 export const useClients = () => {
   const { data, error, isLoading } = useClientsQuery();
@@ -28,10 +28,8 @@ export const useClients = () => {
 export const useManagers = () => {
   const { data, error, isLoading } = useManagersQuery();
 
-  const managers = (data?.data ?? []).sort(
-    (a, b) =>
-      a.first_name.localeCompare(b.first_name) ||
-      a.last_name.localeCompare(b.last_name),
+  const managers = (data?.data ?? []).sort((a, b) =>
+    a.name.localeCompare(b.name),
   );
 
   return {

@@ -10,25 +10,14 @@ export function toTitle(s: string) {
   return s[0].toUpperCase() + s.slice(1).toLowerCase();
 }
 
+// todo: remove
 export function managerFullName(manager: Manager) {
-  let out = toTitle(manager.first_name);
-
-  if (manager.last_name) {
-    out += " " + toTitle(manager.last_name);
-  }
-
-  return out;
+  return toTitle(manager.name);
 }
 
+// todo: remove
 export function managerShortName(manager: Manager) {
-  let out = toTitle(manager.first_name);
-
-  if (manager.last_name) {
-    let initials = manager.last_name[0].toUpperCase();
-    out += ` ${initials}.`;
-  }
-
-  return out;
+  return toTitle(manager.name);
 }
 
 export const formatClientName = (name: string) => {

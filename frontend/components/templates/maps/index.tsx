@@ -108,7 +108,7 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
                 <div className="font-semibold">Менеджеры:</div>
                 <div className="grid grid-cols-3">
                   {selectedPlan.managers
-                    .sort((a, b) => a.first_name.localeCompare(b.first_name))
+                    .sort((a, b) => a.name.localeCompare(b.name))
                     .map((manager) => (
                       <div key={manager.id}>{managerFullName(manager)}</div>
                     ))}
