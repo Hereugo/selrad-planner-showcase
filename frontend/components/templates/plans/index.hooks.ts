@@ -18,7 +18,7 @@ export const usePlans = () => {
     start_date: start_date,
     end_date: end_date,
     search: searchQuery,
-    manager_id: managerId,
+    managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
   });
 

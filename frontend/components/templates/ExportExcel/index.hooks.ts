@@ -34,7 +34,7 @@ export const handlePlanDownload = ({
       .reverse()
       .join("-"),
     search: searchQuery,
-    manager_id: managerId,
+    managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
   });
 
@@ -97,7 +97,7 @@ export const handleReportDownload = ({
       .reverse()
       .join("-"),
     search: searchQuery,
-    manager_id: managerId,
+    managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
   });
 

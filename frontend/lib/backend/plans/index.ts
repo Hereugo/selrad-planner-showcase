@@ -14,7 +14,7 @@ interface plansQueryProps {
   ordering?: string;
   page?: number;
   search?: string;
-  manager_id?: string;
+  managers?: Manager["id"][];
   work_items?: WorkItem["id"][];
 }
 
@@ -28,7 +28,7 @@ export const usePlansQuery = (props: plansQueryProps = {}) => {
   if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
   if (props.page) queryParams.push(`page=${props.page}`);
   if (props.search) queryParams.push(`search=${props.search}`);
-  if (props.manager_id) queryParams.push(`manager_id=${props.manager_id}`);
+  if (props.managers) queryParams.push(`managers=${props.managers.join(",")}`);
   if (props.work_items)
     queryParams.push(`work_items=${props.work_items.join(",")}`);
 
@@ -122,9 +122,9 @@ export const usePlanDeleteMutation = (id: string) => {
 interface planExportQueryProps {
   start_date?: string;
   end_date?: string;
-  manager_id?: string;
   ordering?: string;
   search?: string;
+  managers?: Manager["id"][];
   work_items?: WorkItem["id"][];
 }
 
@@ -136,7 +136,7 @@ export const planExportQuery = (props: planExportQueryProps = {}) => {
   if (props.end_date) queryParams.push(`end_date=${props.end_date}`);
   if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
   if (props.search) queryParams.push(`search=${props.search}`);
-  if (props.manager_id) queryParams.push(`manager_id=${props.manager_id}`);
+  if (props.managers) queryParams.push(`managers=${props.managers.join(",")}`);
   if (props.work_items)
     queryParams.push(`work_items=${props.work_items.join(",")}`);
 
@@ -149,7 +149,7 @@ export const planExportQuery = (props: planExportQueryProps = {}) => {
 
 export const managerReportExportQuery = (props: planExportQueryProps) => {
   const baseUrl = urls.base_backend.plan_export_report;
-  const url = `${baseUrl}/${props.manager_id}`;
+  const url = `${baseUrl}/${props.managers?.[0]}`;
   const queryParams = [];
 
   if (props.start_date) queryParams.push(`start_date=${props.start_date}`);
