@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
 from rest_framework import filters, status
 from rest_framework.permissions import BasePermission
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
@@ -12,6 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from drf_spectacular.utils import (
+    OpenApiResponse,
     extend_schema,
     OpenApiParameter,
     extend_schema_view,
@@ -59,7 +61,7 @@ class PlanViewSet(ModelViewSet):
     filterset_class = PlanFilter
     search_fields = (
         "client__name",
-        "managers__first_name",
+        "managers__name",
         "work_items__name",
     )
 
@@ -100,11 +102,10 @@ class PlanViewSet(ModelViewSet):
             ),
         ],
         responses={
-            200: {
-                "content": {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {}
-                },
-            }
+            (200, "image/png"): OpenApiResponse(
+                response=OpenApiTypes.BYTE,
+                description="Диспетчерский лист",
+            )
         },
     )
     @action(
@@ -143,12 +144,12 @@ class PlanViewSet(ModelViewSet):
 
         buffer = generate_dispatch_list(plans, manager, comment, start_date, end_date)
         filename: str = (
-            f"ДИСПЕТЧЕРСКИЙ ЛИСТ {manager.name} С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
+            f"ДИСПЕТЧЕРСКИЙ ЛИСТ {manager.name} С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.png"
         )
 
         response = HttpResponse(
             buffer.getvalue(),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            content_type="image/png",
         )
         response["Access-Control-Expose-Headers"] = "Content-Disposition"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
@@ -182,12 +183,12 @@ class PlanViewSet(ModelViewSet):
         end_date = request.GET.get("end_date", None)
 
         if not start_date:
-            start_date = plans.latest("assigned_date").assigned_date
+            start_date = plans.earliest("assigned_date").assigned_date
         else:
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
 
         if not end_date:
-            end_date = plans.earliest("assigned_date").assigned_date
+            end_date = plans.latest("assigned_date").assigned_date
         else:
             end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
@@ -243,12 +244,12 @@ class PlanViewSet(ModelViewSet):
         end_date = request.GET.get("end_date", None)
 
         if not start_date:
-            start_date = plans.latest("assigned_date").assigned_date
+            start_date = plans.earliest("assigned_date").assigned_date
         else:
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
 
         if not end_date:
-            end_date = plans.earliest("assigned_date").assigned_date
+            end_date = plans.latest("assigned_date").assigned_date
         else:
             end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
