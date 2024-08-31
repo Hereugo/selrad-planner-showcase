@@ -131,6 +131,7 @@ class PlanViewSet(ModelViewSet):
 
         plans: QuerySet[Plan] = self.filter_queryset(self.get_queryset())
         plans = plans.filter(managers__id=manager_id)
+        plans = plans.order_by("assigned_date")
 
         if not start_date:
             start_date = plans.earliest("assigned_date").assigned_date
@@ -172,6 +173,7 @@ class PlanViewSet(ModelViewSet):
         """Скачать план."""
 
         plans = self.filter_queryset(plans or self.get_queryset())
+        plans = plans.order_by("assigned_date")
 
         if plans.count() == 0:
             return Response(
@@ -194,7 +196,7 @@ class PlanViewSet(ModelViewSet):
 
         buffer = generate_excelsheet_by_plan(plans, start_date, end_date)
 
-        filename = f"ПЛАНЫ С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
+        filename = f"ПЛАНЫ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),
@@ -233,6 +235,7 @@ class PlanViewSet(ModelViewSet):
         # Method export report is used here, because filters are applied here.
         plans = self.filter_queryset(plans or self.get_queryset())
         plans = plans.filter(managers__id=manager_id)
+        plans = plans.order_by("assigned_date")
 
         if plans.count() == 0:
             return Response(
@@ -253,9 +256,9 @@ class PlanViewSet(ModelViewSet):
         else:
             end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
-        buffer = generate_excelsheet_by_manager(plans, manager, end_date, start_date)
+        buffer = generate_excelsheet_by_manager(plans, manager, start_date, end_date)
 
-        filename = f"ОТЧЕТ {manager.name} С {end_date.strftime('%d-%m-%Y')} ПО {start_date.strftime('%d-%m-%Y')}.xlsx"
+        filename = f"ОТЧЕТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),

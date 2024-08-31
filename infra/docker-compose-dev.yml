@@ -1,5 +1,5 @@
 version: "3.3"
-name: selrad-planner-dev-2
+name: selrad-planner-dev
 services:
   db:
     image: postgis/postgis:13-3.1

@@ -175,7 +175,7 @@ def generate_excelsheet_by_manager(plans, manager, earliest_date, latest_date):
     gen_header(
         ws,
         1,
-        f"ОТЧЕТ {manager} С {earliest_date.strftime('%d.%m.%Y')} ПО {latest_date.strftime('%d.%m.%Y')}",
+        f"ОТЧЕТ {manager.name} С {earliest_date.strftime('%d.%m.%Y')} ПО {latest_date.strftime('%d.%m.%Y')}",
         1,
         4,
     )
