@@ -1,6 +1,7 @@
 import logging
 
 from datetime import datetime
+from django.utils import timezone
 from django.http import HttpResponse
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
@@ -37,6 +38,7 @@ from .work_items_serializers import TaskSerializer, TaskUpdatePolymorphicSeriali
 
 from .custom_permissions import CanChangeFuturePlans, CanDeleteFuturePlans
 from .custom_filters import PlanFilter, TaskFilter
+from .generate_dispatch_report import generate_dispatch_report
 from .generate_dispatch_list import generate_dispatch_list
 from .generate_excelsheet import (
     generate_excelsheet_by_plan,
@@ -133,6 +135,8 @@ class PlanViewSet(ModelViewSet):
         plans = plans.filter(managers__id=manager_id)
         plans = plans.order_by("assigned_date")
 
+        plans.update(time_since_last_dispatch=timezone.now())
+
         if not start_date:
             start_date = plans.earliest("assigned_date").assigned_date
         else:
@@ -151,6 +155,62 @@ class PlanViewSet(ModelViewSet):
         response = HttpResponse(
             buffer.getvalue(),
             content_type="image/png",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+    @extend_schema(
+        methods=["get"],
+        description="Cкачать диспетчерский отчет по периоду",
+        filters=True,
+        summary="Cкачать диспетчерский отчет по периоду",
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="dispatch_report",
+    )
+    @permission_required("plans.get_dispatch_report")
+    def dispatch_report(self, request, plans=None):
+        """Cкачать диспетчерский отчет по периоду"""
+
+        plans = self.filter_queryset(plans or self.get_queryset())
+        plans = plans.order_by("assigned_date")
+
+        if plans.count() == 0:
+            return Response(
+                {"error": "Нет планов для выбранных фильтров."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        start_date = request.GET.get("start_date", None)
+        end_date = request.GET.get("end_date", None)
+
+        if not start_date:
+            start_date = plans.earliest("assigned_date").assigned_date
+        else:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d")
+
+        if not end_date:
+            end_date = plans.latest("assigned_date").assigned_date
+        else:
+            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+
+        work_items_shipments = (
+            PlanWorkItem.objects.filter(plan__in=plans, content_type__model="shipment")
+            .prefetch_related("content_object")
+            .select_related("plan")
+        )
+
+        buffer = generate_dispatch_report(work_items_shipments, start_date, end_date)
+
+        filename = f"ОТЧЕТ ПО ДИСПЕЧЕРСКОМУ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx"
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         response["Access-Control-Expose-Headers"] = "Content-Disposition"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'

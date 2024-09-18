@@ -16,6 +16,7 @@ class ShipmentAdmin(admin.ModelAdmin):
         "status",
         "comment",
         "completed_by",
+        "time_since_last_box_arrival",
         "created_at",
         "updated_at",
     )

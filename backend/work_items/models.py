@@ -69,8 +69,22 @@ class Shipment(BaseWorkItem):
     )
     status = models.CharField(max_length=10, choices=CHOICES, blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
+    time_since_last_box_arrival = models.DateTimeField(
+        verbose_name="Время с момента последнего прихода (time since last update on box_count)",
+        blank=True,
+        null=True,
+    )
 
     class Meta(BaseWorkItem.Meta):
         verbose_name = "Отгрузка"
         verbose_name_plural = "Отгрузки"
         ordering = ("-created_at",)
+
+    def save(self, *args, **kwargs):
+        # Check if the instance is already in the database (i.e., update case)
+        if self.pk:
+            prev_instance = Shipment.objects.get(pk=self.pk)
+            if prev_instance.box_count != self.box_count:
+                self.time_since_last_box_arrival = timezone.now()
+
+        super().save(*args, **kwargs)
