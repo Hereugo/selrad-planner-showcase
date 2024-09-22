@@ -87,8 +87,6 @@ def generate_dispatch_report(
         )
         ws.cell(row=row + i, column=COL.COMMENT.value).value = shipment.comment
 
-    workbook.save("./test.xlsx")
-
     buffer = io.BytesIO()
     workbook.save(buffer)
 
