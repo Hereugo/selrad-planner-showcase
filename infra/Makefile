@@ -12,6 +12,7 @@ endif
 DEV_FILE := docker-compose-dev.yml
 BACKEND := backend
 DB_VOLUME := selrad-planner-dev_db_value
+STATIC_VOLUME := selrad-planner-dev_static_value
 
 #============================
 
@@ -44,6 +45,9 @@ superuser:
 
 #=============================
 
+collectstatic:
+	docker-compose -f $(DEV_FILE) exec $(BACKEND) python3 manage.py collectstatic 
+
 # Executes django loaddata on backend docker container, loadding values to db from a file on the container
 loaddata:
 	docker-compose -f $(DEV_FILE) exec $(BACKEND) python3 manage.py loaddata ./data/$(d).json 
@@ -60,6 +64,10 @@ flush:
 
 volume_down:
 	docker volume rm $(DB_VOLUME)
+
+static_down:
+	docker volume rm $(STATIC_VOLUME)
+
 volume:
 	docker volume inspect $(DB_VOLUME)
 

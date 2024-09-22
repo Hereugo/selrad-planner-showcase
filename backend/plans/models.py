@@ -114,6 +114,12 @@ class Plan(models.Model):
         blank=True,
         null=True,
     )
+    time_since_last_dispatch = models.DateTimeField(
+        verbose_name="Время с момента последней отправки диспетчерского листа",
+        help_text="Количество времени, прошедшее с момента последней отправки отчёта.",
+        blank=True,
+        null=True,
+    )
 
     def shipment_cost(self):
         try:
@@ -144,6 +150,7 @@ class Plan(models.Model):
             ("delete_old_plan", "Can delete old plan"),
             ("export_report", "Can export report"),
             ("get_dispatch_list", "Can export dispatch list"),
+            ("get_dispatch_report", "Can export dispatch report"),
         ]
         verbose_name = "План"
         verbose_name_plural = "Планы"

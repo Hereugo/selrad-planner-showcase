@@ -48,10 +48,11 @@ def generate_dispatch_list(
         f.seek(0)
 
         html_str = f"""
-        <h1>Диспетчерсктй лист {manager.name}</h1>
+        <h1>Диспечерский лист {manager.name}</h1>
         <span>Параметры:</span><br />
         <span>Период: {start_date.strftime("%d.%m.%Y")} с {end_date.strftime("%d.%m.%Y")}</span><br />
         <span>Менеджер: {manager.name}</span><br />
+        <span>Итого кол-во коробок: {sum(x.box_count for x in plans)}</span><br />
         <br />
         {f.read()}
         <h2>{comment}</h2>
@@ -69,7 +70,11 @@ def generate_dispatch_list(
         )
 
         image = Image.open(img[0])
-        image.save(buffer, format="png", optimize=True, quality=95)
+
+        # rotate image clockwise 90
+        rotated_image = image.rotate(-90, expand=1)
+
+        rotated_image.save(buffer, format="png", optimize=True, quality=95)
         buffer.seek(0)
 
     # delete html_table

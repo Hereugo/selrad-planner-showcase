@@ -1,7 +1,7 @@
 "use client";
 
 import { FC, useState } from "react";
-import { handlePlanDownload, handleReportDownload } from "./index.hooks";
+import { handleDispatchDownload, handlePlanDownload, handleReportDownload } from "./index.hooks";
 import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,6 +15,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
   const { toast } = useToast();
 
   const [isPlanLoading, setIsPlanLoading] = useState(false);
+  const [isDispatchLoading, setIsDispatchLoading] = useState(false);
   const [isReportLoading, setIsReportLoading] = useState(false);
 
   return (
@@ -35,6 +36,23 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
         >
           Скачать план
           {isPlanLoading && <Loader2 className="w-6 h-6 ml-2 animate-spin" />}
+        </Button>
+
+        <Button
+          onClick={() =>
+            handleDispatchDownload({
+              setIsLoading: setIsDispatchLoading,
+              calendarRange,
+              searchQuery,
+              managerId,
+              workId,
+              toast,
+            })
+          }
+          disabled={isDispatchLoading}
+        >
+          Скачать отчет по диспечерскому
+          {isDispatchLoading && <Loader2 className="w-6 h-6 ml-2 animate-spin" />}
         </Button>
 
         <Button
