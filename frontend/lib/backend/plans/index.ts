@@ -147,6 +147,25 @@ export const planExportQuery = (props: planExportQueryProps = {}) => {
   });
 };
 
+export const dispatchExportQuery = (props: planExportQueryProps = {}) => {
+  const url = urls.base_backend.dispatch_export_report;
+  const queryParams = [];
+
+  if (props.start_date) queryParams.push(`start_date=${props.start_date}`);
+  if (props.end_date) queryParams.push(`end_date=${props.end_date}`);
+  if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
+  if (props.search) queryParams.push(`search=${props.search}`);
+  if (props.managers) queryParams.push(`managers=${props.managers.join(",")}`);
+  if (props.work_items)
+    queryParams.push(`work_items=${props.work_items.join(",")}`);
+
+  const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
+
+  return fetchWithAuth<Blob>(urlWithParams, {
+    responseType: "blob",
+  });
+};
+
 export const managerReportExportQuery = (props: planExportQueryProps) => {
   const baseUrl = urls.base_backend.plan_export_report;
   const url = `${baseUrl}/${props.managers?.[0]}`;
