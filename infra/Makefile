@@ -10,9 +10,13 @@ ifeq ($(strip $(d)),)
 endif
 
 DEV_FILE := docker-compose-dev.yml
-BACKEND := backend
-DB_VOLUME := selrad-planner-dev_db_value
-STATIC_VOLUME := selrad-planner-dev_static_value
+DOCKER_COMPOSE_NAME := selrad-planner-dev
+
+BACKEND_CON := backend
+DATABASE_CON := db
+
+DATABASE_VOLUME := $(DOCKER_COMPOSE_NAME)_db_value
+STATIC_VOLUME := $(DOCKER_COMPOSE_NAME)_static_value
 
 #============================
 
@@ -38,44 +42,50 @@ logs:
 #=============================
 
 migrate:
-	docker-compose -f $(DEV_FILE) exec $(BACKEND) python3 manage.py migrate
+	docker-compose -f $(DEV_FILE) exec $(BACKEND_CON) python3 manage.py migrate
+
+migrate_fake:
+	docker-compose -f $(DEV_FILE) exec $(BACKEND_CON) python3 manage.py migrate --fake-initial
 
 superuser:
-	docker-compose -f $(DEV_FILE) exec $(BACKEND) python3 manage.py createsuperuser	
+	docker-compose -f $(DEV_FILE) exec $(BACKEND_CON) python3 manage.py createsuperuser	
 
 #=============================
 
 collectstatic:
-	docker-compose -f $(DEV_FILE) exec $(BACKEND) python3 manage.py collectstatic 
+	docker-compose -f $(DEV_FILE) exec $(BACKEND_CON) python3 manage.py collectstatic 
 
-# Executes django loaddata on backend docker container, loadding values to db from a file on the container
 loaddata:
-	docker-compose -f $(DEV_FILE) exec $(BACKEND) python3 manage.py loaddata ./data/$(d).json 
+	docker-compose -f $(DEV_FILE) exec $(BACKEND_CON) python3 manage.py loaddata ./data/$(d).json 
 
-# Executes django dumpdata on backend docker container, output is treated as input to a local file
-# Use DATA variable to change file name, by default current date is used. 
 dumpdata:
-	docker-compose -f $(DEV_FILE) exec $(BACKEND) python3 manage.py dumpdata -e contenttypes -e auth > ../backend/data/$(d).json
+	docker-compose -f $(DEV_FILE) exec $(BACKEND_CON) python3 manage.py dumpdata -e contenttypes -e auth > ../backend/data/$(d).json
+
+pg_dumpdata:
+	docker-compose -f $(DEV_FILE) exec $(DATABASE_CON) pg_dump --username=$(POSTGRES_USER) --password --dbname=$(DB_NAME) > ../backend/backup/$(d)-local.sql
+
+pg_loaddata:
+	docker-compose -f $(DEV_FILE) exec -T $(DATABASE_CON) psql --username=$(POSTGRES_USER) --password --dbname=$(DB_NAME) < ../backend/backups/$(d).sql
 
 #=============================
 
 flush:
-	docker-compose -f $(DEV_FILE) exec $(BACKEND) python3 manage.py flush
+	docker-compose -f $(DEV_FILE) exec $(BACKEND_CON) python3 manage.py flush
 
 volume_down:
-	docker volume rm $(DB_VOLUME)
+	docker volume rm $(DATABASE_VOLUME)
 
 static_down:
 	docker volume rm $(STATIC_VOLUME)
 
 volume:
-	docker volume inspect $(DB_VOLUME)
+	docker volume inspect $(DATABASE_VOLUME)
 
 #=============================
 
 bash:
-	docker-compose -f $(DEV_FILE) exec $(BACKEND) bash
+	docker-compose -f $(DEV_FILE) exec $(BACKEND_CON) bash
 
 shell:
-	docker-compose -f $(DEV_FILE) exec $(BACKEND) python3 manage.py shell
+	docker-compose -f $(DEV_FILE) exec $(BACKEND_CON) python3 manage.py shell
 
