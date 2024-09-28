@@ -1,11 +1,11 @@
 import io
 import logging
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db.models import QuerySet
 import openpyxl
-from openpyxl.styles import Border, Side, NamedStyle, Font, PatternFill, Alignment
+from openpyxl.styles import Border, Side, NamedStyle, Alignment
 
 from plans.models import Plan, PlanWorkItem
 from work_items.models import Shipment
@@ -68,7 +68,7 @@ def generate_dispatch_report(
         ws.cell(row=row + i, column=COL.TIME_SINCE_DISPATCH.value).value = (
             "-"
             if plan.time_since_last_dispatch is None
-            else plan.time_since_last_dispatch.strftime("%H:%M")
+            else (plan.time_since_last_dispatch + timedelta(hours=5)).strftime("%H:%M")
         )
         ws.cell(row=row + i, column=COL.DRIVERS.value).value = ", ".join(
             [d.name for d in drivers.all()]
@@ -77,7 +77,9 @@ def generate_dispatch_report(
         ws.cell(row=row + i, column=COL.TIME_SINCE_BOX_ARRIVAL.value).value = (
             "-"
             if shipment.time_since_last_box_arrival is None
-            else shipment.time_since_last_box_arrival.strftime("%H:%M")
+            else (shipment.time_since_last_box_arrival + timedelta(hours=5)).strftime(
+                "%H:%M"
+            )
         )
         ws.cell(row=row + i, column=COL.STATUS.value).value = dict(
             Shipment.CHOICES

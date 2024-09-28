@@ -52,15 +52,16 @@ def generate_dispatch_list(
         <span>Параметры:</span><br />
         <span>Период: {start_date.strftime("%d.%m.%Y")} с {end_date.strftime("%d.%m.%Y")}</span><br />
         <span>Менеджер: {manager.name}</span><br />
-        <span>Итого кол-во коробок: {sum(x.box_count for x in plans)}</span><br />
         <br />
         {f.read()}
-        <h2>{comment}</h2>
+        <h1 style="margin-left: calc(674px - 8ch);">ИТОГО: {sum(x.box_count for x in plans)}</h1>
+        <br />
+        <h1>{comment}</h1>
         """
 
         css_str = "table,th{border:1px solid #000,background-color:white;}*{box-sizing:border-box;font-family:Arial,sans-serif;background-color:white;}table{border-collapse:collapse;width:100%}th{background-color:#d3d3d3;font-size:14px;font-weight:700;text-align:left}td,th{padding:8px}tr th:first-child{width:24px;max-width:24px}tr th:nth-child(2),tr th:nth-child(4){width:300px;max-width:300px}tr th:nth-child(3){width:50px;max-width:50px}tr td:nth-child(3){font-size:20px;font-weight:700;text-align:center}tr th:nth-child(5){width:200px;max-width:200px}tr th:nth-child(6){width:100px;max-width:100px}"
 
-        calc_height = 500 + len(df) * 40
+        calc_height = 500 + len(df) * 55
 
         img = hti.screenshot(
             html_str,
