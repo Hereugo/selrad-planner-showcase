@@ -10,11 +10,42 @@ from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 
+# This is a client
+class MetaClient(models.Model):
+    name = models.CharField(
+        max_length=255, verbose_name="Имя клиента", help_text="Введите имя клиента"
+    )
+    created_at = models.DateTimeField(
+        verbose_name="Дата создания",
+        auto_now_add=True,
+        editable=False,
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Клиент"
+        verbose_name_plural = "Клиенты"
+        ordering = ["-created_at"]
+
+
+# This is a shop client
+# TODO: Rename this model to Shop
 class Client(models.Model):
     """Model Client"""
 
+    meta_client = models.ForeignKey(
+        to=MetaClient,
+        related_name="clients",
+        verbose_name="Клиент",
+        help_text="Выберите клиента к магазину",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
     name = models.CharField(
-        max_length=255, verbose_name="Имя клиента", help_text="Введите имя клиента"
+        max_length=255, verbose_name="Имя магазина", help_text="Введите имя клиента"
     )
     created_at = models.DateTimeField(
         verbose_name="Дата создания",
@@ -27,7 +58,7 @@ class Client(models.Model):
     )
     is_hidden_on_map = models.BooleanField(
         verbose_name="Скрыть на карте",
-        help_text="Скрыть клиента на карте",
+        help_text="Скрыть магазин на карте",
         default=False,
     )
 
@@ -35,8 +66,8 @@ class Client(models.Model):
         "Address",
         on_delete=models.PROTECT,
         related_name="clients",
-        verbose_name="Адрес клиента",
-        help_text="Выберите адрес клиента",
+        verbose_name="Адрес магазина",
+        help_text="Выберите адрес магазина",
         blank=True,
         null=True,
     )
@@ -50,16 +81,16 @@ class Client(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
-        verbose_name = "Клиент"
-        verbose_name_plural = "Клиенты"
+        verbose_name = "Магазин"
+        verbose_name_plural = "Магазины"
         ordering = ["-created_at"]
 
 
 class Address(gis_models.Model):
     street = models.CharField(
         max_length=255,
-        verbose_name="Адрес клиента",
-        help_text="Введите адрес клмента",
+        verbose_name="Адрес магазина",
+        help_text="Введите адрес магазина",
     )
     twogis_link = models.CharField(
         max_length=255,
