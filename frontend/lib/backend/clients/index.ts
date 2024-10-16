@@ -54,3 +54,25 @@ export const useFindNearbyClientsQuery = (props: any, enabled: boolean) => {
     { enabled },
   );
 };
+
+interface compareExportQueryProps {
+  start_date?: string;
+  end_date?: string;
+  diff_year?: number;
+}
+
+export const compareReportExportQuery = (props: compareExportQueryProps) => {
+  const baseUrl = urls.base_backend.compare;
+  const url = `${baseUrl}`;
+  const queryParams = [];
+
+  if (props.start_date) queryParams.push(`start_date=${props.start_date}`);
+  if (props.end_date) queryParams.push(`end_date=${props.end_date}`);
+  if (props.diff_year) queryParams.push(`diff_year=${props.diff_year}`);
+
+  const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
+
+  return fetchWithAuth<Blob>(urlWithParams, {
+    responseType: "blob",
+  });
+};

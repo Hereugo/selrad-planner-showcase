@@ -1,7 +1,12 @@
 "use client";
 
 import { FC, useState } from "react";
-import { handleDispatchDownload, handlePlanDownload, handleReportDownload } from "./index.hooks";
+import {
+  handleDispatchDownload,
+  handlePlanDownload,
+  handleReportDownload,
+  handleCompareReportDownload,
+} from "./index.hooks";
 import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
@@ -17,6 +22,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
   const [isPlanLoading, setIsPlanLoading] = useState(false);
   const [isDispatchLoading, setIsDispatchLoading] = useState(false);
   const [isReportLoading, setIsReportLoading] = useState(false);
+  const [isCompareLoading, setIsCompareLoading] = useState(false);
 
   return (
     <>
@@ -52,7 +58,9 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
           disabled={isDispatchLoading}
         >
           Скачать отчет по диспечерскому
-          {isDispatchLoading && <Loader2 className="w-6 h-6 ml-2 animate-spin" />}
+          {isDispatchLoading && (
+            <Loader2 className="w-6 h-6 ml-2 animate-spin" />
+          )}
         </Button>
 
         <Button
@@ -68,6 +76,22 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
         >
           Скачать отчет
           {isReportLoading && <Loader2 className="w-6 h-6 ml-2 animate-spin" />}
+        </Button>
+
+        <Button
+          onClick={() =>
+            handleCompareReportDownload({
+              setIsLoading: setIsCompareLoading,
+              calendarRange,
+              toast,
+            })
+          }
+          disabled={isCompareLoading}
+        >
+          Сравнить с прошлым годом
+          {isCompareLoading && (
+            <Loader2 className="w-6 h-6 ml-2 animate-spin" />
+          )}
         </Button>
       </div>
       {(searchQuery || managerId || workId) && (
