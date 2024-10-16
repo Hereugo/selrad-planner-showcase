@@ -192,9 +192,8 @@ def generate_compare_years(period_1, period_2):
         )
 
         f.append(row)
-        row += num_clients
+        row += num_clients + 1
 
-    row += 1
     ws.cell(row=row, column=1).value = "ИТОГО:"
     ws.cell(row=row, column=2).value = "=" + "+".join([f"B{x}" for x in f])
     ws.cell(row=row, column=3).value = "=" + "+".join([f"C{x}" for x in f])
@@ -207,8 +206,6 @@ def generate_compare_years(period_1, period_2):
         ws.cell(row=row, column=col).fill = PatternFill(
             start_color="FFFFFF", end_color="FFFFFF", fill_type="solid"
         )
-
-    workbook.save("test")
 
     buffer = io.BytesIO()
     workbook.save(buffer)

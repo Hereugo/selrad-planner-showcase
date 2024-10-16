@@ -90,16 +90,19 @@ def generate_dispatch_report(
         )
         ws.cell(row=row + i, column=COL.COMMENT.value).value = shipment.comment
 
-    last_row = row + len(work_items_shipments) + 1
+    last_row = row + len(work_items_shipments)
 
     ws.cell(row=last_row, column=COL.DATE.value).value = "ИТОГО:"
     ws.cell(row=last_row, column=COL.DATE.value).font = Font(bold=True)
     ws.cell(row=last_row, column=COL.BOX_COUNT.value).value = (
-        "SUM({0}{1}:{0}{2})".format(
+        "=SUM({0}{1}:{0}{2})".format(
             get_column_letter(COL.BOX_COUNT.value), 7, last_row - 1
         )
     )
     ws.cell(row=last_row, column=COL.BOX_COUNT.value).font = Font(bold=True)
+    ws.cell(row=last_row, column=COL.BOX_COUNT.value).alignment = Alignment(
+        horizontal="center", vertical="center", wrap_text=True
+    )
 
     buffer = io.BytesIO()
     workbook.save(buffer)

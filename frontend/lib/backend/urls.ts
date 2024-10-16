@@ -11,7 +11,7 @@ const urls = {
   base_backend: {
     plans: `${BASE_BACKEND_V1}/plans`,
     clients: `${BASE_BACKEND_V1}/clients`,
-    compare: `${BASE_BACKEND_V1}/clients/compare`,
+    compare: `${BASE_BACKEND_V1}/clients/export_compare_years`,
     work_items: `${BASE_BACKEND_V1}/work_items`,
     plan_export: `${BASE_BACKEND_V1}/plans/export`,
     dispatch_export_report: `${BASE_BACKEND_V1}/plans/dispatch_report`,
