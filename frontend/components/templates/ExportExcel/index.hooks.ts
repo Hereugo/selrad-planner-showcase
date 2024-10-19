@@ -13,8 +13,8 @@ interface handlePlanDownloadProps {
   toast: Function;
   calendarRange?: DateRange;
   searchQuery?: string;
-  managerId?: string;
-  workId?: string;
+  managerId?: Manager["id"];
+  workId?: WorkItem["id"];
 }
 
 interface handleCompareReportDownloadProps {
@@ -22,6 +22,8 @@ interface handleCompareReportDownloadProps {
   toast: Function;
   calendarRange?: DateRange;
   yearDifference?: number;
+  managerId?: Manager["id"];
+  workId?: WorkItem["id"];
 }
 
 export const handlePlanDownload = ({
@@ -201,6 +203,8 @@ export const handleCompareReportDownload = ({
   toast,
   calendarRange,
   yearDifference,
+  managerId,
+  workId,
 }: handleCompareReportDownloadProps) => {
   setIsLoading(true);
 
@@ -216,6 +220,8 @@ export const handleCompareReportDownload = ({
       .reverse()
       .join("-"),
     diff_year: yearDifference || 1,
+    managers: managerId ? [managerId] : undefined,
+    work_items: workId ? [workId] : undefined,
   });
 
   data

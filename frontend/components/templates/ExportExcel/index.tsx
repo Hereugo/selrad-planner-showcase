@@ -84,6 +84,8 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               setIsLoading: setIsCompareLoading,
               calendarRange,
               toast,
+              managerId,
+              workId,
             })
           }
           disabled={isCompareLoading}
