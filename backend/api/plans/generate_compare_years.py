@@ -6,7 +6,11 @@ from django.db.models import Sum
 
 import openpyxl
 from openpyxl.styles import Border, Side, NamedStyle, Font, PatternFill
+
+from .custom_filters import PlanFilter
 from clients.models import Client
+from plans.models import WorkItem
+from managers.models import Manager
 
 
 logger = logging.getLogger(__name__)
@@ -17,10 +21,12 @@ def gen_header(ws, start_row, **kwargs):
     period_1_end = kwargs["period_1"]["end"].strftime("%d-%m-%Y")
     period_2_start = kwargs["period_2"]["start"].strftime("%d-%m-%Y")
     period_2_end = kwargs["period_2"]["end"].strftime("%d-%m-%Y")
+    managers = kwargs.get("managers", [])
+    work_items = kwargs.get("work_items", [])
 
-    ws.cell(row=start_row, column=1).value = (
-        f"СРАВНИТЬ С {period_1_start} ПО {period_1_end} ПРОТИВ {period_2_start} ПО {period_2_end}"
-    )
+    title = f"СРАВНИТЬ С {period_1_start} ПО {period_1_end} ПРОТИВ {period_2_start} ПО {period_2_end}"
+
+    ws.cell(row=start_row, column=1).value = title
     ws.cell(row=start_row, column=1).style = "head_cell"
     ws.cell(row=start_row + 2, column=1).value = (
         f"Прошлый период: {period_1_start} по {period_1_end}"
@@ -28,9 +34,15 @@ def gen_header(ws, start_row, **kwargs):
     ws.cell(row=start_row + 3, column=1).value = (
         f"Текущий период: {period_2_start} по {period_2_end}"
     )
+    ws.cell(row=start_row + 4, column=1).value = f"Менеджеры: " + ", ".join(
+        [m.name for m in managers]
+    )
+    ws.cell(row=start_row + 5, column=1).value = f"Работы: " + ", ".join(
+        [w.name for w in work_items]
+    )
 
 
-def generate_compare_years(period_1, period_2):
+def generate_compare_years(period_1, period_2, params):
     workbook = openpyxl.load_workbook("./static/docs/standard_compare_years.xlsx")
     ws = workbook.active or workbook.create_sheet("Sheet1")
 
@@ -69,9 +81,17 @@ def generate_compare_years(period_1, period_2):
         )
         workbook.add_named_style(general_style)
 
-    gen_header(ws, 1, period_1=period_1, period_2=period_2)
+    managers = Manager.objects.filter(id__in=params.get("managers", []))
+    work_items = WorkItem.objects.filter(id__in=params.get("work_items", []))
+    gen_header(
+        ws,
+        1,
+        period_1=period_1,
+        period_2=period_2,
+        managers=managers,
+        work_items=work_items,
+    )
 
-    # TODO: fill out the tables
     table = {}
     for client in Client.objects.all():
         meta_client_name = (
@@ -88,12 +108,22 @@ def generate_compare_years(period_1, period_2):
             assigned_date__gte=period_2["start"],
             assigned_date__lte=period_2["end"],
         )
+        if len(managers):
+            period_1_plans = period_1_plans.filter(managers__in=managers)
+            period_2_plans = period_2_plans.filter(managers__in=managers)
+        if len(work_items):
+            period_1_plans = period_1_plans.filter(work_items__in=work_items)
+            period_2_plans = period_2_plans.filter(work_items__in=work_items)
 
         if not period_1_plans.exists() and not period_2_plans.exists():
             logger.debug(
                 f"Skipping client {client} as no plans were given for it in both periods"
             )
             continue
+
+        logger.debug(period_1_plans)
+        logger.debug(period_2_plans)
+        logger.debug(params)
 
         table[meta_client_name].append(
             {
@@ -147,12 +177,8 @@ def generate_compare_years(period_1, period_2):
             row + 1, row + num_clients
         )
         # table 3
-        ws.cell(row=row, column=8).value = "=SUM(H{}:H{})".format(
-            row + 1, row + num_clients
-        )
-        ws.cell(row=row, column=9).value = "=SUM(I{}:I{})".format(
-            row + 1, row + num_clients
-        )
+        ws.cell(row=row, column=8).value = "=E{0}/B{0}".format(row)
+        ws.cell(row=row, column=9).value = "=F{0}/C{0}".format(row)
 
         for col in [1, 2, 3, 5, 6, 8, 9]:
             ws.cell(row=row, column=col).style = "headers_style"

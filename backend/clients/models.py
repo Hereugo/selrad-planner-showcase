@@ -81,6 +81,9 @@ class Client(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
+        permissions = [
+            ("export_compare_years", "Can export compare report"),
+        ]
         verbose_name = "Магазин"
         verbose_name_plural = "Магазины"
         ordering = ["-created_at"]
