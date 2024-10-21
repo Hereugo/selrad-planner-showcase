@@ -109,11 +109,9 @@ class PlanViewSet(ModelViewSet):
     def export_compare_years(self, request):
         """Скачать сравнить по периодам."""
 
-        query_params = request.query_params.dict()
-
-        start_date = query_params.pop("start_date", None)
-        end_date = query_params.pop("end_date", None)
-        to_year_diff = int(query_params.pop("to_year_diff", 1))
+        start_date = request.query_params.get("start_date", None)
+        end_date = request.query_params.get("end_date", None)
+        to_year_diff = int(request.query_params.get("to_year_diff", 1))
 
         if not start_date or not end_date:
             return Response(
@@ -128,20 +126,20 @@ class PlanViewSet(ModelViewSet):
             )
 
         period_2 = {
-            "start": datetime.strptime(start_date, "%Y-%m-%d"),
-            "end": datetime.strptime(end_date, "%Y-%m-%d"),
+            "start_date": datetime.strptime(start_date, "%Y-%m-%d"),
+            "end_date": datetime.strptime(end_date, "%Y-%m-%d"),
         }
         period_1 = period_2.copy()
-        period_1["start"] = period_1["start"].replace(
-            year=period_1["start"].year - to_year_diff
+        period_1["start_date"] = period_1["start_date"].replace(
+            year=period_1["start_date"].year - to_year_diff
         )
-        period_1["end"] = period_1["end"].replace(
-            year=period_1["end"].year - to_year_diff
+        period_1["end_date"] = period_1["end_date"].replace(
+            year=period_1["end_date"].year - to_year_diff
         )
 
-        buffer = generate_compare_years(period_1, period_2, query_params)
+        buffer = generate_compare_years(period_1, period_2, request)
 
-        filename = f"СРАВНИТЬ {period_1['start'].strftime('%d-%m-%Y')} ПО {period_1['end'].strftime('%d-%m-%Y')} ПРОТИВ {period_2['start'].strftime('%d-%m-%Y')} ПО {period_2['end'].strftime('%d-%m-%Y')} ГОДА.xlsx"
+        filename = f"СРАВНИТЬ {period_1['start_date'].strftime('%d-%m-%Y')} ПО {period_1['end_date'].strftime('%d-%m-%Y')} ПРОТИВ {period_2['start_date'].strftime('%d-%m-%Y')} ПО {period_2['end_date'].strftime('%d-%m-%Y')} ГОДА.xlsx"
 
         response = HttpResponse(
             buffer.getvalue(),

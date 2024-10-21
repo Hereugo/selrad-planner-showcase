@@ -6,8 +6,10 @@ from django.db.models import Sum
 
 import openpyxl
 from openpyxl.styles import Border, Side, NamedStyle, Font, PatternFill
+from rest_framework.request import Request
 
 from .custom_filters import PlanFilter
+from plans.models import Plan
 from clients.models import Client
 from plans.models import WorkItem
 from managers.models import Manager
@@ -16,11 +18,17 @@ from managers.models import Manager
 logger = logging.getLogger(__name__)
 
 
+def get_plans(filter_data, queryset):
+    logger.debug(filter_data)
+    filterset = PlanFilter(filter_data, queryset=queryset)
+    return filterset.qs
+
+
 def gen_header(ws, start_row, **kwargs):
-    period_1_start = kwargs["period_1"]["start"].strftime("%d-%m-%Y")
-    period_1_end = kwargs["period_1"]["end"].strftime("%d-%m-%Y")
-    period_2_start = kwargs["period_2"]["start"].strftime("%d-%m-%Y")
-    period_2_end = kwargs["period_2"]["end"].strftime("%d-%m-%Y")
+    period_1_start = kwargs["period_1"]["start_date"].strftime("%d-%m-%Y")
+    period_1_end = kwargs["period_1"]["end_date"].strftime("%d-%m-%Y")
+    period_2_start = kwargs["period_2"]["start_date"].strftime("%d-%m-%Y")
+    period_2_end = kwargs["period_2"]["end_date"].strftime("%d-%m-%Y")
     managers = kwargs.get("managers", [])
     work_items = kwargs.get("work_items", [])
 
@@ -42,7 +50,7 @@ def gen_header(ws, start_row, **kwargs):
     )
 
 
-def generate_compare_years(period_1, period_2, params):
+def generate_compare_years(period_1, period_2, request: Request):
     workbook = openpyxl.load_workbook("./static/docs/standard_compare_years.xlsx")
     ws = workbook.active or workbook.create_sheet("Sheet1")
 
@@ -81,8 +89,13 @@ def generate_compare_years(period_1, period_2, params):
         )
         workbook.add_named_style(general_style)
 
-    managers = Manager.objects.filter(id__in=params.get("managers", []))
-    work_items = WorkItem.objects.filter(id__in=params.get("work_items", []))
+    # The value is not an array when its just one passed
+    managers = Manager.objects.filter(
+        id__in=request.query_params.getlist("managers", [])
+    )
+    work_items = WorkItem.objects.filter(
+        id__in=request.query_params.getlist("work_items", [])
+    )
     gen_header(
         ws,
         1,
@@ -93,6 +106,9 @@ def generate_compare_years(period_1, period_2, params):
     )
 
     table = {}
+    query_params = dict(request.query_params)
+    query_params.pop("diff_year")
+
     for client in Client.objects.all():
         meta_client_name = (
             client.meta_client.name if client.meta_client else "НЕНАЗНАЧЕН"
@@ -100,30 +116,15 @@ def generate_compare_years(period_1, period_2, params):
         if not meta_client_name in table:
             table[meta_client_name] = []
 
-        period_1_plans = client.plans.filter(
-            assigned_date__gte=period_1["start"],
-            assigned_date__lte=period_1["end"],
-        )
-        period_2_plans = client.plans.filter(
-            assigned_date__gte=period_2["start"],
-            assigned_date__lte=period_2["end"],
-        )
-        if len(managers):
-            period_1_plans = period_1_plans.filter(managers__in=managers)
-            period_2_plans = period_2_plans.filter(managers__in=managers)
-        if len(work_items):
-            period_1_plans = period_1_plans.filter(work_items__in=work_items)
-            period_2_plans = period_2_plans.filter(work_items__in=work_items)
+        plans = client.plans.all()
+        period_1_plans = get_plans({**query_params, **period_1}, plans)
+        period_2_plans = get_plans({**query_params, **period_2}, plans)
 
         if not period_1_plans.exists() and not period_2_plans.exists():
             logger.debug(
                 f"Skipping client {client} as no plans were given for it in both periods"
             )
             continue
-
-        logger.debug(period_1_plans)
-        logger.debug(period_2_plans)
-        logger.debug(params)
 
         table[meta_client_name].append(
             {
