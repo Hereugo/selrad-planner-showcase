@@ -74,6 +74,11 @@ export const useCreatePlan = ({
   const [boxCount, setBoxCount] = useState<number>();
   const [comment, setComment] = useState<string>();
 
+  const [invoiceDate, setInvoiceDate] = useState<string | undefined>(
+    defaultAssignedDate,
+  );
+  const [accountantComment, setAccountantComment] = useState<string>();
+
   const planCreateMutation = usePlanCreateMutation();
   const [isOpen, setIsOpen] = useState(defaultIsOpen || false);
 
@@ -147,8 +152,16 @@ export const useCreatePlan = ({
       setShipmentCostFormula(undefined);
       setBoxCount(undefined);
       setComment(undefined);
+      setInvoiceDate(undefined);
+      setAccountantComment(undefined);
     }
   }, [planCreateMutation.isSuccess, toast, setIsOpen]);
+
+  useEffect(() => {
+    if (invoiceDate == undefined) {
+      setInvoiceDate(assignedDate);
+    }
+  }, [invoiceDate, assignedDate]);
 
   return {
     isOpen,
@@ -164,6 +177,8 @@ export const useCreatePlan = ({
     setShipmentCostFormula,
     setBoxCount,
     setComment,
+    setInvoiceDate,
+    setAccountantComment,
     handleCreatePlan,
     isSuccess: planCreateMutation.isSuccess,
     isLoading: planCreateMutation.isLoading,
