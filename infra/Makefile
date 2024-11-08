@@ -67,6 +67,9 @@ pg_dumpdata:
 pg_loaddata:
 	docker-compose -f $(DEV_FILE) exec -T $(DATABASE_CON) psql --username=$(POSTGRES_USER) --password --dbname=$(DB_NAME) < ../backend/backups/$(d).sql
 
+copy:
+	docker-compose -f $(DEV_FILE) cp $(BACKEND_CON):$(src) $(dest) 
+
 #=============================
 
 flush:

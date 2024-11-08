@@ -15,6 +15,7 @@ const urls = {
     plan_export: `${BASE_BACKEND_V1}/plans/export`,
     dispatch_export_report: `${BASE_BACKEND_V1}/plans/dispatch_report`,
     plan_export_report: `${BASE_BACKEND_V1}/plans/export_report/`,
+    compare: `${BASE_BACKEND_V1}/plans/export_compare_years`,
     managers: `${BASE_BACKEND_V1}/users/managers`,
     warehousers: `${BASE_BACKEND_V1}/users/warehousers`,
     drivers: `${BASE_BACKEND_V1}/users/drivers`,

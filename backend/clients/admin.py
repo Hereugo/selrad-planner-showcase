@@ -9,7 +9,7 @@ from django.urls import path
 
 from leaflet.admin import LeafletGeoAdmin
 
-from clients.models import Client, Address
+from clients.models import Client, Address, MetaClient
 from api.clients.serializers import AddressSerializer
 from utils.admin.mixins import ExportCsvMixin
 
@@ -35,7 +35,7 @@ def update_coordinates_by_link(modeladmin, request, queryset):
         try:
             address.update_coordinates_by_link()
             address.save()
-            sucess_count += 1
+            success_count += 1
         except Exception as e:
             logger.exception(f"Error updating coordinates: {e}")
 
@@ -71,12 +71,22 @@ def display_on_map_client(modeladmin, request, queryset):
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "plan_count", "address", "is_hidden_on_map")
+    list_display = (
+        "id",
+        "meta_client",
+        "name",
+        "plan_count",
+        "address",
+        "is_hidden_on_map",
+    )
     search_fields = ("name", "address__street")
     list_filter = ("is_hidden_on_map",)
     empty_value_display = "--пусто--"
 
-    actions = [display_on_map_client, update_coordinates_of_clients]
+    actions = [
+        display_on_map_client,
+        update_coordinates_of_clients,
+    ]
 
     def plan_count(self, obj):
         return obj.plans.count()
@@ -87,6 +97,22 @@ class ClientAdmin(admin.ModelAdmin):
 class ClientInline(admin.TabularInline):
     model = Client
     extra = 0
+
+
+@admin.register(MetaClient)
+class MetaClientAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "client_count",
+        "created_at",
+    )
+    empty_value_display = "--пусто--"
+    inlines = [ClientInline]
+
+    def client_count(self, obj):
+        return obj.clients.count()
+
+    client_count.short_description = "Количество магазинов"
 
 
 @admin.register(Address)
@@ -116,7 +142,7 @@ class AddressAdmin(LeafletGeoAdmin, ExportCsvMixin):
     def client_count(self, obj):
         return obj.clients.count()
 
-    client_count.short_description = "Количество клиентов"
+    client_count.short_description = "Количество магазинов"
 
     def get_urls(self):
         urls = super().get_urls()

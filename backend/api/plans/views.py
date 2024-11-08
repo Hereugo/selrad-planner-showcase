@@ -38,6 +38,7 @@ from .work_items_serializers import TaskSerializer, TaskUpdatePolymorphicSeriali
 
 from .custom_permissions import CanChangeFuturePlans, CanDeleteFuturePlans
 from .custom_filters import PlanFilter, TaskFilter
+from .generate_compare_years import generate_compare_years
 from .generate_dispatch_report import generate_dispatch_report
 from .generate_dispatch_list import generate_dispatch_list
 from .generate_excelsheet import (
@@ -83,6 +84,70 @@ class PlanViewSet(ModelViewSet):
             return PlanUpdateSerializer
 
         return super().get_serializer_class()
+
+    @extend_schema(
+        methods=["get"],
+        description="Скачать сравнить по периодам",
+        filters=True,
+        summary="Скачать сравнить по периодам",
+        parameters=[
+            OpenApiParameter(
+                "to_year_diff",
+                int,
+                description="Сравнить с каким годом (differance)",
+                default=1,
+            ),
+        ],
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path=r"export_compare_years",
+    )
+    @permission_required("clients.export_compare_years")
+    def export_compare_years(self, request):
+        """Скачать сравнить по периодам."""
+
+        start_date = request.query_params.get("start_date", None)
+        end_date = request.query_params.get("end_date", None)
+        to_year_diff = int(request.query_params.get("to_year_diff", 1))
+
+        if not start_date or not end_date:
+            return Response(
+                {"error": "Выберите период"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if to_year_diff < 0:
+            return Response(
+                {"error": "Против год не может быть отрицательным"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        period_2 = {
+            "start_date": datetime.strptime(start_date, "%Y-%m-%d"),
+            "end_date": datetime.strptime(end_date, "%Y-%m-%d"),
+        }
+        period_1 = period_2.copy()
+        period_1["start_date"] = period_1["start_date"].replace(
+            year=period_1["start_date"].year - to_year_diff
+        )
+        period_1["end_date"] = period_1["end_date"].replace(
+            year=period_1["end_date"].year - to_year_diff
+        )
+
+        buffer = generate_compare_years(period_1, period_2, request)
+
+        filename = f"СРАВНИТЬ {period_1['start_date'].strftime('%d-%m-%Y')} ПО {period_1['end_date'].strftime('%d-%m-%Y')} ПРОТИВ {period_2['start_date'].strftime('%d-%m-%Y')} ПО {period_2['end_date'].strftime('%d-%m-%Y')} ГОДА.xlsx"
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
 
     @extend_schema(
         methods=["get"],

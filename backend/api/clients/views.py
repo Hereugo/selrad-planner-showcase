@@ -12,10 +12,12 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from api.utils.custom_permissions import IsAuthenticated
 from api.plans.serializers import NearbyClientSerializer
+from api.utils.custom_permissions import (
+    IsAuthenticated,
+)
 
 from clients.models import Client
 from .serializers import ClientSerializer
-
 
 logger = logging.getLogger(__name__)
 

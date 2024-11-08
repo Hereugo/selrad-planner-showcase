@@ -1,5 +1,10 @@
 import useFiltersContext from "@/components/molecules/side-bar/index.providers";
-import { planExportQuery, managerReportExportQuery, dispatchExportQuery } from "@/lib/backend/plans";
+import { compareReportExportQuery } from "@/lib/backend/clients";
+import {
+  planExportQuery,
+  managerReportExportQuery,
+  dispatchExportQuery,
+} from "@/lib/backend/plans";
 import { decodeContentDisposition } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
@@ -8,8 +13,17 @@ interface handlePlanDownloadProps {
   toast: Function;
   calendarRange?: DateRange;
   searchQuery?: string;
-  managerId?: string;
-  workId?: string;
+  managerId?: Manager["id"];
+  workId?: WorkItem["id"];
+}
+
+interface handleCompareReportDownloadProps {
+  setIsLoading: Function;
+  toast: Function;
+  calendarRange?: DateRange;
+  yearDifference?: number;
+  managerId?: Manager["id"];
+  workId?: WorkItem["id"];
 }
 
 export const handlePlanDownload = ({
@@ -168,6 +182,60 @@ export const handleReportDownload = ({
         const a = document.createElement("a");
         a.href = url;
         a.download = filename || "report.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+      setIsLoading(false);
+    })
+    .catch((e) => {
+      console.error(e);
+      setIsLoading(false);
+      toast({
+        title: "Ошибка, не удалось скачать отчет",
+        description: e.message,
+      });
+    });
+};
+
+export const handleCompareReportDownload = ({
+  setIsLoading,
+  toast,
+  calendarRange,
+  yearDifference,
+  managerId,
+  workId,
+}: handleCompareReportDownloadProps) => {
+  setIsLoading(true);
+
+  const data = compareReportExportQuery({
+    start_date: calendarRange?.from
+      ?.toLocaleDateString("ru-RU")
+      .split(".")
+      .reverse()
+      .join("-"),
+    end_date: calendarRange?.to
+      ?.toLocaleDateString("ru-RU")
+      .split(".")
+      .reverse()
+      .join("-"),
+    diff_year: yearDifference || 1,
+    managers: managerId ? [managerId] : undefined,
+    work_items: workId ? [workId] : undefined,
+  });
+
+  data
+    .then((data) => {
+      if (data?.data) {
+        const filename = decodeContentDisposition(
+          data.headers["content-disposition"],
+        )
+          ?.split("filename=")[1]
+          .replace(/[^A-Za-zА-Яа-я\s0-9.-]/g, "");
+        const url = window.URL.createObjectURL(new Blob([data.data]));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename || "compare_report.xlsx";
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
