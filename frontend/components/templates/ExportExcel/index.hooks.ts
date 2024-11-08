@@ -5,7 +5,7 @@ import {
   managerReportExportQuery,
   dispatchExportQuery,
 } from "@/lib/backend/plans";
-import { decodeContentDisposition } from "@/lib/utils";
+import { decodeContentDisposition, formatDateBackend } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
 interface handlePlanDownloadProps {
@@ -37,16 +37,8 @@ export const handlePlanDownload = ({
   setIsLoading(true);
 
   const data = planExportQuery({
-    start_date: calendarRange?.from
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
-    end_date: calendarRange?.to
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,
     managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
@@ -92,16 +84,8 @@ export const handleDispatchDownload = ({
   setIsLoading(true);
 
   const data = dispatchExportQuery({
-    start_date: calendarRange?.from
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
-    end_date: calendarRange?.to
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,
     managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
@@ -155,16 +139,8 @@ export const handleReportDownload = ({
   setIsLoading(true);
 
   const data = managerReportExportQuery({
-    start_date: calendarRange?.from
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
-    end_date: calendarRange?.to
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,
     managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
@@ -209,16 +185,8 @@ export const handleCompareReportDownload = ({
   setIsLoading(true);
 
   const data = compareReportExportQuery({
-    start_date: calendarRange?.from
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
-    end_date: calendarRange?.to
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
     diff_year: yearDifference || 1,
     managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,

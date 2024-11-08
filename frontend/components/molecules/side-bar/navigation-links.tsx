@@ -1,4 +1,4 @@
-import { FileDown, List, MapPinnedIcon } from "lucide-react";
+import { FileDown, List, MapPinnedIcon, WalletCardsIcon } from "lucide-react";
 import Link from "next/link";
 
 const NavigationLinks = () => {
@@ -9,6 +9,12 @@ const NavigationLinks = () => {
         className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100"
       >
         <List className="w-6 h-6" /> Планы
+      </Link>
+      <Link
+        href="/financial_plans"
+        className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100"
+      >
+        <WalletCardsIcon className="w-6 h-6" /> Финансовые планы
       </Link>
       <Link
         href="/maps"

@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useEffect } from "react";
 import DayPicker from "./day-picker";
 import ClientPicker from "./client-picker";
 import SelectManagers from "./select-managers";
@@ -54,6 +54,12 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
     selectedManagers,
     selectedWorkItem,
   } = useCreatePlan({ defaultClientId, defaultAssignedDate, defaultIsOpen });
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (defaultIsOpen) setIsOpen(true);
+    }, 100);
+  }, [defaultIsOpen]);
 
   return (
     <Dialog
@@ -99,6 +105,10 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
                   setBoxCount={setBoxCount}
                 />
               </div>
+              <div className="w-full">
+                <Label htmlFor="comment">Комментарии</Label>
+                <CommentInput id="comment" setComment={setComment} />
+              </div>
             </div>
             <Separator orientation="vertical" />
             <div className="flex flex-col gap-4 flex-1 w-[calc((48rem-8rem)/2)]">
@@ -119,11 +129,13 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
                   selectedWorkItem={selectedWorkItem}
                 />
               </div>
+              <Separator />
+              {/* TODO: mn */}
+              {(["Отгрузка", "Возврат"].some((workItem) =>
+                selectedWorkItem.includes(workItem),
+              ) ||
+                true) && <AccountantFields />}
             </div>
-          </div>
-          <div>
-            <Label htmlFor="comment">Комментарии</Label>
-            <CommentInput id="comment" setComment={setComment} />
           </div>
         </DialogHeader>
         <DialogFooter>
@@ -137,6 +149,25 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+};
+
+const AccountantFields: FC = () => {
+  return (
+    <div className="w-full">
+      <div className="w-full">
+        <Label htmlFor="invoice_date">Дата накладной</Label>
+        <DayPicker
+          id="invoice_date"
+          setAssignedDate={() => {}}
+          assignedDate={undefined}
+        />
+      </div>
+      <div className="w-full">
+        <Label htmlFor="accountant">Комментарий для бухгалтера</Label>
+        <CommentInput id="comment" setComment={() => {}} />
+      </div>
+    </div>
   );
 };
 

@@ -9,7 +9,7 @@ import { toTitle } from "@/lib/utils";
 interface SelectWorkItemProps {
   id?: string;
   switchWork: (id: WorkItem["id"]) => void;
-  selectedWorkItem: string[];
+  selectedWorkItem: string[]; // todo: rename to selectedWorkItems
 }
 
 const SelectWorkItem: FC<SelectWorkItemProps> = ({

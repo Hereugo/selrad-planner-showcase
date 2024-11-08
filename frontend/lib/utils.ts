@@ -88,3 +88,7 @@ export function calendarRangeDuration(range: DateRange | undefined) {
   );
   return days;
 }
+
+export const formatDateBackend = (date: Date | undefined) => {
+  return date?.toLocaleDateString("ru-RU").split(".").reverse().join("-");
+};

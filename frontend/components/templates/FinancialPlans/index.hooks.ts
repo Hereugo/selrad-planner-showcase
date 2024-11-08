@@ -2,7 +2,7 @@ import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { usePlansQuery } from "@/lib/backend/plans";
 import { formatDateBackend } from "@/lib/utils";
 
-export const usePlans = () => {
+export const useFinancialPlans = () => {
   const { calendarRange, searchQuery, managerId, workId } = useFiltersContext();
   const startDate = formatDateBackend(calendarRange?.from);
   const endDate = formatDateBackend(calendarRange?.to);
@@ -12,10 +12,10 @@ export const usePlans = () => {
     end_date: endDate,
     search: searchQuery,
     managers: managerId ? [managerId] : undefined,
-    work_items: workId ? [workId] : undefined,
+    work_items: workId ? [workId] : undefined, // todo: mn only отгрузка и возврат
   });
 
-  const plans = (data?.data || []).sort((a, b) => {
+  const financialPlans = (data?.data || []).sort((a, b) => {
     let diff =
       new Date(a.assigned_date).getTime() - new Date(b.assigned_date).getTime();
     if (diff === 0) {
@@ -27,7 +27,7 @@ export const usePlans = () => {
   });
 
   return {
-    plans,
+    financialPlans,
     error,
     isLoading,
   };
