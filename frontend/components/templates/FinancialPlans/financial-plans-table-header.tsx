@@ -7,7 +7,7 @@ const FinancialPlansTableHeader = () => {
         <TableHead className="w-[150px]">Дата</TableHead>
         <TableHead className="w-[200px]">Клиент</TableHead>
         <TableHead>Сумма отгрузки (₸)</TableHead>
-        <TableHead className="w-[150px]">Дата Накладной</TableHead>
+        <TableHead className="w-[150px]">Дата накладной</TableHead>
         <TableHead>Возврат</TableHead>
         <TableHead></TableHead>
       </TableRow>
