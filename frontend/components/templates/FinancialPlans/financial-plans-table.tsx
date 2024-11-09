@@ -40,7 +40,7 @@ const FinancialPlansTable = () => {
           }
         </TableBody>
         {!financialPlans.length && !isLoading && (
-          <TableCaption>Нет финансовых планов</TableCaption>
+          <TableCaption>Нет планов</TableCaption>
         )}
       </Table>
       {isLoading && (

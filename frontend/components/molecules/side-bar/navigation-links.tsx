@@ -14,7 +14,7 @@ const NavigationLinks = () => {
         href="/financial_plans"
         className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100"
       >
-        <WalletCardsIcon className="w-6 h-6" /> Финансовые планы
+        <WalletCardsIcon className="w-6 h-6" /> Бухгалтерия и склад
       </Link>
       <Link
         href="/maps"
