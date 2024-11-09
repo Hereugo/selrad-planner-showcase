@@ -1,15 +1,7 @@
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { FC } from "react";
-import {
-  cn,
-  formatDate,
-  formatPrice,
-  isPlanAReturn,
-  managerFullName,
-  managerShortName,
-} from "@/lib/utils";
-import PlanDialogEdit from "@/components/molecules/plan-dialog-edit";
+import { cn, formatDate, formatPrice, isPlanAReturn } from "@/lib/utils";
+import FinancialPlansEditDialog from "./financial-plans-dialog";
 
 interface FinancialPlansTableRowProps {
   plan: Plan;
@@ -37,9 +29,9 @@ const FinancialPlansTableRow: FC<FinancialPlansTableRowProps> = ({
       </TableCell>
       <TableCell>{isPlanAReturn(plan) && "Есть"}</TableCell>
       <TableCell className="text-blue-500 hover:cursor-pointer">
-        <PlanDialogEdit plan={plan}>
+        <FinancialPlansEditDialog plan={plan}>
           <span>Изменить</span>
-        </PlanDialogEdit>
+        </FinancialPlansEditDialog>
       </TableCell>
     </TableRow>
   );
