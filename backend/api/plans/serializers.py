@@ -1,7 +1,11 @@
 import logging
 from typing import Any, Optional, List
 
+from rest_framework.request import Request
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
+from django.utils import timezone
+
 
 from api.clients.serializers import ClientSerializer
 from api.users.serializers import ManagerSerializer
@@ -18,13 +22,19 @@ class WorkItemSerializer(serializers.ModelSerializer):
     """Serializer for WorkItem model"""
 
     id = serializers.StringRelatedField()
+    content_type = serializers.SerializerMethodField()
 
     class Meta:
         model = WorkItem
         fields = (
             "id",
             "name",
+            "content_type",
         )
+
+    @extend_schema_field(serializers.CharField)
+    def get_content_type(self, obj) -> Optional[str]:
+        return obj.content_type.model_class().__name__ if obj.content_type else None
 
 
 class PlanSerializer(serializers.ModelSerializer):
@@ -49,11 +59,13 @@ class PlanSerializer(serializers.ModelSerializer):
             "box_count",
             "created_at",
             "updated_at",
+            "invoice_date",
+            "accountant_comment",
         )
 
 
-class PlanUpdateSerializer(serializers.ModelSerializer):
-    """Serializer for Plan model"""
+class PlanCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating Plan model"""
 
     id = serializers.StringRelatedField()
     work_items = serializers.PrimaryKeyRelatedField(
@@ -70,6 +82,7 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
         queryset=Client.objects.all(),
         required=False,
     )
+    invoice_date = serializers.DateField(required=False)
 
     class Meta:
         model = Plan
@@ -85,19 +98,36 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             "box_count",
             "created_at",
             "updated_at",
+            # Accountant stuff
+            "invoice_date",
+            "accountant_comment",
         )
         read_only_fields = ("id", "created_at", "updated_at")
 
+    def validate_assigned_date(self, assigned_date):
+        request: Request = self.context["request"]
+
+        if request.user.has_perm("plans.add_old_plan"):
+            return assigned_date
+
+        if assigned_date < timezone.now().date():
+            raise serializers.ValidationError(
+                "У вас нет разрешения на добавление планов в прошлом"
+            )
+
+        return assigned_date
+
     def validate(self, attrs):
-        # If work_items contains a "shipment" type, then only one manager should be assgined as driver
         work_items: List[WorkItem] = attrs.get("work_items", [])
         managers: List[Manager] = attrs.get("managers", [])
-
-        if any(
-            work_item.content_type.model_class().__name__.lower() == "shipment"
+        work_items_name: List[str] = [
+            work_item.content_type.model_class().__name__.lower()
             for work_item in work_items
             if work_item.content_type
-        ):
+        ]
+
+        # If work_items contains a "shipment" type, then only one manager should be assgined as driver
+        if "shipment" in work_items_name:
             drivers: List[Manager] = list(filter(lambda x: x.is_driver, managers))
 
             if len(drivers) > 1:
@@ -107,6 +137,13 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             elif len(drivers) == 0:
                 raise serializers.ValidationError(
                     "При наличии отгрузки, должен быть назначен хотя бы один водитель"
+                )
+
+        # Only with work_items "shipment" or "return" you can update attributes "invoice_date" or "accountant_comment"
+        if not ("shipment" in work_items_name and "return" in work_items_name):
+            if "invoice_date" in attrs or "accountant_comment" in attrs:
+                raise serializers.ValidationError(
+                    f"Невозможно создать/изменить атрибуты бyхгалтера без работ: отгрузка или возврат"
                 )
 
         return super().validate(attrs)
@@ -148,7 +185,54 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
 
         return plan
 
+    def to_representation(self, instance: Plan):
+        return PlanSerializer(
+            instance, context={"request": self.context.get("request")}
+        ).data
+
+
+class PlanUpdateSerializer(PlanCreateSerializer):
+    """Serializer for updating Plan model"""
+
+    class Meta(PlanCreateSerializer.Meta):
+        pass
+
+    def validate_assigned_date(self, assigned_date):
+        request: Request = self.context["request"]
+
+        if request.user.has_perm("plans.change_old_plan"):
+            return assigned_date
+
+        if assigned_date < timezone.now().date():
+            raise serializers.ValidationError(
+                "У вас нет разрешения на изменение планов в прошлом"
+            )
+
+        return assigned_date
+
+    def validate_field_permission(self, validated_data):
+        request: Request = self.context["request"]
+        manager: Manager = request.user.manager
+
+        modified_attrs = set()
+        for field, value in validated_data.items():
+            if getattr(self.instance, field) != value:
+                logger.debug(f"{field}: {value} | {getattr(self.instance, field)}")
+                modified_attrs.add(field)
+
+        if manager.is_accountant:
+            # A set of attributes that an account is allowed to modify
+            allowed_attrs = set("shipment_cost")
+            if modified_attrs != allowed_attrs:
+                invalid_attrs = modified_attrs - allowed_attrs
+                raise serializers.ValidationError(
+                    f"Не разрешается изменять атрибуты: {invalid_attrs}"
+                )
+
     def update(self, instance: Plan, validated_data):
+        # This doesn't work?
+        self.validate_field_permission(validated_data)
+
         if "work_items" in validated_data:
             work_items: List[WorkItem] = validated_data.pop("work_items", [])
             PlanWorkItem.objects.filter(plan=instance).exclude(
@@ -170,11 +254,6 @@ class PlanUpdateSerializer(serializers.ModelSerializer):
             self.create_managers(instance, managers)
 
         return super().update(instance, validated_data)
-
-    def to_representation(self, instance: Plan):
-        return PlanSerializer(
-            instance, context={"request": self.context.get("request")}
-        ).data
 
 
 # HACK: This serializer should be declared in the clients serializer file, but

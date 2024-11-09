@@ -26,7 +26,9 @@ class WorkItem(models.Model):
     """Model WorkItem"""
 
     # https://www.reddit.com/r/django/comments/103uufa/can_you_limit_the_list_of_entities_to_associate/
-    target_limit = models.Q(app_label="work_items", model="shipment")
+    target_limit = models.Q(app_label="work_items", model="shipment") | models.Q(
+        app_label="work_items", model="return"
+    )
 
     name = models.CharField(
         verbose_name="Название работы",
@@ -121,6 +123,19 @@ class Plan(models.Model):
         null=True,
     )
 
+    invoice_date = models.DateField(
+        max_length=255,
+        verbose_name="Время Бухгалтера",
+        help_text="Выберите время бухгалтера",
+        blank=True,
+        null=True,
+    )
+    accountant_comment = models.TextField(
+        verbose_name="Комментарии бухгалтера",
+        help_text="Ввидите бухгалтера комментарии",
+        blank=True,
+    )
+
     def shipment_cost(self):
         try:
             sum = eval(self.shipment_cost_formula)
@@ -140,12 +155,14 @@ class Plan(models.Model):
                 self.box_count = ceil(cost / 93_000)
             else:
                 self.box_count = 0
+
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)
 
     class Meta:
         permissions = [
             ("export_plans", "Can export plans"),
+            ("add_old_plan", "Can add old plan"),
             ("change_old_plan", "Can change old plan"),
             ("delete_old_plan", "Can delete old plan"),
             ("export_report", "Can export report"),

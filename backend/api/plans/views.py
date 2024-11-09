@@ -30,13 +30,18 @@ from api.utils.custom_permissions import (
 )
 from api.utils.custom_paginations import PageLimitPagination
 from .serializers import (
+    PlanCreateSerializer,
     PlanSerializer,
     PlanUpdateSerializer,
     WorkItemSerializer,
 )
 from .work_items_serializers import TaskSerializer, TaskUpdatePolymorphicSerializer
 
-from .custom_permissions import CanChangeFuturePlans, CanDeleteFuturePlans
+from .custom_permissions import (
+    # CanAddFuturePlans,
+    # CanChangeFuturePlans,
+    CanDeleteFuturePlans,
+)
 from .custom_filters import PlanFilter, TaskFilter
 from .generate_compare_years import generate_compare_years
 from .generate_dispatch_report import generate_dispatch_report
@@ -70,9 +75,9 @@ class PlanViewSet(ModelViewSet):
 
     def get_permissions(self):
         permission_classes: list[type[BasePermission]] = [IsAuthenticated]
-        if self.action in ("update", "partial_update"):
-            permission_classes.append(CanChangeFuturePlans)
-        elif self.action == "destroy":
+        # if self.action in ("update", "partial_update"):
+        #     permission_classes.append(CanChangeFuturePlans)
+        if self.action == "destroy":
             permission_classes.append(CanDeleteFuturePlans)
 
         permission_classes.append(HasCRUDPermission)
@@ -80,7 +85,9 @@ class PlanViewSet(ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
-        if self.action in ("create", "update", "partial_update"):
+        if self.action in ("create",):
+            return PlanCreateSerializer
+        if self.action in ("update", "partial_update"):
             return PlanUpdateSerializer
 
         return super().get_serializer_class()

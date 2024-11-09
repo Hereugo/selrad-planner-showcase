@@ -102,6 +102,11 @@ class Manager(models.Model):
         verbose_name="Кладовщик",
         default=False,
     )
+    is_accountant = models.BooleanField(
+        help_text="Является ли менеджер бухгалтером",
+        verbose_name="Бухгалтрер",
+        default=False,
+    )
     is_manager = models.BooleanField(
         help_text="Является ли менеджер менеджером",
         verbose_name="Менеджер",
@@ -117,6 +122,8 @@ class Manager(models.Model):
             roles += Manager.is_warehouser.field.verbose_name + " "
         if self.is_manager:
             roles += Manager.is_manager.field.verbose_name + " "
+        if self.is_accountant:
+            roles += Manager.is_accountant.field.verbose_name + " "
         return f"{name} | {roles} | {'Скрыт' if self.is_hidden else 'Виден'}"
 
     class Meta:

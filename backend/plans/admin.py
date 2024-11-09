@@ -70,6 +70,8 @@ class PlanAdmin(admin.ModelAdmin):
         "client",
         "client_address",
         "time_since_last_dispatch",
+        "invoice_date",
+        "accountant_comment",
     )
     search_fields = ("client__name", "client__address", "assigned_date")
     list_filter = (
