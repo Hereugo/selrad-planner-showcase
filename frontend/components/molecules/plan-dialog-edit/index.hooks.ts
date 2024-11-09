@@ -181,7 +181,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
       setInvoiceDate(assignedDate);
     }
     if (!isAccountant) {
-      setInvoiceDate(null);
+      setInvoiceDate(undefined);
     }
   }, [invoiceDate, assignedDate, isAccountant, workItems]);
 

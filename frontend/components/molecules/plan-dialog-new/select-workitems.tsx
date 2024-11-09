@@ -31,6 +31,7 @@ const SelectWorkItems: FC<SelectWorkItemsProps> = ({
           <Label
             className="font-normal hover:cursor-pointer"
             htmlFor={`workItem-${workItem.id}`}
+            title={workItem.name}
           >
             {toTitle(workItem.name)}
           </Label>

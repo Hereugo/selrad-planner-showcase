@@ -28,7 +28,7 @@ const PlanTableRow: FC<PlanTableRowProps> = ({ plan, className }) => {
       <TableCell>
         <div className="flex gap-1 flex-wrap">
           {plan.work_items.map((workItem) => (
-            <Badge key={workItem.id} title={workItem.description}>
+            <Badge key={workItem.id} title={workItem.name}>
               {workItem.name}
             </Badge>
           ))}

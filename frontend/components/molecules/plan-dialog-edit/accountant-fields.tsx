@@ -6,7 +6,7 @@ import CommentInput from "./input-comment";
 interface AccountantFieldsProps {
   invoiceDate: string | undefined;
   setInvoiceDate: (date: string) => void;
-  accountantComment?: string;
+  accountantComment: string;
   setAccountantComment: (comment: string) => void;
 }
 
