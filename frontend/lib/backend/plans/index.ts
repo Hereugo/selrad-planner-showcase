@@ -58,8 +58,8 @@ interface planCreateMutationProps {
   shipment_cost_formula: string;
   box_count: number;
   comment: string;
-  invoice_date: string | undefined;
-  accountant_comment: string;
+  invoice_date?: string;
+  accountant_comment?: string;
 }
 
 export const usePlanCreateMutation = () => {

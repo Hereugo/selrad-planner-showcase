@@ -103,8 +103,8 @@ export const useCreatePlan = ({
       shipment_cost_formula: shipmentCostFormula ?? "0",
       box_count: boxCount ?? 0,
       comment: comment ?? "",
-      invoice_date: invoiceDate,
-      accountant_comment: accountantComment ?? "",
+      invoice_date: isAccountant ? invoiceDate : undefined,
+      accountant_comment: isAccountant ? accountantComment : undefined,
     });
   };
 
