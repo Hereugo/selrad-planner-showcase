@@ -30,7 +30,9 @@ export const usePlansQuery = (props: plansQueryProps = {}) => {
   if (props.search) queryParams.push(`search=${props.search}`);
   if (props.managers) queryParams.push(`managers=${props.managers.join(",")}`);
   if (props.work_items)
-    queryParams.push(`work_items=${props.work_items.join(",")}`);
+    props.work_items.forEach((work_item) =>
+      queryParams.push(`work_items=${work_item}`),
+    );
 
   const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
 

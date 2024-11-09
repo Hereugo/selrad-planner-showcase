@@ -1,18 +1,29 @@
 import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { usePlansQuery } from "@/lib/backend/plans";
+import { useWorkItemsQuery } from "@/lib/backend/work_items";
 import { formatDateBackend } from "@/lib/utils";
 
 export const useFinancialPlans = () => {
-  const { calendarRange, searchQuery, managerId, workId } = useFiltersContext();
+  const { data: workItems } = useWorkItemsQuery();
+  const { calendarRange, searchQuery, managerId } = useFiltersContext();
   const startDate = formatDateBackend(calendarRange?.from);
   const endDate = formatDateBackend(calendarRange?.to);
+
+  const financialWorkItemIds =
+    workItems?.data
+      .filter((item) => {
+        return (
+          item.content_type === "Return" || item.content_type === "Shipment"
+        );
+      })
+      .map((item) => item.id) || [];
 
   const { data, error, isLoading } = usePlansQuery({
     start_date: startDate,
     end_date: endDate,
     search: searchQuery,
     managers: managerId ? [managerId] : undefined,
-    work_items: workId ? [workId] : undefined, // todo: mn only отгрузка и возврат
+    work_items: financialWorkItemIds,
   });
 
   const financialPlans = (data?.data || []).sort((a, b) => {

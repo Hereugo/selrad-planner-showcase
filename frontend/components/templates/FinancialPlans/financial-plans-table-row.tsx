@@ -5,6 +5,7 @@ import {
   cn,
   formatDate,
   formatPrice,
+  isPlanAReturn,
   managerFullName,
   managerShortName,
 } from "@/lib/utils";
@@ -31,8 +32,10 @@ const FinancialPlansTableRow: FC<FinancialPlansTableRowProps> = ({
       <TableCell className="text-center">
         {formatPrice(plan.shipment_cost)}
       </TableCell>
-      <TableCell>{/* {formatDate(plan.invoice_date)}  todo: mn */}</TableCell>
-      <TableCell>{/* {plan.is_return  todo: mn */}</TableCell>
+      <TableCell>
+        {plan.invoice_date ? formatDate(plan.invoice_date) : "Не указано"}
+      </TableCell>
+      <TableCell>{isPlanAReturn(plan) && "Есть"}</TableCell>
       <TableCell className="text-blue-500 hover:cursor-pointer">
         <PlanDialogEdit plan={plan}>
           <span>Изменить</span>
