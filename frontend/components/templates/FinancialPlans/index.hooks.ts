@@ -5,7 +5,7 @@ import { formatDateBackend } from "@/lib/utils";
 
 export const useFinancialPlans = () => {
   const { data: workItems } = useWorkItemsQuery();
-  const { calendarRange, searchQuery, managerId } = useFiltersContext();
+  const { calendarRange, searchQuery } = useFiltersContext();
   const startDate = formatDateBackend(calendarRange?.from);
   const endDate = formatDateBackend(calendarRange?.to);
 
@@ -22,7 +22,6 @@ export const useFinancialPlans = () => {
     start_date: startDate,
     end_date: endDate,
     search: searchQuery,
-    managers: managerId ? [managerId] : undefined,
     work_items: financialWorkItemIds,
   });
 
