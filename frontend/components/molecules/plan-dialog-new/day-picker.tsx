@@ -25,15 +25,8 @@ const DayPicker: FC<DayPickerProps> = ({
   assignedDate,
   setAssignedDate,
 }) => {
-  const [date, setDate] = useState<Date | undefined>(
-    !!assignedDate ? new Date(assignedDate) : undefined,
-  );
-
-  useEffect(() => {
-    if (setAssignedDate) {
-      setAssignedDate(date ? format(date, "yyyy-MM-dd") : "");
-    }
-  }, [date]);
+  const date = assignedDate ? new Date(assignedDate) : undefined;
+  const setDate = (date: Date) => setAssignedDate(format(date, "yyyy-MM-dd"));
 
   return (
     <Popover>

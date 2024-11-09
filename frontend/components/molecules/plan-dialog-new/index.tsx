@@ -22,6 +22,7 @@ import { useCreatePlan } from "./index.hooks";
 import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import AccountantFields from "./accountant-fields";
 
 interface PlanDialogNewProps {
   children?: ReactNode;
@@ -51,6 +52,10 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
     setBoxCount,
     setComment,
     handleCreatePlan,
+    invoiceDate,
+    setInvoiceDate,
+    accountantComment,
+    setAccountantComment,
     isAccountant,
     isLoading,
     selectedManagers,
@@ -134,11 +139,16 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
               <div
                 className={cn(
                   "flex flex-col gap-4 h-0 overflow-hidden duration-1000",
-                  isAccountant && "h-56",
+                  isAccountant && "h-60",
                 )}
               >
                 <Separator />
-                <AccountantFields />
+                <AccountantFields
+                  invoiceDate={invoiceDate}
+                  setInvoiceDate={setInvoiceDate}
+                  accountantComment={accountantComment}
+                  setAccountantComment={setAccountantComment}
+                />
               </div>
             </div>
           </div>
@@ -154,25 +164,6 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
-
-const AccountantFields: FC = () => {
-  return (
-    <div className="w-full">
-      <div className="w-full">
-        <Label htmlFor="invoice_date">Дата накладной</Label>
-        <DayPicker
-          id="invoice_date"
-          setAssignedDate={() => {}}
-          assignedDate={undefined}
-        />
-      </div>
-      <div className="w-full">
-        <Label htmlFor="accountant">Комментарий для бухгалтера</Label>
-        <CommentInput id="comment" setComment={() => {}} />
-      </div>
-    </div>
   );
 };
 

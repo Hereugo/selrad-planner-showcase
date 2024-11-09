@@ -4,7 +4,7 @@ import { useClientsQuery } from "@/lib/backend/clients";
 import { usePlanCreateMutation } from "@/lib/backend/plans";
 import { useWorkItemsQuery } from "@/lib/backend/work_items";
 import { formatClientName } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { highlightPlanRow } from "../plan-dialog-edit/index.hooks";
 import { useManagersQuery } from "@/lib/backend/users/managers";
 
@@ -103,6 +103,8 @@ export const useCreatePlan = ({
       shipment_cost_formula: shipmentCostFormula ?? "0",
       box_count: boxCount ?? 0,
       comment: comment ?? "",
+      invoice_date: invoiceDate,
+      accountant_comment: accountantComment ?? "",
     });
   };
 
@@ -171,10 +173,20 @@ export const useCreatePlan = ({
   }, [planCreateMutation.isSuccess, toast, setIsOpen]);
 
   useEffect(() => {
-    if (invoiceDate == undefined) {
+    if (!invoiceDate && assignedDate && isAccountant) {
+      console.log("Setting invoice date to assigned date", assignedDate);
       setInvoiceDate(assignedDate);
     }
-  }, [invoiceDate, assignedDate]);
+    if (!isAccountant) {
+      setInvoiceDate(undefined);
+    }
+  }, [invoiceDate, assignedDate, isAccountant]);
+
+  useEffect(() => {
+    if (!isAccountant) {
+      setAccountantComment("");
+    }
+  }, [isAccountant]);
 
   return {
     isOpen,
@@ -190,7 +202,9 @@ export const useCreatePlan = ({
     setShipmentCostFormula,
     setBoxCount,
     setComment,
+    invoiceDate,
     setInvoiceDate,
+    accountantComment,
     setAccountantComment,
     handleCreatePlan,
     isAccountant: isAccountant,
