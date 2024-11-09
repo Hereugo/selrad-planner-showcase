@@ -47,7 +47,6 @@ export const handlePlanDownload = ({
   data
     .then((data) => {
       if (data?.data) {
-        console.log(data);
         const filename = decodeContentDisposition(
           data.headers["content-disposition"],
         )
@@ -94,7 +93,6 @@ export const handleDispatchDownload = ({
   data
     .then((data) => {
       if (data?.data) {
-        console.log(data);
         const filename = decodeContentDisposition(
           data.headers["content-disposition"],
         )

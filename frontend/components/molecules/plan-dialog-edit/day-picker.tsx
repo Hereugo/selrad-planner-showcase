@@ -16,7 +16,7 @@ import {
 
 interface DayPickerProps {
   id?: string;
-  assignedDate: string;
+  assignedDate?: string;
   setAssignedDate: (date: string) => void;
 }
 
@@ -25,13 +25,8 @@ const DayPicker: FC<DayPickerProps> = ({
   assignedDate,
   setAssignedDate,
 }) => {
-  const [date, setDate] = useState<Date | undefined>(new Date(assignedDate));
-
-  useEffect(() => {
-    if (setAssignedDate) {
-      setAssignedDate(date ? format(date, "yyyy-MM-dd") : "");
-    }
-  }, [date]);
+  const date = assignedDate ? new Date(assignedDate) : undefined;
+  const setDate = (date: Date) => setAssignedDate(format(date, "yyyy-MM-dd"));
 
   return (
     <Popover>

@@ -174,7 +174,6 @@ export const useCreatePlan = ({
 
   useEffect(() => {
     if (!invoiceDate && assignedDate && isAccountant) {
-      console.log("Setting invoice date to assigned date", assignedDate);
       setInvoiceDate(assignedDate);
     }
     if (!isAccountant) {

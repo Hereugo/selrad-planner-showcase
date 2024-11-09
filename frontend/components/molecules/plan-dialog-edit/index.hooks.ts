@@ -78,6 +78,7 @@ export const highlightPlanRow = (plan: Plan, attempts = 3) => {
 
 export const useUpdatePlan = (initialPlan: Plan) => {
   const { toast } = useToast();
+  const { data: allWorkItems } = useWorkItemsQuery();
 
   const [isOpen, setIsOpen] = useState(false);
   const [assignedDate, setAssignedDate] = useState(initialPlan.assigned_date);
@@ -85,7 +86,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
   const [managers, setManagers] = useState(
     initialPlan.managers.map((manager) => manager.id),
   );
-  const [workItems, setWorkItem] = useState(
+  const [workItems, setWorkItems] = useState<WorkItem["id"][]>(
     initialPlan.work_items.map((workItem) => workItem.id),
   );
   const [shipmentCostFormula, setShipmentCostFormula] = useState(
@@ -93,8 +94,23 @@ export const useUpdatePlan = (initialPlan: Plan) => {
   );
   const [boxCount, setBoxCount] = useState(initialPlan.box_count);
   const [comment, setComment] = useState(initialPlan.comment);
+  const [invoiceDate, setInvoiceDate] = useState<Plan["invoice_date"]>(
+    initialPlan.invoice_date,
+  );
+  const [accountantComment, setAccountantComment] = useState(
+    initialPlan.accountant_comment,
+  );
 
   const planUpdateMutation = usePlanUpdateMutation(initialPlan.id);
+
+  const isAccountant = workItems.some((id) => {
+    return allWorkItems?.data.some(
+      (workItem) =>
+        workItem.id === id &&
+        (workItem.content_type === "Return" ||
+          workItem.content_type === "Shipment"),
+    );
+  });
 
   const switchManager = (manager: string) => {
     setManagers((prev) => {
@@ -107,7 +123,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
   };
 
   const switchWork = (id: WorkItem["id"]) => {
-    setWorkItem((prev) => {
+    setWorkItems((prev) => {
       if (prev.includes(id)) {
         return prev.filter((w) => w !== id);
       } else {
@@ -160,6 +176,21 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     }
   }, [planUpdateMutation.isSuccess, toast, setIsOpen]);
 
+  useEffect(() => {
+    if (!invoiceDate && assignedDate && isAccountant) {
+      setInvoiceDate(assignedDate);
+    }
+    if (!isAccountant) {
+      setInvoiceDate(null);
+    }
+  }, [invoiceDate, assignedDate, isAccountant, workItems]);
+
+  useEffect(() => {
+    if (!isAccountant) {
+      setAccountantComment("");
+    }
+  }, [isAccountant]);
+
   return {
     assignedDate,
     setAssignedDate,
@@ -173,6 +204,11 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     setBoxCount,
     comment,
     setComment,
+    invoiceDate,
+    setInvoiceDate,
+    accountantComment,
+    setAccountantComment,
+    isAccountant,
     switchManager,
     switchWork,
     handleUpdatePlan,
