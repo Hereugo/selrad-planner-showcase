@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { FC, ReactNode } from "react";
 
@@ -37,7 +38,16 @@ const FinancialPlansEditDialog: FC<FinancialPlansEditDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="mb-4">Изменить план</DialogTitle>
         </DialogHeader>
-        <div className="flex gap-4 flex-row justify-stretch w-full">
+        <div className="flex gap-4 flex-col justify-stretch w-full">
+          <div>
+            <Label htmlFor="shipment_cost">Комментарий для бухгалтера</Label>
+            <div>
+              {plan.accountant_comment}
+              {!plan.accountant_comment && (
+                <span className="text-muted-foreground">Не указано</span>
+              )}
+            </div>
+          </div>
           <ShipmentCostInput
             id="shipment_cost"
             className="flex-1"
