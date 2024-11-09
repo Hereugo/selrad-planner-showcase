@@ -96,3 +96,6 @@ export const formatDateBackend = (date: Date | undefined) => {
 export const isPlanAReturn = (plan: Plan) => {
   return plan.work_items.some((item) => item.content_type === "Return");
 };
+export const isPlanAShipment = (plan: Plan) => {
+  return plan.work_items.some((item) => item.content_type === "Shipment");
+};

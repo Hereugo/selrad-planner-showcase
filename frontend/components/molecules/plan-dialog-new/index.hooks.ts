@@ -64,12 +64,16 @@ export const useCreatePlan = ({
 }: createPlanProps) => {
   const { toast } = useToast();
 
+  const { data: workItems } = useWorkItemsQuery();
+
   const [assignedDate, setAssignedDate] = useState<string | undefined>(
     defaultAssignedDate,
   );
   const [client, setClient] = useState<string | undefined>(defaultClientId);
   const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
-  const [selectedWorkItem, setSelectedWorkItem] = useState<string[]>([]);
+  const [selectedWorkItems, setSelectedWorkItems] = useState<WorkItem["id"][]>(
+    [],
+  );
   const [shipmentCostFormula, setShipmentCostFormula] = useState<string>();
   const [boxCount, setBoxCount] = useState<number>();
   const [comment, setComment] = useState<string>();
@@ -95,7 +99,7 @@ export const useCreatePlan = ({
       assigned_date: assignedDate,
       client: client,
       managers: selectedManagers || [],
-      work_items: selectedWorkItem || [],
+      work_items: selectedWorkItems || [],
       shipment_cost_formula: shipmentCostFormula ?? "0",
       box_count: boxCount ?? 0,
       comment: comment ?? "",
@@ -113,7 +117,7 @@ export const useCreatePlan = ({
   };
 
   const switchWork = (id: WorkItem["id"]) => {
-    setSelectedWorkItem((prev) => {
+    setSelectedWorkItems((prev) => {
       if (prev.includes(id)) {
         return prev.filter((w) => w !== id);
       } else {
@@ -121,6 +125,15 @@ export const useCreatePlan = ({
       }
     });
   };
+
+  const isAccountant = selectedWorkItems.some((id) => {
+    return workItems?.data.some(
+      (workItem) =>
+        workItem.id === id &&
+        (workItem.content_type === "Return" ||
+          workItem.content_type === "Shipment"),
+    );
+  });
 
   useEffect(() => {
     if (planCreateMutation.isError) {
@@ -148,7 +161,7 @@ export const useCreatePlan = ({
       setAssignedDate(undefined);
       setClient(undefined);
       setSelectedManagers([]);
-      setSelectedWorkItem([]);
+      setSelectedWorkItems([]);
       setShipmentCostFormula(undefined);
       setBoxCount(undefined);
       setComment(undefined);
@@ -166,7 +179,7 @@ export const useCreatePlan = ({
   return {
     isOpen,
     selectedManagers,
-    selectedWorkItem,
+    selectedWorkItems,
     setIsOpen,
     setAssignedDate,
     assignedDate,
@@ -180,6 +193,7 @@ export const useCreatePlan = ({
     setInvoiceDate,
     setAccountantComment,
     handleCreatePlan,
+    isAccountant: isAccountant,
     isSuccess: planCreateMutation.isSuccess,
     isLoading: planCreateMutation.isLoading,
   };

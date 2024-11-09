@@ -14,13 +14,14 @@ import { FC, ReactNode, useEffect } from "react";
 import DayPicker from "./day-picker";
 import ClientPicker from "./client-picker";
 import SelectManagers from "./select-managers";
-import SelectWorkItem from "./select-workitem";
+import SelectWorkItems from "./select-workitems";
 import ShipmentCostInput from "./input-shipment-cost";
 import BoxCountInput from "./input-box-count";
 import CommentInput from "./input-comment";
 import { useCreatePlan } from "./index.hooks";
 import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface PlanDialogNewProps {
   children?: ReactNode;
@@ -50,9 +51,10 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
     setBoxCount,
     setComment,
     handleCreatePlan,
+    isAccountant,
     isLoading,
     selectedManagers,
-    selectedWorkItem,
+    selectedWorkItems,
   } = useCreatePlan({ defaultClientId, defaultAssignedDate, defaultIsOpen });
 
   useEffect(() => {
@@ -123,18 +125,21 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="workItems">Работы</Label>
-                <SelectWorkItem
+                <SelectWorkItems
                   id="workItems"
                   switchWork={switchWork}
-                  selectedWorkItem={selectedWorkItem}
+                  selectedWorkItems={selectedWorkItems}
                 />
               </div>
-              <Separator />
-              {/* TODO: mn */}
-              {(["Отгрузка", "Возврат"].some((workItem) =>
-                selectedWorkItem.includes(workItem),
-              ) ||
-                true) && <AccountantFields />}
+              <div
+                className={cn(
+                  "flex flex-col gap-4 h-0 overflow-hidden duration-1000",
+                  isAccountant && "h-56",
+                )}
+              >
+                <Separator />
+                <AccountantFields />
+              </div>
             </div>
           </div>
         </DialogHeader>
