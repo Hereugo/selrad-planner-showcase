@@ -140,7 +140,7 @@ class PlanCreateSerializer(serializers.ModelSerializer):
                 )
 
         # Only with work_items "shipment" or "return" you can update attributes "invoice_date" or "accountant_comment"
-        if not ("shipment" in work_items_name and "return" in work_items_name):
+        if not ("shipment" in work_items_name or "return" in work_items_name):
             if "invoice_date" in attrs or "accountant_comment" in attrs:
                 raise serializers.ValidationError(
                     f"Невозможно создать/изменить атрибуты бyхгалтера без работ: отгрузка или возврат"
