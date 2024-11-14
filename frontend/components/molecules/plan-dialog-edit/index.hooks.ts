@@ -149,6 +149,8 @@ export const useUpdatePlan = (initialPlan: Plan) => {
       shipment_cost_formula: shipmentCostFormula,
       box_count: boxCount ?? 0,
       comment: comment ?? "",
+      invoice_date: invoiceDate,
+      accountant_comment: accountantComment,
     });
   };
 
