@@ -1,30 +1,47 @@
+"use client";
+
+import { useMeQuery } from "@/lib/backend/users";
+import { cn } from "@/lib/utils";
 import { FileDown, List, MapPinnedIcon, WalletCardsIcon } from "lucide-react";
 import Link from "next/link";
 
 const NavigationLinks = () => {
+  const { data: me } = useMeQuery();
+
   return (
     <div className="flex flex-col gap-2">
       <Link
         href="/"
-        className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100"
+        className={cn(
+          "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+          !me?.data.is_accountant ? "" : "hidden",
+        )}
       >
         <List className="w-6 h-6" /> Планы
       </Link>
       <Link
         href="/financial_plans"
-        className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100"
+        className={cn(
+          "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+          me?.data.is_accountant ? "" : "hidden",
+        )}
       >
         <WalletCardsIcon className="w-6 h-6" /> Бухгалтерия и склад
       </Link>
       <Link
         href="/maps"
-        className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100"
+        className={cn(
+          "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+          !me?.data.is_accountant ? "" : "hidden",
+        )}
       >
         <MapPinnedIcon className="w-6 h-6" /> Карта
       </Link>
       <Link
         href="/export_excel"
-        className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100"
+        className={cn(
+          "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+        )}
       >
         <FileDown className="w-6 h-6" /> Скачать эксель
       </Link>
