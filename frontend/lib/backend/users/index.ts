@@ -1,5 +1,5 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { fetchWithAuth, postWithAuth } from "../httpCalls";
+import { useQuery } from "@tanstack/react-query";
+import { fetchWithAuth } from "../httpCalls";
 import urls from "../urls";
 
 export const useMeQuery = () => {

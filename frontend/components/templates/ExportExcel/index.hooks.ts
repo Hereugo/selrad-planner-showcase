@@ -1,4 +1,3 @@
-import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { compareReportExportQuery } from "@/lib/backend/clients";
 import {
   planExportQuery,

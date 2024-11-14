@@ -12,10 +12,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Loader2, Terminal } from "lucide-react";
+import { useMeQuery } from "@/lib/backend/users";
+import { cn } from "@/lib/utils";
 
 interface ExportExcelTemplateProps {}
 
 const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
+  const { data: me } = useMeQuery();
+
   const { calendarRange, searchQuery, managerId, workId } = useFiltersContext();
   const { toast } = useToast();
 
@@ -38,6 +42,9 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               toast,
             })
           }
+          className={cn(
+            me?.data.permissions.includes("plans.export_plans") ? "" : "hidden",
+          )}
           disabled={isPlanLoading}
         >
           Скачать план
@@ -55,6 +62,11 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               toast,
             })
           }
+          className={cn(
+            me?.data.permissions.includes("plans.get_dispatch_report")
+              ? ""
+              : "hidden",
+          )}
           disabled={isDispatchLoading}
         >
           Скачать отчет по диспечерскому
@@ -72,6 +84,11 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               toast,
             })
           }
+          className={cn(
+            me?.data.permissions.includes("plans.get_dispatch_list")
+              ? ""
+              : "hidden",
+          )}
           disabled={isReportLoading}
         >
           Скачать отчет
@@ -88,6 +105,11 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               workId,
             })
           }
+          className={cn(
+            me?.data.permissions.includes("clients.export_compare_years")
+              ? ""
+              : "hidden",
+          )}
           disabled={isCompareLoading}
         >
           Сравнить с прошлым годом
