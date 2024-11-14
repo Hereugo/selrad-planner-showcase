@@ -28,7 +28,7 @@ const FinancialPlansTableRow: FC<FinancialPlansTableRowProps> = ({
         {plan.invoice_date ? formatDate(plan.invoice_date) : "Не указано"}
       </TableCell>
       <TableCell>{isPlanAReturn(plan) && "Есть"}</TableCell>
-      <TableCell className="w-[120px] text-ellipsis">
+      <TableCell className="max-w-[60px] text-ellipsis line-clamp-1">
         {plan.accountant_comment}
       </TableCell>
       <TableCell className="text-blue-500 hover:cursor-pointer">

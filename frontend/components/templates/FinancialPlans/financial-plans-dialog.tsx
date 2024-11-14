@@ -39,9 +39,9 @@ const FinancialPlansEditDialog: FC<FinancialPlansEditDialogProps> = ({
           <DialogTitle className="mb-4">Изменить план</DialogTitle>
         </DialogHeader>
         <div className="flex gap-4 flex-col justify-stretch w-full">
-          <div>
+          <div className="w-full">
             <Label htmlFor="shipment_cost">Комментарий для бухгалтера</Label>
-            <div>
+            <div className="text-wrap w-full">
               {plan.accountant_comment}
               {!plan.accountant_comment && (
                 <span className="text-muted-foreground">Не указано</span>
