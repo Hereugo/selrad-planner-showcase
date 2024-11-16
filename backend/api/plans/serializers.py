@@ -210,28 +210,28 @@ class PlanUpdateSerializer(PlanCreateSerializer):
 
         return assigned_date
 
-    def validate_field_permission(self, validated_data):
-        request: Request = self.context["request"]
-        manager: Manager = request.user.manager
-
-        modified_attrs = set()
-        for field, value in validated_data.items():
-            if getattr(self.instance, field) != value:
-                logger.debug(f"{field}: {value} | {getattr(self.instance, field)}")
-                modified_attrs.add(field)
-
-        if manager.is_accountant:
-            # A set of attributes that an account is allowed to modify
-            allowed_attrs = set("shipment_cost")
-            if modified_attrs != allowed_attrs:
-                invalid_attrs = modified_attrs - allowed_attrs
-                raise serializers.ValidationError(
-                    f"Не разрешается изменять атрибуты: {invalid_attrs}"
-                )
+    # def validate_field_permission(self, validated_data):
+    #     request: Request = self.context["request"]
+    #     manager: Manager = request.user.manager
+    #
+    #     modified_attrs = set()
+    #     for field, value in validated_data.items():
+    #         if getattr(self.instance, field) != value:
+    #             logger.debug(f"{field}: {value} | {getattr(self.instance, field)}")
+    #             modified_attrs.add(field)
+    #
+    #     if manager.is_accountant:
+    #         # A set of attributes that an account is allowed to modify
+    #         allowed_attrs = set("shipment_cost")
+    #         if modified_attrs != allowed_attrs:
+    #             invalid_attrs = modified_attrs - allowed_attrs
+    #             raise serializers.ValidationError(
+    #                 f"Не разрешается изменять атрибуты: {invalid_attrs}"
+    #             )
 
     def update(self, instance: Plan, validated_data):
         # This doesn't work?
-        self.validate_field_permission(validated_data)
+        # self.validate_field_permission(validated_data)
 
         if "work_items" in validated_data:
             work_items: List[WorkItem] = validated_data.pop("work_items", [])
