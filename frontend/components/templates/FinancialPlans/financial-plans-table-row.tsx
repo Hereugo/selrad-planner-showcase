@@ -1,7 +1,15 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { FC } from "react";
-import { cn, formatDate, formatPrice, isPlanAReturn } from "@/lib/utils";
+import {
+  cn,
+  formatDate,
+  formatPrice,
+  isPlanAReturn,
+  managerFullName,
+  managerShortName,
+} from "@/lib/utils";
 import FinancialPlansEditDialog from "./financial-plans-dialog";
+import { Badge } from "@/components/ui/badge";
 
 interface FinancialPlansTableRowProps {
   plan: Plan;
@@ -25,10 +33,16 @@ const FinancialPlansTableRow: FC<FinancialPlansTableRowProps> = ({
         {formatPrice(plan.shipment_cost)}
       </TableCell>
       <TableCell>
-        {plan.invoice_date ? formatDate(plan.invoice_date) : "Не указано"}
+        <div className="flex gap-1 flex-wrap">
+          {plan.managers.map((manager) => (
+            <Badge key={manager.id} title={managerFullName(manager)}>
+              {managerShortName(manager)}
+            </Badge>
+          ))}
+        </div>
       </TableCell>
       <TableCell>{isPlanAReturn(plan) && "Есть"}</TableCell>
-      <TableCell className="max-w-[60px] text-ellipsis line-clamp-1">
+      <TableCell className="max-w-[150px] text-wrap">
         {plan.accountant_comment}
       </TableCell>
       <TableCell className="text-blue-500 hover:cursor-pointer">

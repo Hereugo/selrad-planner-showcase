@@ -6,8 +6,8 @@ const FinancialPlansTableHeader = () => {
       <TableRow>
         <TableHead className="w-[150px]">Дата</TableHead>
         <TableHead className="w-[200px]">Клиент</TableHead>
-        <TableHead>Сумма отгрузки (₸)</TableHead>
-        <TableHead className="w-[150px]">Дата накладной</TableHead>
+        <TableHead className="w-[160px]">Сумма отгрузки</TableHead>
+        <TableHead>Менеджеры</TableHead>
         <TableHead>Возврат</TableHead>
         <TableHead>Комментарий</TableHead>
         <TableHead></TableHead>
