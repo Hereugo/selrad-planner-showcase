@@ -6,7 +6,7 @@ import {
   usePlanUpdateMutation,
 } from "@/lib/backend/plans";
 import { useWorkItemsQuery } from "@/lib/backend/work_items";
-import { formatClientName } from "@/lib/utils";
+import { formatClientName, generateAccountantComment } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useManagersQuery } from "@/lib/backend/users/managers";
 
@@ -79,6 +79,7 @@ export const highlightPlanRow = (plan: Plan, attempts = 3) => {
 export const useUpdatePlan = (initialPlan: Plan) => {
   const { toast } = useToast();
   const { data: allWorkItems } = useWorkItemsQuery();
+  const { data: allClients } = useClientsQuery();
 
   const [isOpen, setIsOpen] = useState(false);
   const [assignedDate, setAssignedDate] = useState(initialPlan.assigned_date);
@@ -103,14 +104,17 @@ export const useUpdatePlan = (initialPlan: Plan) => {
 
   const planUpdateMutation = usePlanUpdateMutation(initialPlan.id);
 
-  const isAccountant = workItems.some((id) => {
+  const isReturn = workItems.some((id) => {
     return allWorkItems?.data.some(
-      (workItem) =>
-        workItem.id === id &&
-        (workItem.content_type === "Return" ||
-          workItem.content_type === "Shipment"),
+      (workItem) => workItem.id === id && workItem.content_type === "Return",
     );
   });
+  const isShipment = workItems.some((id) => {
+    return allWorkItems?.data.some(
+      (workItem) => workItem.id === id && workItem.content_type === "Shipment",
+    );
+  });
+  const isAccountant = isReturn || isShipment;
 
   const switchManager = (manager: string) => {
     setManagers((prev) => {
@@ -192,6 +196,28 @@ export const useUpdatePlan = (initialPlan: Plan) => {
       setAccountantComment("");
     }
   }, [isAccountant]);
+
+  useEffect(() => {
+    const invoiceSum = shipmentCostFormula.split("+").reduce((acc, cur) => {
+      const num = Number(cur);
+      if (isNaN(num)) {
+        return acc;
+      }
+      return acc + num;
+    }, 0);
+    const invoiceCount = shipmentCostFormula.split("+").length ?? 0;
+
+    const newComment = generateAccountantComment({
+      isReturn,
+      isShipment,
+      invoiceSum,
+      invoiceCount,
+      client: allClients?.data.find((c) => c.id === client),
+      hasManager: managers.length > 0,
+    });
+
+    setAccountantComment(newComment);
+  }, [shipmentCostFormula, client, allClients, managers, isReturn, isShipment]);
 
   return {
     assignedDate,
