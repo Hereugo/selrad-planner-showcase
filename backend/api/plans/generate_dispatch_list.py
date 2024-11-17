@@ -7,7 +7,6 @@ import pandas as pd
 from html2image import Html2Image
 
 from django.db.models import QuerySet
-
 from plans.models import Plan
 from managers.models import Manager
 
@@ -26,6 +25,7 @@ def generate_dispatch_list(
         "Место Отгрузки": [],
         "Контактное лицо": [],
         "Доп информация": [],
+        "Доп информация бух": [],
     }
     for i, plan in enumerate(plans, start=1):
         l["№\nп/п"].append(i)
@@ -34,6 +34,7 @@ def generate_dispatch_list(
         l["Место Отгрузки"].append(plan.client.address.street)
         l["Контактное лицо"].append(", ".join([m.name for m in plan.managers.all()]))
         l["Доп информация"].append(plan.comment)
+        l["Доп информация бух"].append(plan.accountant_comment)
 
     df = pd.DataFrame(l)
 
@@ -59,7 +60,7 @@ def generate_dispatch_list(
         <h1>{comment}</h1>
         """
 
-        css_str = "table,th{border:1px solid #000,background-color:white;}*{box-sizing:border-box;font-family:Arial,sans-serif;background-color:white;}table{border-collapse:collapse;width:100%}th{background-color:#d3d3d3;font-size:14px;font-weight:700;text-align:left}td,th{padding:8px}tr th:first-child{width:24px;max-width:24px}tr th:nth-child(2),tr th:nth-child(4){width:300px;max-width:300px}tr th:nth-child(3){width:50px;max-width:50px}tr td:nth-child(3){font-size:20px;font-weight:700;text-align:center}tr th:nth-child(5){width:200px;max-width:200px}tr th:nth-child(6){width:100px;max-width:100px}"
+        css_str = "table,th{border:1px solid #000,background-color:white;}*{box-sizing:border-box;font-family:Arial,sans-serif;background-color:white;}table{border-collapse:collapse;width:100%}th{background-color:#d3d3d3;font-size:14px;font-weight:700;text-align:left}td,th{padding:8px}tr th:first-child{width:24px;max-width:24px}tr th:nth-child(2),tr th:nth-child(4){width:300px;max-width:300px}tr th:nth-child(3){width:50px;max-width:50px}tr td:nth-child(3){font-size:20px;font-weight:700;text-align:center}tr th:nth-child(5){width:200px;max-width:200px}tr th:nth-child(6){width:100px;max-width:100px}tr th:nth-child(7){width:100px;max-width:100px}"
 
         calc_height = 500 + len(df) * 55
 
