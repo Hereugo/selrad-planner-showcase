@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { formatDate } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { FC, ReactNode } from "react";
 
@@ -39,6 +40,15 @@ const FinancialPlansEditDialog: FC<FinancialPlansEditDialogProps> = ({
           <DialogTitle className="mb-4">Изменить план</DialogTitle>
         </DialogHeader>
         <div className="flex gap-4 flex-col justify-stretch w-full">
+          <div className="w-full">
+            <Label htmlFor="invoice_date">Дата накладной</Label>
+            <div className="text-wrap w-full">
+              {!!plan.invoice_date && formatDate(plan.invoice_date)}
+              {!plan.invoice_date && (
+                <span className="text-muted-foreground">Не указано</span>
+              )}
+            </div>
+          </div>
           <div className="w-full">
             <Label htmlFor="shipment_cost">Комментарий для бухгалтера</Label>
             <div className="text-wrap w-full">
