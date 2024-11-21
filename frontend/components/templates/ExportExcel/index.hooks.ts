@@ -3,6 +3,7 @@ import {
   planExportQuery,
   managerReportExportQuery,
   dispatchExportQuery,
+  dispatchListExportQuery,
 } from "@/lib/backend/plans";
 import { decodeContentDisposition, formatDateBackend } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
@@ -212,6 +213,53 @@ export const handleCompareReportDownload = ({
       setIsLoading(false);
       toast({
         title: "Ошибка, не удалось скачать отчет",
+        description: e.message,
+      });
+    });
+};
+
+export const handleDispatchListDownload = ({
+  setIsLoading,
+  toast,
+  calendarRange,
+  searchQuery,
+  managerId,
+  workId,
+}: handlePlanDownloadProps) => {
+  setIsLoading(true);
+
+  if (!managerId) return;
+
+  const data = dispatchListExportQuery(managerId, {
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
+    search: searchQuery,
+    work_items: workId ? [workId] : undefined,
+  });
+
+  data
+    .then((data) => {
+      if (data?.data) {
+        const filename = decodeContentDisposition(
+          data.headers["content-disposition"],
+        )
+          ?.split("filename=")[1]
+          .replace(/[^A-Za-zА-Яа-я\s0-9.-]/g, "");
+        const url = window.URL.createObjectURL(new Blob([data.data]));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename ?? "dispatch_list.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+      setIsLoading(false);
+    })
+    .catch((e) => {
+      console.error(e);
+      setIsLoading(false);
+      toast({
+        title: "Ошибка, не удалось скачать план",
         description: e.message,
       });
     });

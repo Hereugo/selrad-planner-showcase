@@ -6,6 +6,7 @@ import {
   handlePlanDownload,
   handleReportDownload,
   handleCompareReportDownload,
+  handleDispatchListDownload,
 } from "./index.hooks";
 import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -14,17 +15,20 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Terminal } from "lucide-react";
 import { useMeQuery } from "@/lib/backend/users";
 import { cn } from "@/lib/utils";
+import { useDriversQuery } from "@/lib/backend/users/managers";
 
 interface ExportExcelTemplateProps {}
 
 const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
   const { data: me } = useMeQuery();
+  const { data: allDrivers } = useDriversQuery();
 
   const { calendarRange, searchQuery, managerId, workId } = useFiltersContext();
   const { toast } = useToast();
 
   const [isPlanLoading, setIsPlanLoading] = useState(false);
   const [isDispatchLoading, setIsDispatchLoading] = useState(false);
+  const [isDispatchListLoading, setIsDispatchListLoading] = useState(false);
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isCompareLoading, setIsCompareLoading] = useState(false);
 
@@ -94,7 +98,28 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
           Скачать отчет
           {isReportLoading && <Loader2 className="w-6 h-6 ml-2 animate-spin" />}
         </Button>
-
+        <Button
+          onClick={() =>
+            handleDispatchListDownload({
+              setIsLoading: setIsDispatchListLoading,
+              calendarRange,
+              toast,
+              searchQuery,
+              managerId,
+              workId,
+            })
+          }
+          disabled={
+            isDispatchListLoading ||
+            !allDrivers?.data.find((driver) => driver.id === managerId)
+              ?.is_driver
+          }
+        >
+          Скачать диспечерский лист
+          {isDispatchListLoading && (
+            <Loader2 className="w-6 h-6 ml-2 animate-spin" />
+          )}
+        </Button>
         <Button
           onClick={() =>
             handleCompareReportDownload({

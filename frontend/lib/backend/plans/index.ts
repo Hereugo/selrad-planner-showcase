@@ -190,3 +190,39 @@ export const managerReportExportQuery = (props: planExportQueryProps) => {
     responseType: "blob",
   });
 };
+
+interface dispatchListExportQueryProps {
+  start_date?: string;
+  end_date?: string;
+  ordering?: string;
+  search?: string;
+  managers?: Manager["id"][];
+  work_items?: WorkItem["id"][];
+  only_shipment?: boolean;
+  comment?: string;
+}
+
+export const dispatchListExportQuery = (
+  manager_id: string,
+  props: dispatchListExportQueryProps = {},
+) => {
+  const url = `${urls.base_backend.plans}/dispatch_list/${manager_id}/`;
+  const queryParams = [];
+
+  if (props.start_date) queryParams.push(`start_date=${props.start_date}`);
+  if (props.end_date) queryParams.push(`end_date=${props.end_date}`);
+  if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
+  if (props.search) queryParams.push(`search=${props.search}`);
+  if (props.managers) queryParams.push(`managers=${props.managers.join(",")}`);
+  if (props.work_items)
+    queryParams.push(`work_items=${props.work_items.join(",")}`);
+  if (props.only_shipment !== undefined)
+    queryParams.push(`only_shipment=${props.only_shipment}`);
+  if (props.comment) queryParams.push(`comment=${props.comment}`);
+
+  const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
+
+  return fetchWithAuth<Blob>(urlWithParams, {
+    responseType: "blob",
+  });
+};
