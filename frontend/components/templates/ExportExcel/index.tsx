@@ -89,7 +89,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
             })
           }
           className={cn(
-            me?.data.permissions.includes("plans.get_dispatch_list")
+            me?.data.permissions.includes("plans.export_report")
               ? ""
               : "hidden",
           )}
@@ -109,6 +109,11 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               workId,
             })
           }
+          className={cn(
+            me?.data.permissions.includes("plans.get_dispatch_list")
+              ? ""
+              : "hidden",
+          )}
           disabled={
             isDispatchListLoading ||
             !allDrivers?.data.find((driver) => driver.id === managerId)

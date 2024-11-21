@@ -18,15 +18,11 @@ const Filters = () => {
 
       <CalendarFilters />
 
-      {!me?.data.is_accountant && (
-        <>
-          <Separator orientation="horizontal" />
+      <Separator orientation="horizontal" />
 
-          <ManagerFilter />
+      <ManagerFilter />
 
-          <WorkFilter />
-        </>
-      )}
+      {!me?.data.is_accountant && <WorkFilter />}
     </div>
   );
 };
