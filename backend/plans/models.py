@@ -116,9 +116,8 @@ class Plan(models.Model):
         blank=True,
         null=True,
     )
-    time_since_last_dispatch = models.DateTimeField(
-        verbose_name="Время с момента последней отправки диспетчерского листа",
-        help_text="Количество времени, прошедшее с момента последней отправки отчёта.",
+    time_since_first_dispatch = models.DateTimeField(
+        verbose_name="Время с момента первой отправки диспетчерского листа",
         blank=True,
         null=True,
     )
@@ -151,10 +150,10 @@ class Plan(models.Model):
         """Save the model instance. Update the updated_at field."""
         cost = self.shipment_cost()
         if self.box_count is None:
-            if isinstance(cost, (int, float)):
-                self.box_count = ceil(cost / 93_000)
-            else:
-                self.box_count = 0
+            # if isinstance(cost, (int, float)):
+            #     self.box_count = ceil(cost / 93_000)
+            # else:
+            self.box_count = 0
 
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)

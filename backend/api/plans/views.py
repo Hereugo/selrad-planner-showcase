@@ -207,7 +207,9 @@ class PlanViewSet(ModelViewSet):
         plans = plans.filter(managers__id=manager_id)
         plans = plans.order_by("assigned_date")
 
-        plans.update(time_since_last_dispatch=timezone.now())
+        plans.filter(time_since_first_dispatch__isnull=True).update(
+            time_since_first_dispatch=timezone.now()
+        )
 
         if not start_date:
             start_date = plans.earliest("assigned_date").assigned_date
