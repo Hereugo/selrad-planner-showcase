@@ -1,20 +1,20 @@
 "use client";
 
-import { useMeQuery } from "@/lib/backend/users";
 import { cn } from "@/lib/utils";
-import { FileDown, List, MapPinnedIcon, WalletCardsIcon } from "lucide-react";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
+import { FileDown, List, MapPinnedIcon } from "lucide-react";
 import Link from "next/link";
 
 const NavigationLinks = () => {
-  const { data: me } = useMeQuery();
+  const viewFeature = useViewFeature();
 
   return (
     <div className="flex flex-col gap-2">
       <Link
         href="/"
-        className={
-          "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100"
-        }
+        className={cn(
+          "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+        )}
       >
         <List className="w-6 h-6" /> Планы
       </Link>
@@ -22,7 +22,7 @@ const NavigationLinks = () => {
         href="/maps"
         className={cn(
           "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
-          !me?.data.is_accountant ? "" : "hidden",
+          viewFeature.canViewMaps ? "" : "hidden",
         )}
       >
         <MapPinnedIcon className="w-6 h-6" /> Карта

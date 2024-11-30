@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import PlanDialog from "../plan-dialog-new";
 import { FC } from "react";
 import { cn } from "@/lib/utils";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
 interface NewPlanButtonProps {
   className?: string;

@@ -13,14 +13,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Loader2, Terminal } from "lucide-react";
-import { useMeQuery } from "@/lib/backend/users";
 import { cn } from "@/lib/utils";
 import { useDriversQuery } from "@/lib/backend/users/managers";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
 interface ExportExcelTemplateProps {}
 
 const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
-  const { data: me } = useMeQuery();
+  const viewFeature = useViewFeature();
   const { data: allDrivers } = useDriversQuery();
 
   const { calendarRange, searchQuery, managerId, workId } = useFiltersContext();
@@ -46,9 +46,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               toast,
             })
           }
-          className={cn(
-            me?.data.permissions.includes("plans.export_plans") ? "" : "hidden",
-          )}
+          className={cn(viewFeature.canExportPlans ? "" : "hidden")}
           disabled={isPlanLoading}
         >
           Скачать план
@@ -66,11 +64,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               toast,
             })
           }
-          className={cn(
-            me?.data.permissions.includes("plans.get_dispatch_report")
-              ? ""
-              : "hidden",
-          )}
+          className={cn(viewFeature.canExportDispatchReport ? "" : "hidden")}
           disabled={isDispatchLoading}
         >
           Скачать отчет по диспечерскому
@@ -88,11 +82,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               toast,
             })
           }
-          className={cn(
-            me?.data.permissions.includes("plans.export_report")
-              ? ""
-              : "hidden",
-          )}
+          className={cn(viewFeature.canExportReport ? "" : "hidden")}
           disabled={isReportLoading}
         >
           Скачать отчет
@@ -109,11 +99,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               workId,
             })
           }
-          className={cn(
-            me?.data.permissions.includes("plans.get_dispatch_list")
-              ? ""
-              : "hidden",
-          )}
+          className={cn(viewFeature.canExportDispatchList ? "" : "hidden")}
           disabled={
             isDispatchListLoading ||
             !allDrivers?.data.find((driver) => driver.id === managerId)
@@ -135,11 +121,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               workId,
             })
           }
-          className={cn(
-            me?.data.permissions.includes("clients.export_compare_years")
-              ? ""
-              : "hidden",
-          )}
+          className={cn(viewFeature.canExportCompareReport ? "" : "hidden")}
           disabled={isCompareLoading}
         >
           Сравнить с прошлым годом

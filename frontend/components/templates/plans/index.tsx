@@ -2,15 +2,15 @@
 
 import { FC } from "react";
 import PlanTable from "./plan-table";
-import { useMeQuery } from "@/lib/backend/users";
 import FinancialPlansTable from "../FinancialPlans/financial-plans-table";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
 interface PlansTemplateProps {}
 
 const PlansTemplate: FC<PlansTemplateProps> = () => {
-  const { data: me } = useMeQuery();
+  const viewFeature = useViewFeature();
 
-  if (me?.data.is_accountant) {
+  if (viewFeature.canViewAccountant) {
     return <FinancialPlansTable />;
   }
 

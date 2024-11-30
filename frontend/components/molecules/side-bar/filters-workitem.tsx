@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/select";
 import { cn, toTitle } from "@/lib/utils";
 import { useWorks } from "../plan-dialog-edit/index.hooks";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
 const WorkFilter = () => {
+  const viewFeature = useViewFeature();
   const { workId, setWorkId } = useFiltersContext();
   const { workItems } = useWorks();
 
@@ -29,23 +31,25 @@ const WorkFilter = () => {
   };
 
   return (
-    <div className="flex flex-col">
-      <Label className="text-sm">Работа</Label>
-      <Select value={workId || "undefined"} onValueChange={handleSelectWork}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="---" />
-        </SelectTrigger>
-        <SelectContent side="right">
-          <SelectItem value="undefined">Все</SelectItem>
-          <SelectItem value="-1">Не выбрано</SelectItem>
-          {workItems.map((workItem) => (
-            <SelectItem key={workItem.id} value={workItem.id}>
-              {toTitle(workItem.name)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    viewFeature.canUseWorkFilter && (
+      <div className="flex flex-col">
+        <Label className="text-sm">Работа</Label>
+        <Select value={workId || "undefined"} onValueChange={handleSelectWork}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="---" />
+          </SelectTrigger>
+          <SelectContent side="right">
+            <SelectItem value="undefined">Все</SelectItem>
+            <SelectItem value="-1">Не выбрано</SelectItem>
+            {workItems.map((workItem) => (
+              <SelectItem key={workItem.id} value={workItem.id}>
+                {toTitle(workItem.name)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    )
   );
 };
 

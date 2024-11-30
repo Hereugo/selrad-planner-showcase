@@ -6,23 +6,22 @@ import { cn } from "@/lib/utils";
 import NavigationLinks from "./navigation-links";
 import NewPlanButton from "./new-plan-button";
 import Filters from "./filters";
-import { useMeQuery } from "@/lib/backend/users";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
 interface SideBarProps {
   className?: string;
 }
 
 const SideBar: FC<SideBarProps> = ({ className }) => {
-  const { data: me } = useMeQuery();
-
+  const viewFeature = useViewFeature();
   return (
     <div className={cn("border-r-2 z-50 px-4 py-6", className)}>
-      <NewPlanButton className={me?.data.is_accountant ? "hidden" : ""} />
-
-      <Separator
-        orientation="horizontal"
-        className={cn("my-4", me?.data.is_accountant ? "hidden" : "")}
-      />
+      {viewFeature.canCreateNewPlan && (
+        <>
+          <NewPlanButton />
+          <Separator orientation="horizontal" />
+        </>
+      )}
 
       <NavigationLinks />
 
