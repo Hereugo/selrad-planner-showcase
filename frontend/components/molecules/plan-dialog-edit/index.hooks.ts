@@ -198,8 +198,6 @@ export const useUpdatePlan = (initialPlan: Plan) => {
   }, [isAccountant]);
 
   const handleAutoGenerateAccountantComment = (newPlan: typeof plan) => {
-    console.log("newPlan", newPlan);
-
     const invoiceSum = newPlan.shipmentCostFormula
       .split("+")
       .reduce((acc, cur) => {
