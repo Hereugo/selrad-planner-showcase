@@ -22,7 +22,8 @@ import { useDeletePlan, useUpdatePlan } from "./index.hooks";
 import { Loader2, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import AccountantFields from "./accountant-fields";
-import { cn } from "@/lib/utils";
+import { cn, isPlanOld } from "@/lib/utils";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
 interface PlanDialogEditProps {
   plan: Plan;
@@ -57,6 +58,8 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
   } = useUpdatePlan(plan);
 
   const { handleDeletePlan } = useDeletePlan(plan);
+
+  const viewFeature = useViewFeature();
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -145,14 +148,18 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
         </DialogHeader>
         <DialogFooter>
           <Button
-            disabled={isLoading}
+            disabled={
+              isLoading || (!viewFeature.canUpdateOldPlan && isPlanOld(plan))
+            }
             onClick={handleUpdatePlan}
             className="w-full"
           >
             {isLoading ? <Loader2 className="animate-spin" /> : "Сохранить"}
           </Button>
           <Button
-            disabled={isLoading}
+            disabled={
+              isLoading || (!viewFeature.canDeleteOldPlan && isPlanOld(plan))
+            }
             onClick={handleDeletePlan}
             variant="destructive"
             className="w-10 h-10 p-3"

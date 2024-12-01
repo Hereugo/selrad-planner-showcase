@@ -157,3 +157,7 @@ export const generateAccountantComment = ({
   // Вообщем комментарий выглядит вот так если все выполняется по максу «2 НАКЛАДНЫЕ.АДМИРАЛ.ДОВЕРЕННОСТЬ.»
   return comment;
 };
+
+export const isPlanOld = (plan: Plan) => {
+  return plan.assigned_date < new Date().toISOString().slice(0, 10);
+};

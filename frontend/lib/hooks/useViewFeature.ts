@@ -19,8 +19,7 @@ export const useViewFeature = () => {
       "clients.export_compare_years",
     ),
     canDeletePlan: me?.permissions.includes("plans.delete_plans"),
-    // plans.add_old_plan
-    // plans.change_old_plan
-    // plans.delete_old_plan -> can change old plans
+    canDeleteOldPlan: me?.permissions.includes("plans.delete_old_plan"),
+    canUpdateOldPlan: me?.permissions.includes("plans.change_old_plan"),
   };
 };
