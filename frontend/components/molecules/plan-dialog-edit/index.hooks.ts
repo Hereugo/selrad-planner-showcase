@@ -124,6 +124,8 @@ export const useUpdatePlan = (initialPlan: Plan) => {
         return [...prev, manager];
       }
     });
+
+    handleAutoGenerateAccountantComment("manager");
   };
 
   const switchWork = (id: WorkItem["id"]) => {
@@ -134,6 +136,8 @@ export const useUpdatePlan = (initialPlan: Plan) => {
         return [...prev, id];
       }
     });
+
+    handleAutoGenerateAccountantComment("work");
   };
 
   const handleUpdatePlan = () => {
@@ -197,33 +201,40 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     }
   }, [isAccountant]);
 
-  //   useEffect(() => {
-  //     const invoiceSum = shipmentCostFormula.split("+").reduce((acc, cur) => {
-  //       const num = Number(cur);
-  //       if (isNaN(num)) {
-  //         return acc;
-  //       }
-  //       return acc + num;
-  //     }, 0);
-  //     const invoiceCount = shipmentCostFormula.split("+").length ?? 0;
+  const handleAutoGenerateAccountantComment = (who: string) => {
+    console.log("Called by", who);
 
-  //     const newComment = generateAccountantComment({
-  //       isReturn,
-  //       isShipment,
-  //       invoiceSum,
-  //       invoiceCount,
-  //       client: allClients?.data.find((c) => c.id === client),
-  //       hasManager: managers.length > 0,
-  //     });
+    const invoiceSum = shipmentCostFormula.split("+").reduce((acc, cur) => {
+      const num = Number(cur);
+      if (isNaN(num)) {
+        return acc;
+      }
+      return acc + num;
+    }, 0);
+    const invoiceCount = shipmentCostFormula.split("+").length ?? 0;
 
-  //     setAccountantComment(newComment);
-  //   }, [shipmentCostFormula, client, allClients, managers, isReturn, isShipment]);
+    const newComment = generateAccountantComment({
+      isReturn,
+      isShipment,
+      invoiceSum,
+      invoiceCount,
+      client: allClients?.data.find((c) => c.id === client),
+      hasManager: managers.length > 0,
+    });
+
+    setAccountantComment(newComment);
+  }; //, [shipmentCostFormula, client, managers, isReturn, isShipment]);
+
+  const handleClientChange = (client: string) => {
+    setClient(client);
+    handleAutoGenerateAccountantComment("client");
+  };
 
   return {
     assignedDate,
     setAssignedDate,
     client,
-    setClient,
+    setClient: handleClientChange,
     managers,
     workItems,
     shipmentCostFormula,
