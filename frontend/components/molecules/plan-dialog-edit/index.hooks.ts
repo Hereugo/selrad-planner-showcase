@@ -240,6 +240,14 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     });
   };
 
+  const handleShipmentCostFormulaChange = (shipmentCostFormula: string) => {
+    setPlan((prev) => {
+      const newPlan = { ...prev, shipmentCostFormula };
+      handleAutoGenerateAccountantComment(newPlan);
+      return newPlan;
+    });
+  };
+
   return {
     assignedDate: plan.assignedDate,
     setAssignedDate: (assignedDate: string) => {
@@ -250,9 +258,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     managers: plan.managers,
     workItems: plan.workItems,
     shipmentCostFormula: plan.shipmentCostFormula,
-    setShipmentCostFormula: (shipmentCostFormula: string) => {
-      setPlan((prev) => ({ ...prev, shipmentCostFormula }));
-    },
+    setShipmentCostFormula: handleShipmentCostFormulaChange,
     boxCount: plan.boxCount,
     setBoxCount: (boxCount: number) => {
       setPlan((prev) => ({ ...prev, boxCount }));
