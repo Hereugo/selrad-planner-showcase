@@ -110,28 +110,36 @@ export const useUpdatePlan = (initialPlan: Plan) => {
 
   const switchManager = (manager: string) => {
     setPlan((prev) => {
-      const newPlan = {
+      let newPlan = {
         ...prev,
         managers: prev.managers.includes(manager)
           ? prev.managers.filter((m) => m !== manager)
           : [...prev.managers, manager],
       };
 
-      handleAutoGenerateAccountantComment(newPlan);
+      newPlan = {
+        ...newPlan,
+        accountantComment: getGeneratedAccountantComment(newPlan),
+      };
+
       return newPlan;
     });
   };
 
   const switchWork = (id: WorkItem["id"]) => {
     setPlan((prev) => {
-      const newPlan = {
+      let newPlan = {
         ...prev,
         workItems: prev.workItems.includes(id)
           ? prev.workItems.filter((w) => w !== id)
           : [...prev.workItems, id],
       };
 
-      handleAutoGenerateAccountantComment(newPlan);
+      newPlan = {
+        ...newPlan,
+        accountantComment: getGeneratedAccountantComment(newPlan),
+      };
+
       return newPlan;
     });
   };
@@ -197,7 +205,7 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     }
   }, [isAccountant]);
 
-  const handleAutoGenerateAccountantComment = (newPlan: typeof plan) => {
+  const getGeneratedAccountantComment = (newPlan: typeof plan) => {
     const invoiceSum = newPlan.shipmentCostFormula
       .split("+")
       .reduce((acc, cur) => {
@@ -229,21 +237,27 @@ export const useUpdatePlan = (initialPlan: Plan) => {
       hasManager: newPlan.managers.length > 0,
     });
 
-    setPlan((prev) => ({ ...prev, accountantComment: newComment }));
+    return newComment;
   };
 
   const handleClientChange = (client: string) => {
     setPlan((prev) => {
-      const newPlan = { ...prev, client };
-      handleAutoGenerateAccountantComment(newPlan);
+      let newPlan = { ...prev, client };
+      newPlan = {
+        ...newPlan,
+        accountantComment: getGeneratedAccountantComment(newPlan),
+      };
       return newPlan;
     });
   };
 
   const handleShipmentCostFormulaChange = (shipmentCostFormula: string) => {
     setPlan((prev) => {
-      const newPlan = { ...prev, shipmentCostFormula };
-      handleAutoGenerateAccountantComment(newPlan);
+      let newPlan = { ...prev, shipmentCostFormula };
+      newPlan = {
+        ...newPlan,
+        accountantComment: getGeneratedAccountantComment(newPlan),
+      };
       return newPlan;
     });
   };
