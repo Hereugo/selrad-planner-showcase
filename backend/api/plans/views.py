@@ -174,6 +174,13 @@ class PlanViewSet(ModelViewSet):
                 description="id менеджера",
                 required=True,
             ),
+            OpenApiParameter(
+                "set_time_dispatch",
+                str,
+                description="Назначить время когда распичатали диспетчерский лист",
+                required=False,
+                default="true",
+            ),
         ],
         responses={
             (200, "image/png"): OpenApiResponse(
@@ -190,9 +197,14 @@ class PlanViewSet(ModelViewSet):
     )
     @permission_required("plans.get_dispatch_list")
     def dispatch_list(self, request, manager_id=None):
+        logger.info(request.query_params)
+
         start_date = request.query_params.get("start_date", None)
         end_date = request.query_params.get("end_date", None)
         comment = request.query_params.get("comment", "")
+        set_time_dispatch = (
+            request.query_params.get("set_time_dispatch", "true").lower() == "true"
+        )
 
         manager: Manager = get_object_or_404(Manager, id=manager_id)
 
@@ -207,9 +219,10 @@ class PlanViewSet(ModelViewSet):
         plans = plans.filter(managers__id=manager_id)
         plans = plans.order_by("assigned_date")
 
-        plans.filter(time_since_first_dispatch__isnull=True).update(
-            time_since_first_dispatch=timezone.now()
-        )
+        if set_time_dispatch:
+            plans.filter(time_since_first_dispatch__isnull=True).update(
+                time_since_first_dispatch=timezone.now()
+            )
 
         if not start_date:
             start_date = plans.earliest("assigned_date").assigned_date

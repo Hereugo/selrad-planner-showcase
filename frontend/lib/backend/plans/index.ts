@@ -200,6 +200,7 @@ interface dispatchListExportQueryProps {
   work_items?: WorkItem["id"][];
   only_shipment?: boolean;
   comment?: string;
+  set_time_dispatch?: boolean;
 }
 
 export const dispatchListExportQuery = (
@@ -219,6 +220,8 @@ export const dispatchListExportQuery = (
   if (props.only_shipment !== undefined)
     queryParams.push(`only_shipment=${props.only_shipment}`);
   if (props.comment) queryParams.push(`comment=${props.comment}`);
+  if (props.set_time_dispatch !== undefined)
+    queryParams.push(`set_time_dispatch=${props.set_time_dispatch}`);
 
   const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
 

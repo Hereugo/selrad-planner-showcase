@@ -131,6 +131,7 @@ class AddressAdmin(LeafletGeoAdmin, ExportCsvMixin):
     search_fields = ("street", "lon", "lat")
     list_filter = ("is_overridden",)
     empty_value_display = "--пусто--"
+    ordering = ("-id", "street")
 
     actions = [
         display_on_map,

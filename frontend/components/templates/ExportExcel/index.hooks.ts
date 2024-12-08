@@ -235,6 +235,7 @@ export const handleDispatchListDownload = ({
     end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,
     work_items: workId ? [workId] : undefined,
+    set_time_dispatch: false,
   });
 
   data

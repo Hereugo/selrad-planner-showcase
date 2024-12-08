@@ -45,7 +45,7 @@ class Client(models.Model):
         null=True,
     )
     name = models.CharField(
-        max_length=255, verbose_name="Имя магазина", help_text="Введите имя клиента"
+        max_length=255, verbose_name="Имя магазина", help_text="Введите имя магазина"
     )
     created_at = models.DateTimeField(
         verbose_name="Дата создания",
@@ -149,7 +149,7 @@ class Address(gis_models.Model):
         pass
 
     def __str__(self):
-        return f"{self.pk} | {self.street}"
+        return f"{self.pk} | {self.street} | {self.lat} | {self.lon}"
 
     def save(self, *args, **kwargs):
         """Save the model instance. Update the updated_at field."""
