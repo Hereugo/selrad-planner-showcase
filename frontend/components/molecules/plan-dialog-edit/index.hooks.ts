@@ -6,7 +6,7 @@ import {
   usePlanUpdateMutation,
 } from "@/lib/backend/plans";
 import { useWorkItemsQuery } from "@/lib/backend/work_items";
-import { formatClientName } from "@/lib/utils";
+import { formatClientName, generateAccountantComment } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useManagersQuery } from "@/lib/backend/users/managers";
 
@@ -78,46 +78,74 @@ export const highlightPlanRow = (plan: Plan, attempts = 3) => {
 
 export const useUpdatePlan = (initialPlan: Plan) => {
   const { toast } = useToast();
+  const { data: allWorkItems } = useWorkItemsQuery();
+  const { data: allClients } = useClientsQuery();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [assignedDate, setAssignedDate] = useState(initialPlan.assigned_date);
-  const [client, setClient] = useState(initialPlan.client.id);
-  const [managers, setManagers] = useState(
-    initialPlan.managers.map((manager) => manager.id),
-  );
-  const [workItems, setWorkItem] = useState(
-    initialPlan.work_items.map((workItem) => workItem.id),
-  );
-  const [shipmentCostFormula, setShipmentCostFormula] = useState(
-    initialPlan.shipment_cost_formula,
-  );
-  const [boxCount, setBoxCount] = useState(initialPlan.box_count);
-  const [comment, setComment] = useState(initialPlan.comment);
+  const [plan, setPlan] = useState({
+    assignedDate: initialPlan.assigned_date,
+    client: initialPlan.client.id,
+    managers: initialPlan.managers.map((manager) => manager.id),
+    workItems: initialPlan.work_items.map((workItem) => workItem.id),
+    shipmentCostFormula: initialPlan.shipment_cost_formula,
+    boxCount: initialPlan.box_count,
+    comment: initialPlan.comment,
+    invoiceDate: initialPlan.invoice_date,
+    accountantComment: initialPlan.accountant_comment,
+  });
 
   const planUpdateMutation = usePlanUpdateMutation(initialPlan.id);
 
+  const isReturn = plan.workItems.some((id) => {
+    return allWorkItems?.data.some(
+      (workItem) => workItem.id === id && workItem.content_type === "Return",
+    );
+  });
+  const isShipment = plan.workItems.some((id) => {
+    return allWorkItems?.data.some(
+      (workItem) => workItem.id === id && workItem.content_type === "Shipment",
+    );
+  });
+  const isAccountant = isReturn || isShipment;
+
   const switchManager = (manager: string) => {
-    setManagers((prev) => {
-      if (prev.includes(manager)) {
-        return prev.filter((m) => m !== manager);
-      } else {
-        return [...prev, manager];
-      }
+    setPlan((prev) => {
+      let newPlan = {
+        ...prev,
+        managers: prev.managers.includes(manager)
+          ? prev.managers.filter((m) => m !== manager)
+          : [...prev.managers, manager],
+      };
+
+      newPlan = {
+        ...newPlan,
+        accountantComment: getGeneratedAccountantComment(newPlan),
+      };
+
+      return newPlan;
     });
   };
 
   const switchWork = (id: WorkItem["id"]) => {
-    setWorkItem((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((w) => w !== id);
-      } else {
-        return [...prev, id];
-      }
+    setPlan((prev) => {
+      let newPlan = {
+        ...prev,
+        workItems: prev.workItems.includes(id)
+          ? prev.workItems.filter((w) => w !== id)
+          : [...prev.workItems, id],
+      };
+
+      newPlan = {
+        ...newPlan,
+        accountantComment: getGeneratedAccountantComment(newPlan),
+      };
+
+      return newPlan;
     });
   };
 
   const handleUpdatePlan = () => {
-    if (!assignedDate || !client) {
+    if (!plan.assignedDate || !plan.client) {
       toast({
         title: "Ошибка при создании плана",
         description: "Заполните хотя бы дату и клиента",
@@ -126,13 +154,15 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     }
 
     return planUpdateMutation.mutate({
-      assigned_date: assignedDate,
-      client: client,
-      managers: managers || [],
-      work_items: workItems || [],
-      shipment_cost_formula: shipmentCostFormula,
-      box_count: boxCount ?? 0,
-      comment: comment ?? "",
+      assigned_date: plan.assignedDate,
+      client: plan.client,
+      managers: plan.managers || [],
+      work_items: plan.workItems || [],
+      shipment_cost_formula: plan.shipmentCostFormula,
+      box_count: plan.boxCount ?? 0,
+      comment: plan.comment ?? "",
+      invoice_date: plan.invoiceDate,
+      accountant_comment: plan.accountantComment,
     });
   };
 
@@ -160,19 +190,106 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     }
   }, [planUpdateMutation.isSuccess, toast, setIsOpen]);
 
+  useEffect(() => {
+    if (!plan.invoiceDate && plan.assignedDate && isAccountant) {
+      setPlan((prev) => ({ ...prev, invoiceDate: plan.assignedDate }));
+    }
+    if (!isAccountant) {
+      setPlan((prev) => ({ ...prev, invoiceDate: undefined }));
+    }
+  }, [plan.invoiceDate, plan.assignedDate, isAccountant, plan.workItems]);
+
+  useEffect(() => {
+    if (!isAccountant) {
+      setPlan((prev) => ({ ...prev, accountantComment: "" }));
+    }
+  }, [isAccountant]);
+
+  const getGeneratedAccountantComment = (newPlan: typeof plan) => {
+    const invoiceSum = newPlan.shipmentCostFormula
+      .split("+")
+      .reduce((acc, cur) => {
+        const num = Number(cur);
+        if (isNaN(num)) {
+          return acc;
+        }
+        return acc + num;
+      }, 0);
+    const invoiceCount = newPlan.shipmentCostFormula.split("+").length ?? 0;
+    const isReturn = newPlan.workItems.some((id) => {
+      return allWorkItems?.data.some(
+        (workItem) => workItem.id === id && workItem.content_type === "Return",
+      );
+    });
+    const isShipment = newPlan.workItems.some((id) => {
+      return allWorkItems?.data.some(
+        (workItem) =>
+          workItem.id === id && workItem.content_type === "Shipment",
+      );
+    });
+
+    const newComment = generateAccountantComment({
+      isReturn,
+      isShipment,
+      invoiceSum,
+      invoiceCount,
+      client: allClients?.data.find((c) => c.id === newPlan.client),
+      hasManager: newPlan.managers.length > 0,
+    });
+
+    return newComment;
+  };
+
+  const handleClientChange = (client: string) => {
+    setPlan((prev) => {
+      let newPlan = { ...prev, client };
+      newPlan = {
+        ...newPlan,
+        accountantComment: getGeneratedAccountantComment(newPlan),
+      };
+      return newPlan;
+    });
+  };
+
+  const handleShipmentCostFormulaChange = (shipmentCostFormula: string) => {
+    setPlan((prev) => {
+      let newPlan = { ...prev, shipmentCostFormula };
+      newPlan = {
+        ...newPlan,
+        accountantComment: getGeneratedAccountantComment(newPlan),
+      };
+      return newPlan;
+    });
+  };
+
   return {
-    assignedDate,
-    setAssignedDate,
-    client,
-    setClient,
-    managers,
-    workItems,
-    shipmentCostFormula,
-    setShipmentCostFormula,
-    boxCount,
-    setBoxCount,
-    comment,
-    setComment,
+    assignedDate: plan.assignedDate,
+    setAssignedDate: (assignedDate: string) => {
+      setPlan((prev) => ({ ...prev, assignedDate }));
+    },
+    client: plan.client,
+    setClient: handleClientChange,
+    managers: plan.managers,
+    workItems: plan.workItems,
+    shipmentCostFormula: plan.shipmentCostFormula,
+    setShipmentCostFormula: handleShipmentCostFormulaChange,
+    boxCount: plan.boxCount,
+    setBoxCount: (boxCount: number) => {
+      setPlan((prev) => ({ ...prev, boxCount }));
+    },
+    comment: plan.comment,
+    setComment: (comment: string) => {
+      setPlan((prev) => ({ ...prev, comment }));
+    },
+    invoiceDate: plan.invoiceDate,
+    setInvoiceDate: (invoiceDate: string) => {
+      setPlan((prev) => ({ ...prev, invoiceDate }));
+    },
+    accountantComment: plan.accountantComment,
+    setAccountantComment: (accountantComment: string) => {
+      setPlan((prev) => ({ ...prev, accountantComment }));
+    },
+    isAccountant,
     switchManager,
     switchWork,
     handleUpdatePlan,

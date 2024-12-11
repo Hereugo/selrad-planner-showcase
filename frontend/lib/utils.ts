@@ -88,3 +88,76 @@ export function calendarRangeDuration(range: DateRange | undefined) {
   );
   return days;
 }
+
+export const formatDateBackend = (date: Date | undefined) => {
+  return date?.toLocaleDateString("ru-RU").split(".").reverse().join("-");
+};
+
+export const isPlanAReturn = (plan: Plan) => {
+  return plan.work_items.some((item) => item.content_type === "Return");
+};
+export const isPlanAShipment = (plan: Plan) => {
+  return plan.work_items.some((item) => item.content_type === "Shipment");
+};
+
+export const isClientSkif = (client: Client) => {
+  const clientName = client.name.toLowerCase();
+  return clientName.includes("скиф");
+};
+
+export const invoiceNumberWord = (invoiceCount: number) => {
+  if (invoiceCount === 1) {
+    return "НАКЛАДНАЯ";
+  } else if (invoiceCount > 1 && invoiceCount < 5) {
+    return "НАКЛАДНЫЕ";
+  } else {
+    return "НАКЛАДНЫХ";
+  }
+};
+
+export const generateAccountantComment = ({
+  isReturn,
+  isShipment,
+  hasManager,
+  invoiceSum,
+  invoiceCount,
+  client,
+}: {
+  isReturn: boolean;
+  isShipment: boolean;
+  invoiceSum: number;
+  hasManager: boolean;
+  invoiceCount: number;
+  client?: Client;
+}) => {
+  let comment = "";
+
+  // 1) Поле бух комментариев появляется только когда есть - Отгрузка, Возврат или оба
+  if (!isReturn && !isShipment) {
+    return comment;
+  }
+
+  // 2) Когда сумма отгрузки > 0 то пишется «1 НАКЛАДНАЯ»
+  // 3) Если сумма отгрузки написана как «Х + Y» то есть 2 и более числа, то пишется «2 НАКЛАДНЫЕ» итд.
+  if (invoiceSum > 0) {
+    comment += `${invoiceCount} ${invoiceNumberWord(invoiceCount)}. `;
+  }
+
+  // 4) Любой клиент кроме Скифа, пишется «АДМИРАЛ», если Скиф «СЕЛРАД».
+  if (client) {
+    const isSkif = isClientSkif(client);
+    const companyName = isSkif ? "СЕЛРАД" : "АДМИРАЛ";
+    comment += `${companyName}. `;
+  }
+  // 5) Если есть возврат и указан менеджер то в коментах пишется «ДОВЕРЕННОСТЬ».
+  if (isReturn && hasManager) {
+    comment += "ДОВЕРЕННОСТЬ. ";
+  }
+
+  // Вообщем комментарий выглядит вот так если все выполняется по максу «2 НАКЛАДНЫЕ.АДМИРАЛ.ДОВЕРЕННОСТЬ.»
+  return comment;
+};
+
+export const isPlanOld = (plan: Plan) => {
+  return plan.assigned_date < new Date().toISOString().slice(0, 10);
+};

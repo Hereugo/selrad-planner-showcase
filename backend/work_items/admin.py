@@ -1,11 +1,16 @@
 from django.contrib import admin
-from .models import BaseWorkItem, Shipment
+from .models import BaseWorkItem, Shipment, Return
 
 
 @admin.register(BaseWorkItem)
 class BaseWorkItemAdmin(admin.ModelAdmin):
     list_display = ("id", "completed_by", "work_item", "created_at", "updated_at")
     empty_value_display = "--пусто--"
+
+
+@admin.register(Return)
+class ReturnAdmin(BaseWorkItemAdmin):
+    pass
 
 
 @admin.register(Shipment)

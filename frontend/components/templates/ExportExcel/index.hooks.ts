@@ -1,11 +1,11 @@
-import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { compareReportExportQuery } from "@/lib/backend/clients";
 import {
   planExportQuery,
   managerReportExportQuery,
   dispatchExportQuery,
+  dispatchListExportQuery,
 } from "@/lib/backend/plans";
-import { decodeContentDisposition } from "@/lib/utils";
+import { decodeContentDisposition, formatDateBackend } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
 interface handlePlanDownloadProps {
@@ -37,16 +37,8 @@ export const handlePlanDownload = ({
   setIsLoading(true);
 
   const data = planExportQuery({
-    start_date: calendarRange?.from
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
-    end_date: calendarRange?.to
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,
     managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
@@ -55,7 +47,6 @@ export const handlePlanDownload = ({
   data
     .then((data) => {
       if (data?.data) {
-        console.log(data);
         const filename = decodeContentDisposition(
           data.headers["content-disposition"],
         )
@@ -92,16 +83,8 @@ export const handleDispatchDownload = ({
   setIsLoading(true);
 
   const data = dispatchExportQuery({
-    start_date: calendarRange?.from
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
-    end_date: calendarRange?.to
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,
     managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
@@ -110,7 +93,6 @@ export const handleDispatchDownload = ({
   data
     .then((data) => {
       if (data?.data) {
-        console.log(data);
         const filename = decodeContentDisposition(
           data.headers["content-disposition"],
         )
@@ -155,16 +137,8 @@ export const handleReportDownload = ({
   setIsLoading(true);
 
   const data = managerReportExportQuery({
-    start_date: calendarRange?.from
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
-    end_date: calendarRange?.to
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,
     managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
@@ -209,16 +183,8 @@ export const handleCompareReportDownload = ({
   setIsLoading(true);
 
   const data = compareReportExportQuery({
-    start_date: calendarRange?.from
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
-    end_date: calendarRange?.to
-      ?.toLocaleDateString("ru-RU")
-      .split(".")
-      .reverse()
-      .join("-"),
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
     diff_year: yearDifference || 1,
     managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
@@ -247,6 +213,54 @@ export const handleCompareReportDownload = ({
       setIsLoading(false);
       toast({
         title: "Ошибка, не удалось скачать отчет",
+        description: e.message,
+      });
+    });
+};
+
+export const handleDispatchListDownload = ({
+  setIsLoading,
+  toast,
+  calendarRange,
+  searchQuery,
+  managerId,
+  workId,
+}: handlePlanDownloadProps) => {
+  setIsLoading(true);
+
+  if (!managerId) return;
+
+  const data = dispatchListExportQuery(managerId, {
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
+    search: searchQuery,
+    work_items: workId ? [workId] : undefined,
+    set_time_dispatch: false,
+  });
+
+  data
+    .then((data) => {
+      if (data?.data) {
+        const filename = decodeContentDisposition(
+          data.headers["content-disposition"],
+        )
+          ?.split("filename=")[1]
+          .replace(/[^A-Za-zА-Яа-я\s0-9.-]/g, "");
+        const url = window.URL.createObjectURL(new Blob([data.data]));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename ?? "dispatch_list.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+      setIsLoading(false);
+    })
+    .catch((e) => {
+      console.error(e);
+      setIsLoading(false);
+      toast({
+        title: "Ошибка, не удалось скачать план",
         description: e.message,
       });
     });

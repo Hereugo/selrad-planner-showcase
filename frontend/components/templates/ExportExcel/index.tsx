@@ -6,21 +6,29 @@ import {
   handlePlanDownload,
   handleReportDownload,
   handleCompareReportDownload,
+  handleDispatchListDownload,
 } from "./index.hooks";
 import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Loader2, Terminal } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useDriversQuery } from "@/lib/backend/users/managers";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
 interface ExportExcelTemplateProps {}
 
 const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
+  const viewFeature = useViewFeature();
+  const { data: allDrivers } = useDriversQuery();
+
   const { calendarRange, searchQuery, managerId, workId } = useFiltersContext();
   const { toast } = useToast();
 
   const [isPlanLoading, setIsPlanLoading] = useState(false);
   const [isDispatchLoading, setIsDispatchLoading] = useState(false);
+  const [isDispatchListLoading, setIsDispatchListLoading] = useState(false);
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isCompareLoading, setIsCompareLoading] = useState(false);
 
@@ -38,6 +46,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               toast,
             })
           }
+          className={cn(viewFeature.canExportPlans ? "" : "hidden")}
           disabled={isPlanLoading}
         >
           Скачать план
@@ -55,6 +64,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               toast,
             })
           }
+          className={cn(viewFeature.canExportDispatchReport ? "" : "hidden")}
           disabled={isDispatchLoading}
         >
           Скачать отчет по диспечерскому
@@ -72,12 +82,35 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               toast,
             })
           }
+          className={cn(viewFeature.canExportReport ? "" : "hidden")}
           disabled={isReportLoading}
         >
           Скачать отчет
           {isReportLoading && <Loader2 className="w-6 h-6 ml-2 animate-spin" />}
         </Button>
-
+        <Button
+          onClick={() =>
+            handleDispatchListDownload({
+              setIsLoading: setIsDispatchListLoading,
+              calendarRange,
+              toast,
+              searchQuery,
+              managerId,
+              workId,
+            })
+          }
+          className={cn(viewFeature.canExportDispatchList ? "" : "hidden")}
+          disabled={
+            isDispatchListLoading ||
+            !allDrivers?.data.find((driver) => driver.id === managerId)
+              ?.is_driver
+          }
+        >
+          Скачать диспечерский лист
+          {isDispatchListLoading && (
+            <Loader2 className="w-6 h-6 ml-2 animate-spin" />
+          )}
+        </Button>
         <Button
           onClick={() =>
             handleCompareReportDownload({
@@ -88,6 +121,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
               workId,
             })
           }
+          className={cn(viewFeature.canExportCompareReport ? "" : "hidden")}
           disabled={isCompareLoading}
         >
           Сравнить с прошлым годом

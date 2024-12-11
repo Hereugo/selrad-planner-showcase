@@ -13,7 +13,7 @@ from api.plans.serializers import PlanSerializer, WorkItemSerializer
 
 from managers.models import Manager
 from plans.models import PlanWorkItem
-from work_items.models import BaseWorkItem, Shipment
+from work_items.models import BaseWorkItem, Shipment, Return
 
 logger = logging.getLogger(__name__)
 
@@ -102,10 +102,21 @@ class ShipmentUpdateSerializer(BaseWorkItemUpdateSerializer):
         return ShipmentSerializer(instance).data
 
 
+class ReturnSerializer(BaseWorkItemSerializer):
+    class Meta(BaseWorkItemSerializer.Meta):
+        modal = Return
+
+
+class ReturnUpdateSerializer(BaseWorkItemUpdateSerializer):
+    class Meta(BaseWorkItemUpdateSerializer.Meta):
+        modal = Return
+
+
 class WorkItemPolymorphicSerializer(PolymorphicSerializer):
     model_serializer_mapping = {
         BaseWorkItem: BaseWorkItemSerializer,
         Shipment: ShipmentSerializer,
+        Return: ReturnSerializer,
     }
 
 
@@ -133,4 +144,5 @@ class TaskUpdatePolymorphicSerializer(PolymorphicSerializer):
     model_serializer_mapping = {
         BaseWorkItem: BaseWorkItemUpdateSerializer,
         Shipment: ShipmentUpdateSerializer,
+        Return: ReturnUpdateSerializer,
     }

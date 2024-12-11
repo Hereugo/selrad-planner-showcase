@@ -92,3 +92,20 @@ bash:
 shell:
 	docker-compose -f $(DEV_FILE) exec $(BACKEND_CON) python3 manage.py shell
 
+# ZERO SETUP CONFIG
+# ===========================
+wait:
+	@echo "Waiting for 10 seconds..."
+	sleep 10
+
+zerosetup: down volume_down static_down build wait pg_loaddata migrate collectstatic  
+	# 1. check whether docker is active 
+	# 2. check whether the current compose file is running 
+	# 	2.1 If yes, then stop it.
+	# 3. delete the db volume and static volume 
+	# 4. build the compose file 
+	# 5. run loaddata of given day, default is current day 
+	# 6. run migrations 
+	# 7. run collectstatic 
+
+

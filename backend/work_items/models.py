@@ -88,3 +88,10 @@ class Shipment(BaseWorkItem):
                 self.time_since_last_box_arrival = timezone.now()
 
         super().save(*args, **kwargs)
+
+
+class Return(BaseWorkItem):
+    class Meta(BaseWorkItem.Meta):
+        verbose_name = "Возврат"
+        verbose_name_plural = "Возвраты"
+        ordering = ("-created_at",)

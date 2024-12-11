@@ -69,7 +69,9 @@ class PlanAdmin(admin.ModelAdmin):
         "box_count",
         "client",
         "client_address",
-        "time_since_last_dispatch",
+        "time_since_first_dispatch",
+        "invoice_date",
+        "accountant_comment",
     )
     search_fields = ("client__name", "client__address", "assigned_date")
     list_filter = (

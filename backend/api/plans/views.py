@@ -30,13 +30,18 @@ from api.utils.custom_permissions import (
 )
 from api.utils.custom_paginations import PageLimitPagination
 from .serializers import (
+    PlanCreateSerializer,
     PlanSerializer,
     PlanUpdateSerializer,
     WorkItemSerializer,
 )
 from .work_items_serializers import TaskSerializer, TaskUpdatePolymorphicSerializer
 
-from .custom_permissions import CanChangeFuturePlans, CanDeleteFuturePlans
+from .custom_permissions import (
+    # CanAddFuturePlans,
+    # CanChangeFuturePlans,
+    CanDeleteFuturePlans,
+)
 from .custom_filters import PlanFilter, TaskFilter
 from .generate_compare_years import generate_compare_years
 from .generate_dispatch_report import generate_dispatch_report
@@ -70,9 +75,9 @@ class PlanViewSet(ModelViewSet):
 
     def get_permissions(self):
         permission_classes: list[type[BasePermission]] = [IsAuthenticated]
-        if self.action in ("update", "partial_update"):
-            permission_classes.append(CanChangeFuturePlans)
-        elif self.action == "destroy":
+        # if self.action in ("update", "partial_update"):
+        #     permission_classes.append(CanChangeFuturePlans)
+        if self.action == "destroy":
             permission_classes.append(CanDeleteFuturePlans)
 
         permission_classes.append(HasCRUDPermission)
@@ -80,7 +85,9 @@ class PlanViewSet(ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
-        if self.action in ("create", "update", "partial_update"):
+        if self.action in ("create",):
+            return PlanCreateSerializer
+        if self.action in ("update", "partial_update"):
             return PlanUpdateSerializer
 
         return super().get_serializer_class()
@@ -167,6 +174,13 @@ class PlanViewSet(ModelViewSet):
                 description="id менеджера",
                 required=True,
             ),
+            OpenApiParameter(
+                "set_time_dispatch",
+                str,
+                description="Назначить время когда распичатали диспетчерский лист",
+                required=False,
+                default="true",
+            ),
         ],
         responses={
             (200, "image/png"): OpenApiResponse(
@@ -183,9 +197,14 @@ class PlanViewSet(ModelViewSet):
     )
     @permission_required("plans.get_dispatch_list")
     def dispatch_list(self, request, manager_id=None):
+        logger.info(request.query_params)
+
         start_date = request.query_params.get("start_date", None)
         end_date = request.query_params.get("end_date", None)
         comment = request.query_params.get("comment", "")
+        set_time_dispatch = (
+            request.query_params.get("set_time_dispatch", "true").lower() == "true"
+        )
 
         manager: Manager = get_object_or_404(Manager, id=manager_id)
 
@@ -200,7 +219,10 @@ class PlanViewSet(ModelViewSet):
         plans = plans.filter(managers__id=manager_id)
         plans = plans.order_by("assigned_date")
 
-        plans.update(time_since_last_dispatch=timezone.now())
+        if set_time_dispatch:
+            plans.filter(time_since_first_dispatch__isnull=True).update(
+                time_since_first_dispatch=timezone.now()
+            )
 
         if not start_date:
             start_date = plans.earliest("assigned_date").assigned_date

@@ -29,6 +29,7 @@ class ManagerAdmin(admin.ModelAdmin):
         "is_manager",
         "is_driver",
         "is_warehouser",
+        "is_accountant",
     )
     search_fields = (
         "name",
@@ -36,5 +37,6 @@ class ManagerAdmin(admin.ModelAdmin):
         "is_manager",
         "is_driver",
         "is_warehouser",
+        "is_accountant",
     )
     empty_value_display = "--пусто--"

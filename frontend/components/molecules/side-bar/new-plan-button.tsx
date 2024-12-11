@@ -1,11 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import PlanDialog from "../plan-dialog-new";
+import { FC } from "react";
+import { cn } from "@/lib/utils";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
-const NewPlanButton = () => {
+interface NewPlanButtonProps {
+  className?: string;
+}
+
+const NewPlanButton: FC<NewPlanButtonProps> = ({ className }) => {
   return (
     <PlanDialog>
-      <Button className="w-full flex gap-2 justify-start px-2">
+      <Button className={cn("w-full flex gap-2 justify-start px-2", className)}>
         <Plus />
         Создать план
       </Button>

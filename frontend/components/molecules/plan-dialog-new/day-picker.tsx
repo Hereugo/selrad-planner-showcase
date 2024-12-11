@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { FC, use, useEffect, useState } from "react";
+import { FC } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -25,15 +25,9 @@ const DayPicker: FC<DayPickerProps> = ({
   assignedDate,
   setAssignedDate,
 }) => {
-  const [date, setDate] = useState<Date | undefined>(
-    !!assignedDate ? new Date(assignedDate) : undefined,
-  );
-
-  useEffect(() => {
-    if (setAssignedDate) {
-      setAssignedDate(date ? format(date, "yyyy-MM-dd") : "");
-    }
-  }, [date]);
+  const date = assignedDate ? new Date(assignedDate) : undefined;
+  const setDate = (date: Date | undefined) =>
+    date && setAssignedDate(format(date, "yyyy-MM-dd"));
 
   return (
     <Popover>

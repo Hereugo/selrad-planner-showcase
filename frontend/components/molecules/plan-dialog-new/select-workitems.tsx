@@ -6,16 +6,16 @@ import { FC } from "react";
 import { useWorks } from "./index.hooks";
 import { toTitle } from "@/lib/utils";
 
-interface SelectWorkItemProps {
+interface SelectWorkItemsProps {
   id?: string;
   switchWork: (id: WorkItem["id"]) => void;
-  selectedWorkItem: string[];
+  selectedWorkItems: WorkItem["id"][];
 }
 
-const SelectWorkItem: FC<SelectWorkItemProps> = ({
+const SelectWorkItems: FC<SelectWorkItemsProps> = ({
   id,
   switchWork,
-  selectedWorkItem,
+  selectedWorkItems,
 }) => {
   const { workItems } = useWorks();
 
@@ -26,12 +26,12 @@ const SelectWorkItem: FC<SelectWorkItemProps> = ({
           <Checkbox
             id={`workItem-${workItem.id}`}
             onClick={() => switchWork(workItem.id)}
-            checked={selectedWorkItem.includes(workItem.id)}
+            checked={selectedWorkItems.includes(workItem.id)}
           />
           <Label
             className="font-normal hover:cursor-pointer"
             htmlFor={`workItem-${workItem.id}`}
-            title={workItem.description}
+            title={workItem.name}
           >
             {toTitle(workItem.name)}
           </Label>
@@ -41,4 +41,4 @@ const SelectWorkItem: FC<SelectWorkItemProps> = ({
   );
 };
 
-export default SelectWorkItem;
+export default SelectWorkItems;

@@ -30,7 +30,9 @@ export const usePlansQuery = (props: plansQueryProps = {}) => {
   if (props.search) queryParams.push(`search=${props.search}`);
   if (props.managers) queryParams.push(`managers=${props.managers.join(",")}`);
   if (props.work_items)
-    queryParams.push(`work_items=${props.work_items.join(",")}`);
+    props.work_items.forEach((work_item) =>
+      queryParams.push(`work_items=${work_item}`),
+    );
 
   const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
 
@@ -56,6 +58,8 @@ interface planCreateMutationProps {
   shipment_cost_formula: string;
   box_count: number;
   comment: string;
+  invoice_date?: string;
+  accountant_comment?: string;
 }
 
 export const usePlanCreateMutation = () => {
@@ -83,6 +87,8 @@ interface planUpdateMutation {
   shipment_cost_formula: string;
   box_count: number;
   comment: string;
+  invoice_date?: string;
+  accountant_comment?: string;
 }
 
 export const usePlanUpdateMutation = (id: string) => {
@@ -177,6 +183,45 @@ export const managerReportExportQuery = (props: planExportQueryProps) => {
   if (props.search) queryParams.push(`search=${props.search}`);
   if (props.work_items)
     queryParams.push(`work_items=${props.work_items.join(",")}`);
+
+  const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
+
+  return fetchWithAuth<Blob>(urlWithParams, {
+    responseType: "blob",
+  });
+};
+
+interface dispatchListExportQueryProps {
+  start_date?: string;
+  end_date?: string;
+  ordering?: string;
+  search?: string;
+  managers?: Manager["id"][];
+  work_items?: WorkItem["id"][];
+  only_shipment?: boolean;
+  comment?: string;
+  set_time_dispatch?: boolean;
+}
+
+export const dispatchListExportQuery = (
+  manager_id: string,
+  props: dispatchListExportQueryProps = {},
+) => {
+  const url = `${urls.base_backend.plans}/dispatch_list/${manager_id}/`;
+  const queryParams = [];
+
+  if (props.start_date) queryParams.push(`start_date=${props.start_date}`);
+  if (props.end_date) queryParams.push(`end_date=${props.end_date}`);
+  if (props.ordering) queryParams.push(`ordering=${props.ordering}`);
+  if (props.search) queryParams.push(`search=${props.search}`);
+  if (props.managers) queryParams.push(`managers=${props.managers.join(",")}`);
+  if (props.work_items)
+    queryParams.push(`work_items=${props.work_items.join(",")}`);
+  if (props.only_shipment !== undefined)
+    queryParams.push(`only_shipment=${props.only_shipment}`);
+  if (props.comment) queryParams.push(`comment=${props.comment}`);
+  if (props.set_time_dispatch !== undefined)
+    queryParams.push(`set_time_dispatch=${props.set_time_dispatch}`);
 
   const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
 

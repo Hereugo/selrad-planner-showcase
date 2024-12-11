@@ -36,13 +36,8 @@ const filterFunc = (value: string, search: string) => {
 
 const ClientPicker: FC<ClientPickerProps> = ({ id, client, setClient }) => {
   const [open, setOpen] = useState<boolean>(false);
-  const [value, setValue] = useState<string>(client);
 
   const { clients } = useClients();
-
-  useEffect(() => {
-    setClient(value);
-  }, [value]);
 
   return (
     <>
@@ -55,11 +50,11 @@ const ClientPicker: FC<ClientPickerProps> = ({ id, client, setClient }) => {
             aria-expanded={open}
             className={cn(
               "w-full justify-between font-normal",
-              !value && "text-muted-foreground",
+              !client && "text-muted-foreground",
             )}
           >
-            {value
-              ? clients.find((client) => client.id === value)?.name
+            {client
+              ? clients.find((c) => c.id === client)?.name
               : "Выбрать клиента..."}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -69,30 +64,30 @@ const ClientPicker: FC<ClientPickerProps> = ({ id, client, setClient }) => {
             <CommandInput placeholder="Найти клиента..." />
             <CommandEmpty>Клиент не найден</CommandEmpty>
             <CommandGroup className="h-96 overflow-y-scroll">
-              {clients.map((client) => (
+              {clients.map((c) => (
                 <CommandItem
                   className="cursor-pointer"
-                  key={client.id}
-                  title={client.address.street}
+                  key={c.id}
+                  title={c.address.street}
                   onSelect={() => {
-                    setValue(client.id === value ? "" : client.id);
+                    setClient(c.id === client ? "" : c.id);
                     setOpen(false);
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === client.id ? "opacity-100" : "opacity-0",
+                      client === c.id ? "opacity-100" : "opacity-0",
                     )}
                   />
-                  {client.name}
+                  {c.name}
                 </CommandItem>
               ))}
             </CommandGroup>
           </Command>
         </PopoverContent>
       </Popover>
-      {value && (
+      {client && (
         <div className="mt-2">
           <Label htmlFor="address">Адрес</Label>
           <Button
@@ -101,16 +96,12 @@ const ClientPicker: FC<ClientPickerProps> = ({ id, client, setClient }) => {
             id="address"
             className={cn(
               "w-full justify-between font-normal",
-              !value && "text-muted-foreground",
+              !client && "text-muted-foreground",
             )}
-            title={
-              clients.find((client) => client.id === value)?.address.street ??
-              ""
-            }
+            title={clients.find((c) => c.id === client)?.address.street ?? ""}
           >
             <span className="text-start truncate w-[25rem] max-w-[calc(100vw-8rem)]">
-              {clients.find((client) => client.id === value)?.address.street ??
-                ""}
+              {clients.find((c) => c.id === client)?.address.street ?? ""}
             </span>
             <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>

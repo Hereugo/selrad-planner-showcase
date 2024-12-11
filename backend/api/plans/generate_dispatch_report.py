@@ -68,8 +68,8 @@ def generate_dispatch_report(
         ws.cell(row=row + i, column=COL.CLIENT_NAME.value).value = plan.client.name
         ws.cell(row=row + i, column=COL.TIME_SINCE_DISPATCH.value).value = (
             "-"
-            if plan.time_since_last_dispatch is None
-            else (plan.time_since_last_dispatch + timedelta(hours=5)).strftime("%H:%M")
+            if plan.time_since_first_dispatch is None
+            else (plan.time_since_first_dispatch + timedelta(hours=5)).strftime("%H:%M")
         )
         ws.cell(row=row + i, column=COL.DRIVERS.value).value = ", ".join(
             [d.name for d in drivers.all()]

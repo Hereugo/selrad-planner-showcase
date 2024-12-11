@@ -10,17 +10,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useEffect } from "react";
 import DayPicker from "./day-picker";
 import ClientPicker from "./client-picker";
 import SelectManagers from "./select-managers";
-import SelectWorkItem from "./select-workitem";
+import SelectWorkItems from "./select-workitems";
 import ShipmentCostInput from "./input-shipment-cost";
 import BoxCountInput from "./input-box-count";
 import CommentInput from "./input-comment";
 import { useCreatePlan } from "./index.hooks";
 import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import AccountantFields from "./accountant-fields";
 
 interface PlanDialogNewProps {
   children?: ReactNode;
@@ -50,10 +52,21 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
     setBoxCount,
     setComment,
     handleCreatePlan,
+    invoiceDate,
+    setInvoiceDate,
+    accountantComment,
+    setAccountantComment,
+    isAccountant,
     isLoading,
     selectedManagers,
-    selectedWorkItem,
+    selectedWorkItems,
   } = useCreatePlan({ defaultClientId, defaultAssignedDate, defaultIsOpen });
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (defaultIsOpen) setIsOpen(true);
+    }, 100);
+  }, [defaultIsOpen]);
 
   return (
     <Dialog
@@ -99,6 +112,10 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
                   setBoxCount={setBoxCount}
                 />
               </div>
+              <div className="w-full">
+                <Label htmlFor="comment">Комментарии</Label>
+                <CommentInput id="comment" setComment={setComment} />
+              </div>
             </div>
             <Separator orientation="vertical" />
             <div className="flex flex-col gap-4 flex-1 w-[calc((48rem-8rem)/2)]">
@@ -113,17 +130,27 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="workItems">Работы</Label>
-                <SelectWorkItem
+                <SelectWorkItems
                   id="workItems"
                   switchWork={switchWork}
-                  selectedWorkItem={selectedWorkItem}
+                  selectedWorkItems={selectedWorkItems}
+                />
+              </div>
+              <div
+                className={cn(
+                  "flex flex-col gap-4 h-0 overflow-hidden duration-1000",
+                  isAccountant && "h-60",
+                )}
+              >
+                <Separator />
+                <AccountantFields
+                  invoiceDate={invoiceDate}
+                  setInvoiceDate={setInvoiceDate}
+                  accountantComment={accountantComment}
+                  setAccountantComment={setAccountantComment}
                 />
               </div>
             </div>
-          </div>
-          <div>
-            <Label htmlFor="comment">Комментарии</Label>
-            <CommentInput id="comment" setComment={setComment} />
           </div>
         </DialogHeader>
         <DialogFooter>

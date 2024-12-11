@@ -21,6 +21,9 @@ import CommentInput from "./input-comment";
 import { useDeletePlan, useUpdatePlan } from "./index.hooks";
 import { Loader2, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import AccountantFields from "./accountant-fields";
+import { cn, isPlanOld } from "@/lib/utils";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
 interface PlanDialogEditProps {
   plan: Plan;
@@ -43,6 +46,11 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
     setBoxCount,
     comment,
     setComment,
+    invoiceDate,
+    setInvoiceDate,
+    accountantComment,
+    setAccountantComment,
+    isAccountant,
     handleUpdatePlan,
     isOpen,
     setIsOpen,
@@ -50,6 +58,8 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
   } = useUpdatePlan(plan);
 
   const { handleDeletePlan } = useDeletePlan(plan);
+
+  const viewFeature = useViewFeature();
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -92,6 +102,14 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
                   assignedDate={assignedDate}
                 />
               </div>
+              <div>
+                <Label htmlFor="comment">Комментарии</Label>
+                <CommentInput
+                  id="comment"
+                  comment={comment}
+                  setComment={setComment}
+                />
+              </div>
             </div>
             <Separator orientation="vertical" />
             <div className="flex flex-col gap-4 flex-1  w-[calc((48rem-8rem)/2)]">
@@ -103,7 +121,6 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
                   switchManager={switchManager}
                 />
               </div>
-
               <div className="flex flex-col gap-2">
                 <Label htmlFor="workitem">Работы</Label>
                 <SelectWorkList
@@ -112,27 +129,37 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
                   switchWork={switchWork}
                 />
               </div>
+              <div
+                className={cn(
+                  "flex flex-col gap-4 h-0 overflow-hidden duration-1000",
+                  isAccountant && "h-60",
+                )}
+              >
+                <Separator />
+                <AccountantFields
+                  invoiceDate={invoiceDate}
+                  setInvoiceDate={setInvoiceDate}
+                  accountantComment={accountantComment}
+                  setAccountantComment={setAccountantComment}
+                />
+              </div>
             </div>
-          </div>
-          <div>
-            <Label htmlFor="comment">Комментарии</Label>
-            <CommentInput
-              id="comment"
-              comment={comment}
-              setComment={setComment}
-            />
           </div>
         </DialogHeader>
         <DialogFooter>
           <Button
-            disabled={isLoading}
+            disabled={
+              isLoading || (!viewFeature.canUpdateOldPlan && isPlanOld(plan))
+            }
             onClick={handleUpdatePlan}
             className="w-full"
           >
             {isLoading ? <Loader2 className="animate-spin" /> : "Сохранить"}
           </Button>
           <Button
-            disabled={isLoading}
+            disabled={
+              isLoading || (!viewFeature.canDeleteOldPlan && isPlanOld(plan))
+            }
             onClick={handleDeletePlan}
             variant="destructive"
             className="w-10 h-10 p-3"

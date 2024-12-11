@@ -9,6 +9,9 @@ interface Plan {
   managers: Manager[];
   box_count: number;
 
+  invoice_date: string | undefined;
+  accountant_comment: string;
+
   created_at: string;
   updated_at: string;
 }

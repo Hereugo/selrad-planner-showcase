@@ -3,7 +3,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useClientsQuery } from "@/lib/backend/clients";
 import { usePlanCreateMutation } from "@/lib/backend/plans";
 import { useWorkItemsQuery } from "@/lib/backend/work_items";
-import { formatClientName } from "@/lib/utils";
+import { formatClientName, generateAccountantComment } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { highlightPlanRow } from "../plan-dialog-edit/index.hooks";
 import { useManagersQuery } from "@/lib/backend/users/managers";
@@ -64,15 +64,25 @@ export const useCreatePlan = ({
 }: createPlanProps) => {
   const { toast } = useToast();
 
+  const { data: workItems } = useWorkItemsQuery();
+  const { clients: allClients } = useClients();
+
   const [assignedDate, setAssignedDate] = useState<string | undefined>(
     defaultAssignedDate,
   );
   const [client, setClient] = useState<string | undefined>(defaultClientId);
   const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
-  const [selectedWorkItem, setSelectedWorkItem] = useState<string[]>([]);
+  const [selectedWorkItems, setSelectedWorkItems] = useState<WorkItem["id"][]>(
+    [],
+  );
   const [shipmentCostFormula, setShipmentCostFormula] = useState<string>();
   const [boxCount, setBoxCount] = useState<number>();
   const [comment, setComment] = useState<string>();
+
+  const [invoiceDate, setInvoiceDate] = useState<string | undefined>(
+    defaultAssignedDate,
+  );
+  const [accountantComment, setAccountantComment] = useState<string>();
 
   const planCreateMutation = usePlanCreateMutation();
   const [isOpen, setIsOpen] = useState(defaultIsOpen || false);
@@ -90,10 +100,12 @@ export const useCreatePlan = ({
       assigned_date: assignedDate,
       client: client,
       managers: selectedManagers || [],
-      work_items: selectedWorkItem || [],
+      work_items: selectedWorkItems || [],
       shipment_cost_formula: shipmentCostFormula ?? "0",
       box_count: boxCount ?? 0,
       comment: comment ?? "",
+      invoice_date: isAccountant ? invoiceDate : undefined,
+      accountant_comment: isAccountant ? accountantComment : undefined,
     });
   };
 
@@ -108,7 +120,7 @@ export const useCreatePlan = ({
   };
 
   const switchWork = (id: WorkItem["id"]) => {
-    setSelectedWorkItem((prev) => {
+    setSelectedWorkItems((prev) => {
       if (prev.includes(id)) {
         return prev.filter((w) => w !== id);
       } else {
@@ -116,6 +128,19 @@ export const useCreatePlan = ({
       }
     });
   };
+
+  const isReturn = selectedWorkItems.some((id) => {
+    return workItems?.data.some(
+      (workItem) => workItem.id === id && workItem.content_type === "Return",
+    );
+  });
+
+  const isShipment = selectedWorkItems.some((id) => {
+    return workItems?.data.some(
+      (workItem) => workItem.id === id && workItem.content_type === "Shipment",
+    );
+  });
+  const isAccountant = isReturn || isShipment;
 
   useEffect(() => {
     if (planCreateMutation.isError) {
@@ -143,17 +168,64 @@ export const useCreatePlan = ({
       setAssignedDate(undefined);
       setClient(undefined);
       setSelectedManagers([]);
-      setSelectedWorkItem([]);
+      setSelectedWorkItems([]);
       setShipmentCostFormula(undefined);
       setBoxCount(undefined);
       setComment(undefined);
+      setInvoiceDate(undefined);
+      setAccountantComment(undefined);
     }
   }, [planCreateMutation.isSuccess, toast, setIsOpen]);
+
+  useEffect(() => {
+    if (!invoiceDate && assignedDate && isAccountant) {
+      setInvoiceDate(assignedDate);
+    }
+    if (!isAccountant) {
+      setInvoiceDate(undefined);
+    }
+  }, [invoiceDate, assignedDate, isAccountant]);
+
+  useEffect(() => {
+    if (!isAccountant) {
+      setAccountantComment("");
+    }
+  }, [isAccountant]);
+
+  useEffect(() => {
+    const invoiceSum =
+      shipmentCostFormula?.split("+").reduce((acc, cur) => {
+        const num = Number(cur);
+        if (isNaN(num)) {
+          return acc;
+        }
+        return acc + num;
+      }, 0) ?? 0;
+    const invoiceCount = shipmentCostFormula?.split("+").length ?? 0;
+
+    const newComment = generateAccountantComment({
+      isReturn,
+      isShipment,
+      invoiceSum,
+      invoiceCount,
+      client: allClients?.find((c) => c.id === client),
+      hasManager: selectedManagers.length > 0,
+    });
+
+    setAccountantComment(newComment);
+  }, [
+    shipmentCostFormula,
+    client,
+    allClients,
+    selectedManagers,
+    isReturn,
+    isShipment,
+  ]);
 
   return {
     isOpen,
     selectedManagers,
-    selectedWorkItem,
+    selectedWorkItems,
     setIsOpen,
     setAssignedDate,
     assignedDate,
@@ -164,7 +236,12 @@ export const useCreatePlan = ({
     setShipmentCostFormula,
     setBoxCount,
     setComment,
+    invoiceDate,
+    setInvoiceDate,
+    accountantComment,
+    setAccountantComment,
     handleCreatePlan,
+    isAccountant: isAccountant,
     isSuccess: planCreateMutation.isSuccess,
     isLoading: planCreateMutation.isLoading,
   };

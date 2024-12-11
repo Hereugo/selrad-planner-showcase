@@ -1,21 +1,25 @@
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { FC } from "react";
 import {
   cn,
   formatDate,
   formatPrice,
+  isPlanAReturn,
   managerFullName,
   managerShortName,
 } from "@/lib/utils";
-import PlanDialogEdit from "@/components/molecules/plan-dialog-edit";
+import FinancialPlansEditDialog from "./financial-plans-dialog";
+import { Badge } from "@/components/ui/badge";
 
-interface PlanTableRowProps {
+interface FinancialPlansTableRowProps {
   plan: Plan;
   className?: string;
 }
 
-const PlanTableRow: FC<PlanTableRowProps> = ({ plan, className }) => {
+const FinancialPlansTableRow: FC<FinancialPlansTableRowProps> = ({
+  plan,
+  className,
+}) => {
   return (
     <TableRow
       id={`plan-row-${plan.id}`}
@@ -25,14 +29,8 @@ const PlanTableRow: FC<PlanTableRowProps> = ({ plan, className }) => {
       <TableCell className="text-ellipsis" title={plan.client.name}>
         {plan.client.name}
       </TableCell>
-      <TableCell>
-        <div className="flex gap-1 flex-wrap">
-          {plan.work_items.map((workItem) => (
-            <Badge key={workItem.id} title={workItem.name}>
-              {workItem.name}
-            </Badge>
-          ))}
-        </div>
+      <TableCell className="text-center">
+        {formatPrice(plan.shipment_cost)}
       </TableCell>
       <TableCell>
         <div className="flex gap-1 flex-wrap">
@@ -43,17 +41,17 @@ const PlanTableRow: FC<PlanTableRowProps> = ({ plan, className }) => {
           ))}
         </div>
       </TableCell>
-      <TableCell className="text-center">
-        {formatPrice(plan.shipment_cost)}
+      <TableCell>{isPlanAReturn(plan) && "Есть"}</TableCell>
+      <TableCell className="max-w-[150px] text-wrap">
+        {plan.accountant_comment}
       </TableCell>
-      <TableCell className="text-center">{plan.box_count}</TableCell>
       <TableCell className="text-blue-500 hover:cursor-pointer">
-        <PlanDialogEdit plan={plan}>
+        <FinancialPlansEditDialog plan={plan}>
           <span>Изменить</span>
-        </PlanDialogEdit>
+        </FinancialPlansEditDialog>
       </TableCell>
     </TableRow>
   );
 };
 
-export default PlanTableRow;
+export default FinancialPlansTableRow;
