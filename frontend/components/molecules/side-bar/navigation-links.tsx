@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useViewFeature } from "@/lib/hooks/useViewFeature";
-import { FileDown, List, MapPinnedIcon } from "lucide-react";
+import { FileDown, List, MapPinnedIcon, Settings, Wallet } from "lucide-react";
 import Link from "next/link";
 
 const NavigationLinks = () => {
@@ -34,6 +34,22 @@ const NavigationLinks = () => {
         )}
       >
         <FileDown className="w-6 h-6" /> Скачать эксель
+      </Link>
+      <Link
+        href="/payments"
+        className={cn(
+          "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+        )}
+      >
+        <Wallet className="w-6 h-6" /> Выплаты
+      </Link>
+      <Link
+        href="/settings"
+        className={cn(
+          "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+        )}
+      >
+        <Settings className="w-6 h-6" /> Настройки
       </Link>
     </div>
   );
