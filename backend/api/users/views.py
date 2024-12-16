@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin
+
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import status
 
@@ -14,7 +16,7 @@ from .serializers import (
     MeSerializer,
 )
 
-from api.utils.custom_permissions import IsAuthenticated
+from api.utils.custom_permissions import IsAuthenticated, HasCRUDPermission, permission_required
 
 from managers.models import Manager
 
@@ -23,13 +25,13 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-class UserViewSet(GenericViewSet):
+class UserViewSet(GenericViewSet, ListModelMixin, UpdateModelMixin):
     """API для работы с пользователями."""
 
     queryset = Manager.objects.filter(is_hidden=False)
     serializer_class = ManagerSerializer
     pagination_class = None
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, HasCRUDPermission, )
 
     @extend_schema(
         methods=["get"],

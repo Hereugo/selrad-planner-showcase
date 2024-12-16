@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import filters, status
-from rest_framework.permissions import BasePermission
+from rest_framework.request import Request
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -20,7 +20,7 @@ from drf_spectacular.utils import (
     extend_schema_view,
 )
 
-from plans.models import Plan, WorkItem, PlanWorkItem
+from plans.models import Plan, WorkItem, PlanWorkItem, PaymentRegistry
 from managers.models import Manager
 
 from api.utils.custom_permissions import (
@@ -34,15 +34,14 @@ from .serializers import (
     PlanSerializer,
     PlanUpdateSerializer,
     WorkItemSerializer,
+    PaymentRegistrySerializer,
+    PaymentRegistryUpdateSerializer
 )
 from .work_items_serializers import TaskSerializer, TaskUpdatePolymorphicSerializer
 
-from .custom_permissions import (
-    # CanAddFuturePlans,
-    # CanChangeFuturePlans,
-    CanDeleteFuturePlans,
-)
-from .custom_filters import PlanFilter, TaskFilter
+from .custom_permissions import CanDeleteFuturePlans
+
+from .custom_filters import PlanFilter, TaskFilter, PaymentRegistryFilter
 from .generate_compare_years import generate_compare_years
 from .generate_dispatch_report import generate_dispatch_report
 from .generate_dispatch_list import generate_dispatch_list
@@ -61,6 +60,7 @@ class PlanViewSet(ModelViewSet):
     queryset = Plan.objects.all()
     serializer_class = PlanSerializer
     pagination_class = PageLimitPagination
+    permission_classes = [IsAuthenticated, HasCRUDPermission]
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -74,13 +74,10 @@ class PlanViewSet(ModelViewSet):
     )
 
     def get_permissions(self):
-        permission_classes: list[type[BasePermission]] = [IsAuthenticated]
-        # if self.action in ("update", "partial_update"):
-        #     permission_classes.append(CanChangeFuturePlans)
+        permission_classes = self.permission_classes
+
         if self.action == "destroy":
             permission_classes.append(CanDeleteFuturePlans)
-
-        permission_classes.append(HasCRUDPermission)
 
         return [permission() for permission in permission_classes]
 
@@ -94,9 +91,7 @@ class PlanViewSet(ModelViewSet):
 
     @extend_schema(
         methods=["get"],
-        description="Скачать сравнить по периодам",
         filters=True,
-        summary="Скачать сравнить по периодам",
         parameters=[
             OpenApiParameter(
                 "to_year_diff",
@@ -105,6 +100,8 @@ class PlanViewSet(ModelViewSet):
                 default=1,
             ),
         ],
+        description="Скачать сравнить по периодам",
+        summary="Скачать сравнить по периодам",
     )
     @action(
         detail=False,
@@ -463,3 +460,22 @@ class TaskViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericV
         task_serializer = TaskSerializer(task_instance)
 
         return Response(task_serializer.data)
+
+# Permission to view: read_payment_registries
+class PaymentRegistryViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
+    queryset = PaymentRegistry.objects.all()
+    serializer_class = PaymentRegistrySerializer
+    pagination_class = PageLimitPagination
+    permission_classes = [IsAuthenticated, HasCRUDPermission, ]
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    )
+    filterset_class = PaymentRegistryFilter
+
+    def get_serializer_class(self):
+        if self.action in ("update", "partial_update"):
+            return PaymentRegistryUpdateSerializer
+
+        return super().get_serializer_class()

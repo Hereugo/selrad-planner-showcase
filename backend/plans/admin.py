@@ -2,7 +2,7 @@ import logging
 from django.contrib import admin
 from django.shortcuts import render
 
-from plans.models import Plan, WorkItem
+from plans.models import Plan, WorkItem, PaymentRegistry, PlanManager
 from managers.models import Manager
 
 from api.plans.views import PlanViewSet
@@ -95,7 +95,7 @@ class PlanAdmin(admin.ModelAdmin):
     def client_address(self, obj):
         return obj.client.address
 
-    client_address.short_description = "Адрес клиента"
+    client_address.short_description = "Адрес магазина"
 
     # for assignment_date also show its week day
     def assigned_date_formatted(self, obj):
@@ -115,3 +115,27 @@ class WorkItemAdmin(admin.ModelAdmin):
     search_fields = ("name", "content_type__model")
     empty_value_display = "--пусто--"
     readonly_fields = ("created_at",)
+
+
+@admin.register(PaymentRegistry)
+class PaymentRegistryAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "is_confirmed",
+        "date",
+        "manager",
+        "payment",
+        "bonus",
+        "plans_count",
+    )
+    list_filter = (
+        "is_confirmed",
+        "date",
+        "manager",
+    )
+    empty_value_display = "--пусто--"
+
+    def plans_count(self, obj):
+        return obj.plans().count()
+
+    plans_count.short_description = "Кол-во планов"

@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Optional, List
 
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema_field

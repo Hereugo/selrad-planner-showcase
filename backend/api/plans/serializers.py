@@ -1,18 +1,18 @@
 import logging
 from typing import Any, Optional, List
 
-from rest_framework.request import Request
+
 from rest_framework import serializers
+from rest_framework.request import Request
 from drf_spectacular.utils import extend_schema_field
 from django.utils import timezone
-
 
 from api.clients.serializers import ClientSerializer
 from api.users.serializers import ManagerSerializer
 
 from clients.models import Client
 from managers.models import Manager
-from plans.models import Plan, WorkItem, PlanWorkItem, PlanManager
+from plans.models import Plan, WorkItem, PlanWorkItem, PlanManager, PaymentRegistry
 
 
 logger = logging.getLogger(__name__)
@@ -169,7 +169,20 @@ class PlanCreateSerializer(serializers.ModelSerializer):
         plan_managers: List[PlanManager] = []
         for manager in managers:
             plan_managers.append(PlanManager(plan=plan, manager=manager))
+        
         PlanManager.objects.bulk_create(plan_managers, ignore_conflicts=True)
+
+    def create_payment_registries(self, assigned_date: timezone.datetime, managers: List[Manager]):
+        payment_registries: List[PaymentRegistry] = []
+        for manager in managers:
+            payment_registries.append(PaymentRegistry(
+                date=assigned_date,
+                manager=manager,
+                payment=manager.payment,
+                bonus=0,
+            ))
+
+        PaymentRegistry.objects.bulk_create(payment_registries, ignore_conflicts=True)
 
     def create(self, validated_data):
         work_items: List[WorkItem] = validated_data.pop("work_items", [])
@@ -182,6 +195,7 @@ class PlanCreateSerializer(serializers.ModelSerializer):
 
         self.create_work_items(plan, work_items)
         self.create_managers(plan, managers)
+        self.create_payment_registries(plan.assigned_date, managers)
 
         return plan
 
@@ -210,29 +224,7 @@ class PlanUpdateSerializer(PlanCreateSerializer):
 
         return assigned_date
 
-    # def validate_field_permission(self, validated_data):
-    #     request: Request = self.context["request"]
-    #     manager: Manager = request.user.manager
-    #
-    #     modified_attrs = set()
-    #     for field, value in validated_data.items():
-    #         if getattr(self.instance, field) != value:
-    #             logger.debug(f"{field}: {value} | {getattr(self.instance, field)}")
-    #             modified_attrs.add(field)
-    #
-    #     if manager.is_accountant:
-    #         # A set of attributes that an account is allowed to modify
-    #         allowed_attrs = set("shipment_cost")
-    #         if modified_attrs != allowed_attrs:
-    #             invalid_attrs = modified_attrs - allowed_attrs
-    #             raise serializers.ValidationError(
-    #                 f"Не разрешается изменять атрибуты: {invalid_attrs}"
-    #             )
-
     def update(self, instance: Plan, validated_data):
-        # This doesn't work?
-        # self.validate_field_permission(validated_data)
-
         if "work_items" in validated_data:
             work_items: List[WorkItem] = validated_data.pop("work_items", [])
             PlanWorkItem.objects.filter(plan=instance).exclude(
@@ -248,10 +240,35 @@ class PlanUpdateSerializer(PlanCreateSerializer):
             PlanManager.objects.filter(plan=instance).exclude(
                 manager__in=managers
             ).delete()
-
+    
             # We leave existing work_items they will cause a conflict, but we ignore it
             # and this will only create new work_items
             self.create_managers(instance, managers)
+
+        if "assigned_date" in validated_data and validated_data.get("assigned_date") != instance.assigned_date:
+            # https://stackoverflow.com/a/53321241/12423120
+            # Difficult to ignore conflicts if IngerityError happens. can manually update row by row, 
+            # but how do we determine which data is valid?
+            # PaymentRegistry.objects.filter(date=instance.assigned_date,).update(
+            #     date=validated_data.assigned_date,
+            # )
+
+            # NOTE: Not the best way, as updating the date is equivelant, except 
+            # as we deleting set of date's and recreating them, we ignore all conflicts.
+            # NOTE 2: ask mansur to display a warning if assigned_date is changed:
+            # "WARNING: changing assigned_date results in overwritting existing payment registries, are you sure?"
+            PaymentRegistry.objects.filter(date=instance.assigned_date).delete()
+            managers: List[Manager] = validated_data.get("managers", instance.managers.all())
+            self.create_payment_registries(validated_data.get("assigned_date"), managers)
+        else:
+            # NOTE: ask mansur to display a warning if managers were changed:
+            # "WARNING: excluding managers results in deleting their existing payment registries, are you sure?"
+            managers: List[Manager] = validated_data.get("managers", [])
+            PaymentRegistry.objects.filter(date=instance.assigned_date).exclude(
+                manager__in=managers
+            ).delete()
+
+            self.create_payment_registries(instance.assigned_date, managers)
 
         return super().update(instance, validated_data)
 
@@ -297,3 +314,45 @@ class NearbyClientSerializer(serializers.Serializer):
             data["last_shipment_plan"] = last_shipment_plan.data
 
         return data
+    
+
+
+class PaymentRegistrySerializer(serializers.ModelSerializer):
+    """Serializer for Payment Registries"""
+    
+    id = serializers.StringRelatedField()
+    manager = ManagerSerializer(many=False)
+    plans = PlanSerializer(many=True)
+
+    class Meta:
+        model = PaymentRegistry
+        fields = (
+            "id",
+            "date",
+            "manager",
+            "payment",
+            "bonus",
+            "comment",
+            "is_confirmed",
+            "plans",
+        )
+        read_only_fields = ("id",)
+    
+class PaymentRegistryUpdateSerializer(serializers.ModelSerializer):
+    id = serializers.StringRelatedField()
+
+    class Meta:
+        model = PaymentRegistry
+        fields = (
+            "id",
+            "payment",
+            "bonus",
+            "comment",
+            "is_confirmed",
+        )
+        read_only_fields = ("id",)
+
+    def to_representation(self, instance: PaymentRegistry):
+        return PaymentRegistrySerializer(
+            instance, context={"request": self.context.get("request")}
+        ).data

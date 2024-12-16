@@ -7,8 +7,21 @@ from django_filters import (
 
 
 from managers.models import Manager
-from plans.models import Plan, WorkItem, PlanWorkItem
+from plans.models import Plan, WorkItem, PlanWorkItem, PaymentRegistry
 
+
+class PaymentRegistryFilter(FilterSet):
+    start_date = DateFilter(field_name="date", lookup_expr=("gte"))
+    end_date = DateFilter(field_name="date", lookup_expr=("lte"))
+    managers = ModelMultipleChoiceFilter(
+        queryset=Manager.objects.all(),
+        field_name="manager__id",
+        to_field_name="id",
+    )
+
+    class Meta:
+        model = PaymentRegistry
+        fields = ["start_date", "end_date", "managers",]
 
 class TaskFilter(FilterSet):
     start_date = DateFilter(field_name="plan__assigned_date", lookup_expr=("gte"))

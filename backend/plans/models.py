@@ -22,6 +22,58 @@ def validate_sum_string(value):
         raise ValidationError("Invalid sum string")
 
 
+class PaymentRegistry(models.Model):
+    """Payment registry"""
+
+    date = models.DateField(
+        max_length=255,
+        verbose_name="Дата совершенного плана",
+        help_text="Выберите совершенного плана",
+    )
+    manager = models.ForeignKey(
+        to="managers.Manager",
+        verbose_name="Менеджер",
+        help_text="Выберите менеджера",
+        related_name="payment_registries",
+        on_delete=models.CASCADE,
+    )
+    payment = models.IntegerField(
+        verbose_name="Выплаты менеджеру в (₸)",
+        help_text="Введите выплату менеджеру в (₸)",
+        blank=True,
+        null=True,
+    )
+    bonus = models.IntegerField(
+        verbose_name="Бонус менеджеру в (₸)",
+        help_text="Введите бонус менеджеру в (₸)",
+        blank=True,
+        null=True,
+        default=0,
+    )
+    comment = models.TextField(
+        verbose_name="Комментарии",
+        help_text="Ввидите комментарии",
+        blank=True,
+    )
+    is_confirmed = models.BooleanField(
+        verbose_name="Подтвержденно",
+        help_text="Подтвержден ли план",
+        default=False,
+    )
+
+    def plans(self):
+        return self.manager.plans.filter(assigned_date=self.date)
+    class Meta:
+        verbose_name = "Данные о выплате"
+        verbose_name_plural = "Реестр выплаты"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['date', 'manager'], 
+                name='unique_date_manager'
+            )
+        ]
+        ordering = ("-date",)
+
 class WorkItem(models.Model):
     """Model WorkItem"""
 
