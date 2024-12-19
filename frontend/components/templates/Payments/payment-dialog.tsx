@@ -14,6 +14,7 @@ import { formatDate, managerFullName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import PaymentDialogPlanTable from "./payment-dialog-plan-table";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface PaymentDialogProps {
   paymentRegistry: PaymentRegistry;
@@ -24,8 +25,19 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
   paymentRegistry,
   children,
 }) => {
-  const { payment, setPayment, bonus, setBonus, comment, setComment } =
-    useUpdatePaymentRegistry(paymentRegistry);
+  const {
+    payment,
+    setPayment,
+    bonus,
+    setBonus,
+    comment,
+    setComment,
+    handleUpdatePaymentRegistry,
+    isConfirmed,
+    setIsConfirmed,
+  } = useUpdatePaymentRegistry(paymentRegistry);
+
+  setIsConfirmed;
 
   return (
     <Dialog>
@@ -80,7 +92,17 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
           </div>
         </div>
         <DialogFooter>
-          <Button>Подтвердить выплату</Button>
+          <div>
+            <Checkbox
+              id="isConfirmed"
+              checked={isConfirmed}
+              onChange={alert}
+              // todo: <- check if this works
+              // onChange={(e) => setIsConfirmed(e.target.value)}
+            />
+            <Label htmlFor="isConfirmed">Подтвердить</Label>
+          </div>
+          <Button onClick={handleUpdatePaymentRegistry}>Сохранить</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
