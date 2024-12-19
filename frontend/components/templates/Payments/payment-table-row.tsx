@@ -1,5 +1,5 @@
 import { TableCell, TableRow } from "@/components/ui/table";
-import { cn, managerFullName } from "@/lib/utils";
+import { cn, formatDate, managerFullName } from "@/lib/utils";
 import { FC } from "react";
 
 interface PaymentTableRowProps {
@@ -13,7 +13,7 @@ const PaymentTableRow: FC<PaymentTableRowProps> = ({
 }) => {
   return (
     <TableRow className={cn("", className)}>
-      <TableCell>{paymentRegistry.date}</TableCell>
+      <TableCell>{formatDate(paymentRegistry.date)}</TableCell>
       <TableCell>{managerFullName(paymentRegistry.manager)}</TableCell>
       <TableCell>{paymentRegistry.payment + paymentRegistry.bonus}</TableCell>
       <TableCell>Изменить</TableCell>

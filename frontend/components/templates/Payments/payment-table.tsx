@@ -1,3 +1,5 @@
+"use client";
+
 import { Table, TableBody, TableCaption } from "@/components/ui/table";
 import PaymentTableHeader from "./payment-table-header";
 import PaymentTableRow from "./payment-table-row";
