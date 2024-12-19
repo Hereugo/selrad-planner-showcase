@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { formatDate, managerFullName } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import PaymentDialogPlanTable from "./payment-dialog-plan-table";
 
 interface PaymentDialogProps {
   paymentRegistry: PaymentRegistry;
@@ -47,7 +48,9 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
                 </div>
               </div>
             </div>
-            <div></div>
+            <div>
+              <PaymentDialogPlanTable plans={paymentRegistry.plans} />
+            </div>
           </div>
           <div className="flex gap-4 flex-row justify-stretch w-full">
             <div>
