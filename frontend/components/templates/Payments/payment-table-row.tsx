@@ -1,10 +1,16 @@
 import { TableCell, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+import { FC } from "react";
 
-const PaymentTableRow = () => {
+interface PaymentTableRowProps {
+  className: string;
+}
+
+const PaymentTableRow: FC<PaymentTableRowProps> = ({ className }) => {
   return (
-    <TableRow>
+    <TableRow className={cn("", className)}>
       <TableCell>Дата</TableCell>
-      Менеджер
+      <TableCell>Менеджер</TableCell>
       <TableCell>Сумма</TableCell>
       <TableCell>Изменить</TableCell>
     </TableRow>
