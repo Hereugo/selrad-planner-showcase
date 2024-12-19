@@ -3,6 +3,8 @@ interface Manager {
   name: string;
   geopoints: ManagerGeoPoint[];
 
+  payment: number | null;
+
   is_driver: boolean;
   is_warehouser: boolean;
   is_accountant: boolean;

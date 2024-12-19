@@ -465,7 +465,7 @@ class TaskViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericV
 class PaymentRegistryViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     queryset = PaymentRegistry.objects.all()
     serializer_class = PaymentRegistrySerializer
-    pagination_class = PageLimitPagination
+    # pagination_class = PageLimitPagination
     permission_classes = [IsAuthenticated, HasCRUDPermission, ]
     filter_backends = (
         DjangoFilterBackend,

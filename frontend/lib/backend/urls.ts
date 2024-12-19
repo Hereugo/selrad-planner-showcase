@@ -21,6 +21,7 @@ const urls = {
     drivers: `${BASE_BACKEND_V1}/users/drivers`,
     me: `${BASE_BACKEND_V1}/users/me`,
     users: `${BASE_BACKEND_V1}/users`,
+    payment_registries: `${BASE_BACKEND_V1}/payment_registries`,
   },
 };
 
