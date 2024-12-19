@@ -25,7 +25,7 @@ export const usePaymentRegistryUpdateMutation = (id: string) => {
   const url = urls.base_backend.payment_registries;
   const urlParamed = `${url}/${id}/`;
 
-  const call = (paymentRegister: PaymentRegistry) => {
+  const call = (paymentRegister: Partial<PaymentRegistry>) => {
     return patchWithAuth(urlParamed, paymentRegister);
   };
 
