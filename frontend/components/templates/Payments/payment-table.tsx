@@ -21,6 +21,7 @@ const PaymentTable = () => {
                 }
                 acc.rows.push(
                   <PaymentTableRow
+                    paymentRegistry={paymentRegistry}
                     key={paymentRegistry.id}
                     className={acc.parity ? "bg-yellow-50" : ""}
                   />,
