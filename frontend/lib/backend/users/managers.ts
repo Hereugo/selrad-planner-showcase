@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchWithAuth } from "../httpCalls";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchWithAuth, patchWithAuth } from "../httpCalls";
 import urls from "../urls";
 
 export const useManagersQuery = () => {
@@ -26,5 +26,22 @@ export const useDriversQuery = () => {
   return useQuery({
     queryKey: ["useDriversQuery"],
     queryFn: async () => fetchWithAuth<Manager[]>(url),
+  });
+};
+
+export const useUserUpdateMutation = (id: string) => {
+  const queryClient = useQueryClient();
+
+  const url = urls.base_backend.users;
+  const urlParamed = `${url}/${id}/`;
+
+  const call = (user: Partial<User>) => {
+    return patchWithAuth(urlParamed, user);
+  };
+
+  return useMutation(call, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["useManagersQuery"]);
+    },
   });
 };

@@ -2,7 +2,10 @@
 
 import { useManagers } from "@/components/molecules/plan-dialog-edit/index.hooks";
 import { Input } from "@/components/ui/input";
-import { managerFullName } from "@/lib/utils";
+import { cn, managerFullName } from "@/lib/utils";
+import { useManagerPayment } from "./index.hooks";
+import { Button } from "@/components/ui/button";
+import { FC } from "react";
 
 const SettingsTemplate = () => {
   const { managers } = useManagers();
@@ -15,14 +18,41 @@ const SettingsTemplate = () => {
         {managers.map((manager) => (
           <div
             key={manager.id}
-            className="flex items-center justify-between px-4 py-2 border-b border-gray-200 last:border-none"
+            className="flex items-center justify-between px-4 gap-4 py-2 border-b border-gray-200 last:border-none"
           >
-            <div>{managerFullName(manager)}</div>
-            <Input className="w-30" value={100} />
+            <div className="w-40">{managerFullName(manager)}</div>
+            <UserPaymnetInput manager={manager} />
           </div>
         ))}
       </div>
     </div>
+  );
+};
+
+interface UserPaymnetInputProps {
+  manager: Manager;
+}
+
+const UserPaymnetInput: FC<UserPaymnetInputProps> = ({ manager }) => {
+  const { payment, setPayment, isEditted, handleUpdateManagerPayment } =
+    useManagerPayment(manager);
+
+  return (
+    <>
+      <Input
+        className="w-20"
+        type="number"
+        value={payment}
+        onChange={(e) => setPayment(parseInt(e.target.value))}
+      />
+      <Button
+        disabled={!isEditted}
+        className="text-white bg-accent-foreground w-30 disabled:opacity-0"
+        onClick={handleUpdateManagerPayment}
+      >
+        Сохранить
+      </Button>
+    </>
   );
 };
 
