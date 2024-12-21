@@ -42,7 +42,7 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl min-w-3/4">
         <DialogHeader>
           <DialogTitle className="mb-4">Изменить выплату</DialogTitle>
         </DialogHeader>
