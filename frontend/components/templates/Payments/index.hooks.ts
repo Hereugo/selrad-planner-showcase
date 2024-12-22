@@ -1,11 +1,21 @@
+import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import {
   usePaymentRegistriesQuery,
   usePaymentRegistryUpdateMutation,
 } from "@/lib/backend/payment_registries";
+import { formatDateBackend } from "@/lib/utils";
 import { useState } from "react";
 
 export const usePaymentRegistries = () => {
-  const { isLoading, isError, data } = usePaymentRegistriesQuery();
+  const { calendarRange, managerId } = useFiltersContext();
+  const startDate = formatDateBackend(calendarRange?.from);
+  const endDate = formatDateBackend(calendarRange?.to);
+
+  const { isLoading, isError, data } = usePaymentRegistriesQuery({
+    managers: managerId ? [managerId] : undefined,
+    start_date: startDate,
+    end_date: endDate,
+  });
 
   return {
     isLoading,

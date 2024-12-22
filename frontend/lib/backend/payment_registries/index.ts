@@ -2,11 +2,24 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import urls from "../urls";
 import { fetchWithAuth, patchWithAuth } from "../httpCalls";
 
-export const usePaymentRegistriesQuery = () => {
-  const url = urls.base_backend.payment_registries;
+interface PaymentRegistryQueryProps {
+  start_date?: string;
+  end_date?: string;
+  managers?: string[];
+}
 
-  return useQuery(["usePaymentRegistriesQuery"], async () =>
-    fetchWithAuth<PaymentRegistry[]>(url),
+export const usePaymentRegistriesQuery = (props: PaymentRegistryQueryProps) => {
+  const url = urls.base_backend.payment_registries;
+  const queryParams = [];
+
+  if (props.start_date) queryParams.push(`start_date=${props.start_date}`);
+  if (props.end_date) queryParams.push(`end_date=${props.end_date}`);
+  if (props.managers) queryParams.push(`managers=${props.managers.join(",")}`);
+
+  const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
+
+  return useQuery(["usePaymentRegistriesQuery", urlWithParams], async () =>
+    fetchWithAuth<PaymentRegistry[]>(urlWithParams),
   );
 };
 
