@@ -2,6 +2,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -14,6 +15,13 @@ interface PaymentDialogPlanTableProps {
 }
 
 const PaymentDialogPlanTable: FC<PaymentDialogPlanTableProps> = ({ plans }) => {
+  const totalBoxCount = plans.reduce((acc, plan) => acc + plan.box_count, 0);
+  const totalShipmentCost = plans.reduce(
+    (acc, plan) =>
+      acc + parseFloat(parsePriceFormula(plan.shipment_cost_formula)),
+    0,
+  );
+
   return (
     <Table>
       <TableHeader>
@@ -29,6 +37,14 @@ const PaymentDialogPlanTable: FC<PaymentDialogPlanTableProps> = ({ plans }) => {
           <PaymentDialogPlanTableRow key={plan.id} plan={plan} index={i + 1} />
         ))}
       </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableHead></TableHead>
+          <TableHead className="text-right">Итого</TableHead>
+          <TableHead>{totalBoxCount}</TableHead>
+          <TableHead>{totalShipmentCost}</TableHead>
+        </TableRow>
+      </TableFooter>
     </Table>
   );
 };
