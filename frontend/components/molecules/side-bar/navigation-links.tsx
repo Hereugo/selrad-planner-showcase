@@ -39,6 +39,7 @@ const NavigationLinks = () => {
         href="/payments"
         className={cn(
           "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+          viewFeature.canViewPaymnetRegistry ? "" : "hidden",
         )}
       >
         <Wallet className="w-6 h-6" /> Выплаты
@@ -47,6 +48,7 @@ const NavigationLinks = () => {
         href="/settings"
         className={cn(
           "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+          viewFeature.canViewSettings ? "" : "hidden",
         )}
       >
         <Settings className="w-6 h-6" /> Настройки

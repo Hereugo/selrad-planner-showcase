@@ -21,5 +21,12 @@ export const useViewFeature = () => {
     canDeletePlan: me?.permissions.includes("plans.delete_plans"),
     canDeleteOldPlan: me?.permissions.includes("plans.delete_old_plan"),
     canUpdateOldPlan: me?.permissions.includes("plans.change_old_plan"),
+    canViewSettings: me?.permissions.includes("managers.view_settings"),
+    canViewPaymentSettings: me?.permissions.includes(
+      "managers.view_payments_section",
+    ),
+    canViewPaymnetRegistry: me?.permissions.includes(
+      "plans.view_paymentregistry",
+    ),
   };
 };
