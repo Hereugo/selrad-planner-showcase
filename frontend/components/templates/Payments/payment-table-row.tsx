@@ -2,6 +2,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { cn, formatDate, managerFullName } from "@/lib/utils";
 import { FC } from "react";
 import PaymentDialog from "./payment-dialog";
+import { Circle } from "lucide-react";
 
 interface PaymentTableRowProps {
   paymentRegistry: PaymentRegistry;
@@ -19,7 +20,14 @@ const PaymentTableRow: FC<PaymentTableRowProps> = ({
       <TableCell>{paymentRegistry.payment + paymentRegistry.bonus}</TableCell>
       <TableCell className="text-blue-500 hover:cursor-pointer">
         <PaymentDialog paymentRegistry={paymentRegistry}>
-          <span>Изменить</span>
+          <div className="relative max-w-[100px]">
+            <span>
+              {paymentRegistry.is_confirmed ? "Изменить" : "Подтвердить"}
+            </span>
+            {!paymentRegistry.is_confirmed && (
+              <Circle className="absolute fill-red-500 stroke-none top-0 right-0 w-2 h-2" />
+            )}
+          </div>
         </PaymentDialog>
       </TableCell>
     </TableRow>
