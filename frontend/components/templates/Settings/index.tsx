@@ -6,6 +6,7 @@ import { cn, managerFullName } from "@/lib/utils";
 import { useManagerPayment } from "./index.hooks";
 import { Button } from "@/components/ui/button";
 import { FC } from "react";
+import { Save } from "lucide-react";
 
 const SettingsTemplate = () => {
   const { managers } = useManagers();
@@ -38,7 +39,7 @@ const UserPaymnetInput: FC<UserPaymnetInputProps> = ({ manager }) => {
     useManagerPayment(manager);
 
   return (
-    <>
+    <div className="flex items-center gap-4">
       <Input
         className="w-20"
         type="number"
@@ -50,9 +51,9 @@ const UserPaymnetInput: FC<UserPaymnetInputProps> = ({ manager }) => {
         className="text-white bg-accent-foreground w-30 disabled:opacity-0"
         onClick={handleUpdateManagerPayment}
       >
-        Сохранить
+        <Save className="w-5 h-5" />
       </Button>
-    </>
+    </div>
   );
 };
 
