@@ -31,7 +31,7 @@ export const usePaymentRegistryUpdateMutation = (id: string) => {
 
   return useMutation(call, {
     onSuccess: () => {
-      queryClient.invalidateQueries(["usePaymentRegistryUpdateMutation"]);
+      queryClient.invalidateQueries(["usePaymentRegistriesQuery"]);
     },
   });
 };

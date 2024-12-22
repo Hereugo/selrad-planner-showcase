@@ -26,7 +26,7 @@ const PaymentDialogPlanTable: FC<PaymentDialogPlanTableProps> = ({ plans }) => {
       </TableHeader>
       <TableBody>
         {plans.map((plan, i) => (
-          <PaymentDialogPlanTableRow key={plan.id} plan={plan} index={i} />
+          <PaymentDialogPlanTableRow key={plan.id} plan={plan} index={i + 1} />
         ))}
       </TableBody>
     </Table>

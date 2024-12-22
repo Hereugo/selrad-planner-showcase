@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useState } from "react";
 import { useUpdatePaymentRegistry } from "./index.hooks";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,7 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
   paymentRegistry,
   children,
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const {
     payment,
     setPayment,
@@ -35,20 +36,18 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
     handleUpdatePaymentRegistry,
     isConfirmed,
     setIsConfirmed,
-  } = useUpdatePaymentRegistry(paymentRegistry);
-
-  setIsConfirmed;
+  } = useUpdatePaymentRegistry(paymentRegistry, () => setIsOpen(false));
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-xl min-w-3/4">
+      <DialogContent className="max-w-xl min-w-[60vw]">
         <DialogHeader>
           <DialogTitle className="mb-4">Изменить выплату</DialogTitle>
         </DialogHeader>
         <div className="flex gap-4 flex-col justify-stretch w-full">
           <div className="flex gap-4 flex-row justify-stretch w-full">
-            <div className="flex gap-4 flex-col justify-stretch w-full">
+            <div className="flex gap-4 flex-col justify-stretch w-full max-w-40">
               <div>
                 <Label htmlFor="date">Дата</Label>
                 <div id="date">{formatDate(paymentRegistry.date)}</div>
@@ -60,7 +59,7 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
                 </div>
               </div>
             </div>
-            <div>
+            <div className="w-full max-h-[50vh] overflow-auto">
               <PaymentDialogPlanTable plans={paymentRegistry.plans} />
             </div>
           </div>
@@ -81,7 +80,7 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
                 onChange={(e) => setBonus(Number(e.target.value))}
               />
             </div>
-            <div>
+            <div className="w-full">
               <Label htmlFor="comment">Комментарий</Label>
               <Textarea
                 id="comment"
@@ -91,14 +90,13 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
             </div>
           </div>
         </div>
-        <DialogFooter>
-          <div>
+        <DialogFooter className="flex justify-between gap-8">
+          <div className="flex gap-2 items-center cursor-pointer">
             <Checkbox
               id="isConfirmed"
               checked={isConfirmed}
               onChange={alert}
-              // todo: <- check if this works
-              // onChange={(e) => setIsConfirmed(e.target.value)}
+              onClick={() => setIsConfirmed((v) => !v)}
             />
             <Label htmlFor="isConfirmed">Подтвердить</Label>
           </div>

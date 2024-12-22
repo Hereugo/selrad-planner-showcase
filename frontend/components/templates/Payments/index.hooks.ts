@@ -16,6 +16,7 @@ export const usePaymentRegistries = () => {
 
 export const useUpdatePaymentRegistry = (
   initialPaymentRegistry: PaymentRegistry,
+  callback: () => void,
 ) => {
   const [payment, setPayment] = useState(initialPaymentRegistry.payment);
   const [bonus, setBonus] = useState(initialPaymentRegistry.bonus);
@@ -29,12 +30,14 @@ export const useUpdatePaymentRegistry = (
   );
 
   const handleUpdatePaymentRegistry = () => {
-    return paymentRegistryUpdateMutation.mutate({
+    paymentRegistryUpdateMutation.mutate({
       payment,
       bonus,
       comment,
       is_confirmed: isConfirmed,
     });
+
+    callback();
   };
 
   return {
