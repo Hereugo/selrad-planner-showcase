@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import PaymentDialogPlanTable from "./payment-dialog-plan-table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
 interface PaymentDialogProps {
   paymentRegistry: PaymentRegistry;
@@ -37,6 +38,7 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
     isConfirmed,
     setIsConfirmed,
   } = useUpdatePaymentRegistry(paymentRegistry, () => setIsOpen(false));
+  const viewFeature = useViewFeature();
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -100,7 +102,12 @@ const PaymentDialog: FC<PaymentDialogProps> = ({
             />
             <Label htmlFor="isConfirmed">Подтвердить</Label>
           </div>
-          <Button onClick={handleUpdatePaymentRegistry}>Сохранить</Button>
+          <Button
+            disabled={!viewFeature.canUpdatePaymnetRegistry}
+            onClick={handleUpdatePaymentRegistry}
+          >
+            Сохранить
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

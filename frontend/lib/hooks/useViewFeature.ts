@@ -28,5 +28,8 @@ export const useViewFeature = () => {
     canViewPaymnetRegistry: me?.permissions.includes(
       "plans.view_paymentregistry",
     ),
+    canUpdatePaymnetRegistry: me?.permissions.includes(
+      "plans.change_paymentregistry",
+    ),
   };
 };
