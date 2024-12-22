@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatClientName, parsePriceFormula } from "@/lib/utils";
+import { formatClientName, formatPrice } from "@/lib/utils";
 import { FC } from "react";
 
 interface PaymentDialogPlanTableProps {
@@ -17,8 +17,7 @@ interface PaymentDialogPlanTableProps {
 const PaymentDialogPlanTable: FC<PaymentDialogPlanTableProps> = ({ plans }) => {
   const totalBoxCount = plans.reduce((acc, plan) => acc + plan.box_count, 0);
   const totalShipmentCost = plans.reduce(
-    (acc, plan) =>
-      acc + parseFloat(parsePriceFormula(plan.shipment_cost_formula)),
+    (acc, plan) => acc + plan.shipment_cost,
     0,
   );
 
@@ -42,7 +41,7 @@ const PaymentDialogPlanTable: FC<PaymentDialogPlanTableProps> = ({ plans }) => {
           <TableHead></TableHead>
           <TableHead className="text-right">Итого</TableHead>
           <TableHead>{totalBoxCount}</TableHead>
-          <TableHead>{totalShipmentCost}</TableHead>
+          <TableHead>{formatPrice(totalShipmentCost)}</TableHead>
         </TableRow>
       </TableFooter>
     </Table>
@@ -63,7 +62,7 @@ const PaymentDialogPlanTableRow: FC<PaymentDialogPlanTableRowProps> = ({
       <TableCell>{index}.</TableCell>
       <TableCell>{formatClientName(plan.client.name)}</TableCell>
       <TableCell>{plan.box_count}</TableCell>
-      <TableCell>{parsePriceFormula(plan.shipment_cost_formula)}</TableCell>
+      <TableCell>{formatPrice(plan.shipment_cost)}</TableCell>
     </TableRow>
   );
 };

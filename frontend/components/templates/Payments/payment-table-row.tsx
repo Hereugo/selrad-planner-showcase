@@ -1,5 +1,5 @@
 import { TableCell, TableRow } from "@/components/ui/table";
-import { cn, formatDate, managerFullName } from "@/lib/utils";
+import { cn, formatDate, formatPrice, managerFullName } from "@/lib/utils";
 import { FC } from "react";
 import PaymentDialog from "./payment-dialog";
 import { Circle } from "lucide-react";
@@ -17,7 +17,9 @@ const PaymentTableRow: FC<PaymentTableRowProps> = ({
     <TableRow className={cn("", className)}>
       <TableCell>{formatDate(paymentRegistry.date)}</TableCell>
       <TableCell>{managerFullName(paymentRegistry.manager)}</TableCell>
-      <TableCell>{paymentRegistry.payment + paymentRegistry.bonus}</TableCell>
+      <TableCell>
+        {formatPrice(paymentRegistry.payment + paymentRegistry.bonus)}
+      </TableCell>
       <TableCell className="text-blue-500 hover:cursor-pointer">
         <PaymentDialog paymentRegistry={paymentRegistry}>
           <div className="relative max-w-[100px]">
