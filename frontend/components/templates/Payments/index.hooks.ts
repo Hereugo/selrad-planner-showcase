@@ -3,13 +3,16 @@ import {
   usePaymentRegistriesQuery,
   usePaymentRegistryUpdateMutation,
 } from "@/lib/backend/payment_registries";
-import { formatDateBackend } from "@/lib/utils";
+import { formatDateBackend, getLastSundayDate, minDate } from "@/lib/utils";
 import { useState } from "react";
 
 export const usePaymentRegistries = () => {
   const { calendarRange, managerId } = useFiltersContext();
-  const startDate = formatDateBackend(calendarRange?.from);
-  const endDate = formatDateBackend(calendarRange?.to);
+  const lastSunday = getLastSundayDate();
+  const startDate = formatDateBackend(
+    minDate([calendarRange?.from, lastSunday]),
+  );
+  const endDate = formatDateBackend(minDate([calendarRange?.to, lastSunday]));
 
   const { isLoading, isError, data } = usePaymentRegistriesQuery({
     managers: managerId ? [managerId] : undefined,
