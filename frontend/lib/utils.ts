@@ -93,6 +93,27 @@ export const formatDateBackend = (date: Date | undefined) => {
   return date?.toLocaleDateString("ru-RU").split(".").reverse().join("-");
 };
 
+export const minDate = (dates: (Date | undefined)[]) => {
+  return new Date(
+    Math.min(...dates.filter(Boolean).map((date) => date!.getTime())),
+  );
+};
+
+export const maxDate = (dates: (Date | undefined)[]) => {
+  return new Date(
+    Math.max(...dates.filter(Boolean).map((date) => date!.getTime())),
+  );
+};
+
+export const getLastSundayDate = () => {
+  // last sunday at 23:59:59
+  const today = new Date();
+  const lastSunday = new Date(today);
+  lastSunday.setDate(today.getDate() - today.getDay());
+  lastSunday.setHours(23, 59, 59, 999);
+  return lastSunday;
+};
+
 export const isPlanAReturn = (plan: Plan) => {
   return plan.work_items.some((item) => item.content_type === "Return");
 };
