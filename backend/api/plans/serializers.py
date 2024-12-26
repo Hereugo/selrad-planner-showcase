@@ -61,6 +61,7 @@ class PlanSerializer(serializers.ModelSerializer):
             "updated_at",
             "invoice_date",
             "accountant_comment",
+            "is_permanent",
         )
 
 
@@ -102,7 +103,7 @@ class PlanCreateSerializer(serializers.ModelSerializer):
             "invoice_date",
             "accountant_comment",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at",)
 
     def validate_assigned_date(self, assigned_date):
         request: Request = self.context["request"]
@@ -169,20 +170,24 @@ class PlanCreateSerializer(serializers.ModelSerializer):
         plan_managers: List[PlanManager] = []
         for manager in managers:
             plan_managers.append(PlanManager(plan=plan, manager=manager))
-        
+
         PlanManager.objects.bulk_create(plan_managers, ignore_conflicts=True)
 
-    def create_payment_registries(self, assigned_date: timezone.datetime, managers: List[Manager]):
-        payment_registries: List[PaymentRegistry] = []
-        for manager in managers:
-            payment_registries.append(PaymentRegistry(
-                date=assigned_date,
-                manager=manager,
-                payment=manager.payment,
-                bonus=0,
-            ))
+    # def create_payment_registries(
+    #     self, assigned_date: timezone.datetime, managers: List[Manager]
+    # ):
+    #     payment_registries: List[PaymentRegistry] = []
+    #     for manager in managers:
+    #         payment_registries.append(
+    #             PaymentRegistry(
+    #                 date=assigned_date,
+    #                 manager=manager,
+    #                 payment=manager.payment,
+    #                 bonus=0,
+    #             )
+    #         )
 
-        PaymentRegistry.objects.bulk_create(payment_registries, ignore_conflicts=True)
+    #     PaymentRegistry.objects.bulk_create(payment_registries, ignore_conflicts=True)
 
     def create(self, validated_data):
         work_items: List[WorkItem] = validated_data.pop("work_items", [])
@@ -195,7 +200,7 @@ class PlanCreateSerializer(serializers.ModelSerializer):
 
         self.create_work_items(plan, work_items)
         self.create_managers(plan, managers)
-        self.create_payment_registries(plan.assigned_date, managers)
+        # self.create_payment_registries(plan.assigned_date, managers)
 
         return plan
 
@@ -210,6 +215,16 @@ class PlanUpdateSerializer(PlanCreateSerializer):
 
     class Meta(PlanCreateSerializer.Meta):
         pass
+
+
+    def validate(self, attrs):
+        instance: Plan = self.instance # type: ignore
+        if instance and instance.is_permanent:
+            request: Request = self.context["request"]
+            if not request.user.is_superuser:
+                raise serializers.ValidationError("Вы не можете изменять план когда он перманентный")
+            
+        return super().validate(attrs)
 
     def validate_assigned_date(self, assigned_date):
         request: Request = self.context["request"]
@@ -240,35 +255,44 @@ class PlanUpdateSerializer(PlanCreateSerializer):
             PlanManager.objects.filter(plan=instance).exclude(
                 manager__in=managers
             ).delete()
-    
+
             # We leave existing work_items they will cause a conflict, but we ignore it
             # and this will only create new work_items
             self.create_managers(instance, managers)
 
-        if "assigned_date" in validated_data and validated_data.get("assigned_date") != instance.assigned_date:
-            # https://stackoverflow.com/a/53321241/12423120
-            # Difficult to ignore conflicts if IngerityError happens. can manually update row by row, 
-            # but how do we determine which data is valid?
-            # PaymentRegistry.objects.filter(date=instance.assigned_date,).update(
-            #     date=validated_data.assigned_date,
-            # )
+        # if "assigned_date" in validated_data:
+        #     # https://stackoverflow.com/a/53321241/12423120
+        #     # Difficult to ignore conflicts if IngerityError happens. can manually update row by row,
+        #     # but how do we determine which data is valid?
+        #     # PaymentRegistry.objects.filter(date=instance.assigned_date,).update(
+        #     #     date=validated_data.assigned_date,
+        #     # )
 
-            # NOTE: Not the best way, as updating the date is equivelant, except 
-            # as we deleting set of date's and recreating them, we ignore all conflicts.
-            # NOTE 2: ask mansur to display a warning if assigned_date is changed:
-            # "WARNING: changing assigned_date results in overwritting existing payment registries, are you sure?"
-            PaymentRegistry.objects.filter(date=instance.assigned_date).delete()
-            managers: List[Manager] = validated_data.get("managers", instance.managers.all())
-            self.create_payment_registries(validated_data.get("assigned_date"), managers)
-        else:
-            # NOTE: ask mansur to display a warning if managers were changed:
-            # "WARNING: excluding managers results in deleting their existing payment registries, are you sure?"
-            managers: List[Manager] = validated_data.get("managers", [])
-            PaymentRegistry.objects.filter(date=instance.assigned_date).exclude(
-                manager__in=managers
-            ).delete()
-
-            self.create_payment_registries(instance.assigned_date, managers)
+        #     # NOTE: Not the best way, as updating the date is equivelant, except
+        #     # as we deleting set of date's and recreating them, we ignore all conflicts.
+        #     # NOTE 2: ask mansur to display a warning if assigned_date is changed:
+        #     # "WARNING: changing assigned_date results in overwriting existing payment registries, are you sure?"
+        #     for manager in managers:
+        #         qs1 = PaymentRegistry.objects.filter(
+        #             date=instance.assigned_date, manager=manager
+        #         )
+        #         qs2 = PaymentRegistry.objects.filter(
+        #             date=validated_data.get("assigned_date"), manager=manager
+        #         )
+        #         if len(qs1) == 1:
+        #             qs1.delete()
+        #         if not qs2.exists():
+        #             self.create_payment_registries(
+        #                 validated_data.get("assigned_date"), [manager]
+        #             )
+        # else:
+        #     # NOTE: ask mansur to display a warning if managers were changed:
+        #     # "WARNING: excluding managers results in deleting their existing payment registries, are you sure?"
+        #     managers: List[Manager] = validated_data.get("managers", [])
+        #     PaymentRegistry.objects.filter(date=instance.assigned_date).exclude(
+        #         manager__in=managers
+        #     ).delete()
+        #     self.create_payment_registries(instance.assigned_date, managers)
 
         return super().update(instance, validated_data)
 
@@ -314,12 +338,11 @@ class NearbyClientSerializer(serializers.Serializer):
             data["last_shipment_plan"] = last_shipment_plan.data
 
         return data
-    
 
 
 class PaymentRegistrySerializer(serializers.ModelSerializer):
     """Serializer for Payment Registries"""
-    
+
     id = serializers.StringRelatedField()
     manager = ManagerSerializer(many=False)
     plans = PlanSerializer(many=True)
@@ -337,7 +360,8 @@ class PaymentRegistrySerializer(serializers.ModelSerializer):
             "plans",
         )
         read_only_fields = ("id",)
-    
+
+
 class PaymentRegistryUpdateSerializer(serializers.ModelSerializer):
     id = serializers.StringRelatedField()
 

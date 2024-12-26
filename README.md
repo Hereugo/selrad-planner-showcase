@@ -6,13 +6,13 @@ Cпециальный веб-сайт для управления планиро
 
 ### Технологии
 
-- Python 3.11.7
-- Django 4.3.3
-- Nextjs
+-   Python 3.11.7
+-   Django 4.3.3
+-   Nextjs
 
 ### Запуск проекта в dev-режиме
 
-- Установите и активируйте виртуальное окружение
+-   Установите и активируйте виртуальное окружение
 
 ```
 git clone git@github.com:Selrad-Utility-Tools/selrad-planner.git
@@ -20,33 +20,31 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-- Установите зависимости из файла requirements.txt
+-   Установите зависимости из файла requirements.txt
 
 ```
 pip install -r ./backend/requirements.txt
 ```
 
-- Создайте файл .env в папке 'infra' проекта:
+-   Создайте файл .env в папке 'infra' проекта:
 
 ```
 cd infra
 cp .env.example .env
 ```
 
-| VAR   | Description    |
-|--------------- | --------------- |
-| YANDEX_API_KEY   | API key for yandex map. Follow instructions [here](https://yandex.com/dev/commercial/doc/en/concepts/jsapi-geocoder) to setup. |
-| YANDEX_API_URL | <https://geocode-maps.yandex.ru/1.x/>' API URL for yandex map geocoder. |
-| DJANGO_SECRET_KEY | Secret key every django project provides. |
-| DJANGO_DEBUG | True / False. (Optional) defaults to False. Setup project in Debug Mode |  
-| DB_ENGINE | 'django.contrib.gis.db.backends.postgis'. PostGis, Postgres with geo extension |
-| DB_NAME | 'postgres' |
-| POSTGRES_USER | 'postgres' |
-| POSTGRES_PASSWORD | 'postgres' |
-| DB_HOST | 'db'. Same name as in docker-compose |
-| DB_PORT | 5432 |
+| VAR               | Description                                                                    |
+| ----------------- | ------------------------------------------------------------------------------ |
+| DJANGO_SECRET_KEY | Secret key every django project provides.                                      |
+| DJANGO_DEBUG      | True / False. (Optional) defaults to False. Setup project in Debug Mode        |
+| DB_ENGINE         | 'django.contrib.gis.db.backends.postgis'. PostGis, Postgres with geo extension |
+| DB_NAME           | 'postgres'                                                                     |
+| POSTGRES_USER     | 'postgres'                                                                     |
+| POSTGRES_PASSWORD | 'postgres'                                                                     |
+| DB_HOST           | 'db'. Same name as in docker-compose                                           |
+| DB_PORT           | 5432                                                                           |
 
-- Запустить Docker
+-   Запустить Docker
 
 #### Supa Fast Installation
 
@@ -72,7 +70,7 @@ docker-compose -f docker-compose-dev.yml up -d --build
 
 В Докере backend container-а:
 
-- Добавьте базу данных:
+-   Добавьте базу данных:
 
 ```
 python3 manage.py flush
@@ -81,7 +79,7 @@ python3 manage.py loaddata ./data/clients_w_address.json
 python3 manage.py import_managers_csv
 ```
 
-- Создайте административного пользователя:
+-   Создайте административного пользователя:
 
 ```
 python3 manage.py createsuperuser
@@ -91,11 +89,11 @@ python3 manage.py createsuperuser
 
 Инструкция только при выкладавании на сервер.
 
-- Удоствавертись что Docker-desktop версии > 4.26.0.
+-   Удоствавертись что Docker-desktop версии > 4.26.0.
 
-- Dockerfiles для backend-а и frontend-а должны быть сделаны для поддержки на linux-amd64
+-   Dockerfiles для backend-а и frontend-а должны быть сделаны для поддержки на linux-amd64
 
-- Добавить новые изменения в docker image
+-   Добавить новые изменения в docker image
 
 ```
 cd backend
@@ -109,7 +107,7 @@ docker build -t hereugo/planner_frontend .
 docker push hereugo/planner_frontend
 ```
 
-- Зайти на сервер через ssh. Только у Амира есть доступ на сервер
+-   Зайти на сервер через ssh. Только у Амира есть доступ на сервер
 
 ```
 ssh ubuntu@YOUR_SERVER_HOST
@@ -117,7 +115,7 @@ ssh ubuntu@YOUR_SERVER_HOST
 # Provide ssh key to gain access
 ```
 
-- Обновить docker image-ы
+-   Обновить docker image-ы
 
 ```
 cd selrad-planner
@@ -125,7 +123,7 @@ sudo docker pull hereugo/planner_backend
 sudo docker pull hereugo/planner_frontend
 ```
 
-- Перезапустить docker compose
+-   Перезапустить docker compose
 
 ```
 cd selrad-planner
@@ -170,7 +168,7 @@ Change Makefile loaddata command to point at a new file:
 
 ```
 loaddata:
- docker-compose -f docker-compose-dev.yml exec backend python3 manage.py loaddata ./data/<current-date>.json 
+ docker-compose -f docker-compose-dev.yml exec backend python3 manage.py loaddata ./data/<current-date>.json
 ```
 
 Rebuild local containers with brand new data:
@@ -190,10 +188,10 @@ make loaddata
 
 Чтобы просмотреть endpoint-ы API, запустите сервер и пройдите по ссылке:
 
-- Swagger UI: <http://localhost/api/schema/swagger-ui/>
-- Redoc: <http://localhost/api/schema/redoc/>
+-   Swagger UI: <http://localhost/api/schema/swagger-ui/>
+-   Redoc: <http://localhost/api/schema/redoc/>
 
 ### Авторы
 
-- Амир Нурмухамбетов [github profile](https://github.com/Hereugo)  
-- Мансур Нурмухамбетов [github profile](https://github.com/nomomon)
+-   Амир Нурмухамбетов [github profile](https://github.com/Hereugo)
+-   Мансур Нурмухамбетов [github profile](https://github.com/nomomon)

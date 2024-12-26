@@ -63,16 +63,17 @@ class PaymentRegistry(models.Model):
 
     def plans(self):
         return self.manager.plans.filter(assigned_date=self.date)
+
     class Meta:
         verbose_name = "Данные о выплате"
         verbose_name_plural = "Реестр выплаты"
         constraints = [
             models.UniqueConstraint(
-                fields=['date', 'manager'], 
-                name='unique_date_manager'
+                fields=["date", "manager"], name="unique_date_manager"
             )
         ]
-        ordering = ("-date",)
+        ordering = ("-date", "-manager")
+
 
 class WorkItem(models.Model):
     """Model WorkItem"""
@@ -172,6 +173,11 @@ class Plan(models.Model):
         verbose_name="Время с момента первой отправки диспетчерского листа",
         blank=True,
         null=True,
+    )
+    is_permanent = models.BooleanField(
+        verbose_name="перманентный план",
+        help_text="перманентный план",
+        default=False,
     )
 
     invoice_date = models.DateField(

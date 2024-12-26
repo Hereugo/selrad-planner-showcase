@@ -73,6 +73,7 @@ class GeoPoint(models.Model):
         verbose_name_plural = "Геоточки"
         ordering = ["-created_at"]
 
+
 # This Model extends User model
 class Manager(models.Model):
     user = models.OneToOneField(
@@ -90,8 +91,7 @@ class Manager(models.Model):
     payment = models.IntegerField(
         verbose_name="Выплаты менеджеру в (₸)",
         help_text="Введите выплату менеджеру в (₸)",
-        blank=True,
-        null=True,
+        default=0,
     )
     # -============ MANAGER ATTRIBUTES ==============-
     is_hidden = models.BooleanField(

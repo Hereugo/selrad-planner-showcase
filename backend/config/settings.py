@@ -127,6 +127,8 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "djoser",
     "leaflet",
+    "django_celery_beat",
+    "django_celery_results",
     # Local apps
     "api",
     "plans",
@@ -159,7 +161,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "config.context_processors.export_keys",
             ],
         },
     },
@@ -271,17 +272,6 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
-# Yandex Map settings
-
-YANDEX_API_KEY = os.getenv("YANDEX_API_KEY")
-YANDEX_API_URL = os.getenv("YANDEX_API_URL")
-
-
-# 2GIS MAP Settings
-
-TWOGIS_API_KEY = os.getenv("TWOGIS_API_KEY")
-TWOGIS_API_URL = os.getenv("TWOGIS_API_URL")
-
 # Leaflet settings
 
 LEAFLET_CONFIG = {
@@ -291,3 +281,16 @@ LEAFLET_CONFIG = {
     "SCALE": "both",
     "ATTRIBUTION_PREFIX": "Inspired by Life in GIS",
 }
+
+# Celery / Redis settings
+
+REDIS_HOST = os.getenv("REDIS_HOST", "background_tasks")
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:6379/0"
+
+CELERY_ENABLE_UTC = False
+CELERY_TIMEZONE = "UTC"
+
+DJANGO_CELERY_BEAT_TZ_AWARE = False
+
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_EXTENDED = True

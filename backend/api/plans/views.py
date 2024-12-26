@@ -35,7 +35,7 @@ from .serializers import (
     PlanUpdateSerializer,
     WorkItemSerializer,
     PaymentRegistrySerializer,
-    PaymentRegistryUpdateSerializer
+    PaymentRegistryUpdateSerializer,
 )
 from .work_items_serializers import TaskSerializer, TaskUpdatePolymorphicSerializer
 
@@ -461,18 +461,28 @@ class TaskViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericV
 
         return Response(task_serializer.data)
 
+
 # Permission to view: read_payment_registries
-class PaymentRegistryViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
+class PaymentRegistryViewSet(
+    ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet
+):
     queryset = PaymentRegistry.objects.all()
     serializer_class = PaymentRegistrySerializer
     # pagination_class = PageLimitPagination
-    permission_classes = [IsAuthenticated, HasCRUDPermission, ]
+    permission_classes = [
+        IsAuthenticated,
+        HasCRUDPermission,
+    ]
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
         filters.OrderingFilter,
     )
     filterset_class = PaymentRegistryFilter
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs | PaymentRegistry.objects.filter(is_confirmed=False)
 
     def get_serializer_class(self):
         if self.action in ("update", "partial_update"):

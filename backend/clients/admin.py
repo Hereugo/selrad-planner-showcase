@@ -67,8 +67,6 @@ class MetaClientAdmin(admin.ModelAdmin):
 
 @admin.register(Address)
 class AddressAdmin(LeafletGeoAdmin, ExportCsvMixin):
-    change_list_template = "address_changelist.html"
-
     list_display = (
         "id",
         "street",

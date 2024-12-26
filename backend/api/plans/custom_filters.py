@@ -18,10 +18,17 @@ class PaymentRegistryFilter(FilterSet):
         field_name="manager__id",
         to_field_name="id",
     )
+    is_confirmed = BooleanFilter(field_name="is_confirmed")
 
     class Meta:
         model = PaymentRegistry
-        fields = ["start_date", "end_date", "managers",]
+        fields = [
+            "start_date",
+            "end_date",
+            "managers",
+            "is_confirmed",
+        ]
+
 
 class TaskFilter(FilterSet):
     start_date = DateFilter(field_name="plan__assigned_date", lookup_expr=("gte"))
