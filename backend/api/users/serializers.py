@@ -72,10 +72,6 @@ class ManagerSerializer(serializers.ModelSerializer):
         # If user has no permission to view payments of managers,
         # then payments should be changed to -1.
         rep = super().to_representation(instance)
-        request: Optional[Request] = self.context.get("request")
-        if rep["payment"]:
-            if not request.user.has_perm("manager.view_payments_section"):
-                rep["payment"] = -1
         return rep
 
 
