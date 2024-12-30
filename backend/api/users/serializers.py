@@ -68,18 +68,6 @@ class ManagerSerializer(serializers.ModelSerializer):
 
         return GeoPointSerializer(qs, many=True).data
 
-    def to_representation(self, instance):
-        # If user has no permission to view payments of managers,
-        # then payments should be changed to -1.
-        rep = super().to_representation(instance)
-        request: Optional[Request] = self.context.get("request")
-        logger.info(request)
-        logger.info(request.user)
-        # if rep["payment"]:
-        #    if request and not request.user.has_perm("managers.view_payments_section"):
-        #        rep["payment"] = -1
-        return rep
-
 
 class MeSerializer(ManagerSerializer):
     permissions = serializers.SerializerMethodField(read_only=True)

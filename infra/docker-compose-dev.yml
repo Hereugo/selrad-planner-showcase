@@ -23,7 +23,7 @@ services:
         networks:
             - backend
         ports:
-            - "6379:6379"
+            - "6380:6379"
 
     db:
         image: postgis/postgis:13-3.1
