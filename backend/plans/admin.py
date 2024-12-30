@@ -1,8 +1,10 @@
 import logging
+
 from django.contrib import admin
 from django.shortcuts import render
+from django.db.models import QuerySet
 
-from plans.models import Plan, WorkItem, PaymentRegistry, PlanManager
+from plans.models import Plan, WorkItem, PaymentRegistry
 from managers.models import Manager
 
 from api.plans.views import PlanViewSet
@@ -10,7 +12,19 @@ from api.plans.views import PlanViewSet
 
 logger = logging.getLogger(__name__)
 
+@admin.action(description="Unfix plan")
+def unfix_plans(modeladmin, request, queryset):
+    if queryset.count() < 1:
+        modeladmin.message_user(request, "Не выбрано ни одного плана", level="ERROR")
+        return
 
+    plans: QuerySet[Plan] = queryset.all()
+    count = plans.update(is_permanent=False)
+
+    modeladmin.message_user(request, f"{count} план(ов) были изменины из перманентный")
+    return
+
+    
 @admin.action(description="Скачать план")
 def export_plans(modeladmin, request, queryset):
     if queryset.count() < 1:
@@ -63,6 +77,7 @@ class PlanWorkItemInline(admin.TabularInline):
 @admin.register(Plan)
 class PlanAdmin(admin.ModelAdmin):
     list_display = (
+        "is_permanent",
         "assigned_date_formatted",
         "shipment_cost_formula",
         "shipment_cost",
@@ -72,7 +87,6 @@ class PlanAdmin(admin.ModelAdmin):
         "time_since_first_dispatch",
         "invoice_date",
         "accountant_comment",
-        "is_permanent",
     )
     search_fields = ("client__name", "client__address", "assigned_date")
     list_filter = (
@@ -86,7 +100,7 @@ class PlanAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    actions = [export_plans, export_report]
+    actions = [export_plans, export_report, unfix_plans]
 
     inlines = [
         PlanManagerInline,
