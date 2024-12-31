@@ -16,7 +16,7 @@ from .serializers import (
     MeSerializer,
 )
 
-from api.utils.custom_permissions import IsAuthenticated, HasCRUDPermission, permission_required
+from api.utils.custom_permissions import IsAuthenticated, HasCRUDPermission
 
 from managers.models import Manager
 

@@ -49,6 +49,7 @@ class GeoPointCreateSerializer(serializers.ModelSerializer):
 class ManagerSerializer(serializers.ModelSerializer):
     id = serializers.StringRelatedField()
     geopoints = serializers.SerializerMethodField()
+    payment = serializers.SerializerMethodField()
 
     class Meta:
         model = Manager
@@ -67,6 +68,15 @@ class ManagerSerializer(serializers.ModelSerializer):
         qs = obj.geopoints.all()[:geo_limit]
 
         return GeoPointSerializer(qs, many=True).data
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_payment(self, obj):
+        """Hide manager payments if no user has no permission to view them"""
+        request: Optional[Request] = self.context.get("request")
+        if request and not request.user.has_perm("managers.view_payments_section"):
+            return -1
+
+        return obj.payment
 
 
 class MeSerializer(ManagerSerializer):
