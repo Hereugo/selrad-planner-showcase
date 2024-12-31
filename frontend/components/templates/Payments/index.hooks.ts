@@ -8,12 +8,6 @@ import { useState } from "react";
 
 export const usePaymentRegistries = () => {
   const { calendarRange, managerId } = useFiltersContext();
-  //const lastSunday = getLastSundayDate();
-  //const startDate = formatDateBackend(
-  //  minDate([calendarRange?.from, lastSunday]),
-  //);
-  //const endDate = formatDateBackend(minDate([calendarRange?.to, lastSunday]));
-
   const startDate = formatDateBackend(calendarRange?.from);
   const endDate = formatDateBackend(calendarRange?.to);
 
