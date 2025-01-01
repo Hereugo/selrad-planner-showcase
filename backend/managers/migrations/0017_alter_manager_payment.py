@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('managers', '0016_alter_manager_options'),
+        ("managers", "0016_alter_manager_options"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='manager',
-            name='payment',
-            field=models.IntegerField(default=0, help_text='Введите выплату менеджеру в (₸)', verbose_name='Выплаты менеджеру в (₸)'),
+            model_name="manager",
+            name="payment",
+            field=models.IntegerField(
+                default=0,
+                help_text="Введите выплату менеджеру в (₸)",
+                verbose_name="Выплаты менеджеру в (₸)",
+            ),
         ),
     ]

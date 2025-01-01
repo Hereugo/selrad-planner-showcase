@@ -6,17 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('managers', '0014_manager_is_accountant'),
+        ("managers", "0014_manager_is_accountant"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='manager',
-            options={'ordering': ('-pk',), 'verbose_name': 'Менеджер', 'verbose_name_plural': 'Менеджеры'},
+            name="manager",
+            options={
+                "ordering": ("-pk",),
+                "verbose_name": "Менеджер",
+                "verbose_name_plural": "Менеджеры",
+            },
         ),
         migrations.AddField(
-            model_name='manager',
-            name='payment',
-            field=models.IntegerField(blank=True, help_text='Введите выплату менеджеру в (₸)', null=True, verbose_name='Выплаты менеджеру в (₸)'),
+            model_name="manager",
+            name="payment",
+            field=models.IntegerField(
+                blank=True,
+                help_text="Введите выплату менеджеру в (₸)",
+                null=True,
+                verbose_name="Выплаты менеджеру в (₸)",
+            ),
         ),
     ]

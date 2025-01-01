@@ -1,55 +1,51 @@
 import logging
-
 from datetime import datetime
-from django.utils import timezone
-from django.http import HttpResponse
-from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.types import OpenApiTypes
-from rest_framework import filters, status
-from rest_framework.request import Request
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
-from drf_spectacular.utils import (
-    OpenApiResponse,
-    extend_schema,
-    OpenApiParameter,
-    extend_schema_view,
-)
 
-from plans.models import Plan, WorkItem, PlanWorkItem, PaymentRegistry
-from managers.models import Manager
-
+from api.utils.custom_paginations import PageLimitPagination
 from api.utils.custom_permissions import (
-    IsAuthenticated,
     HasCRUDPermission,
+    IsAuthenticated,
     permission_required,
 )
-from api.utils.custom_paginations import PageLimitPagination
+from django.db.models import QuerySet
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_view,
+)
+from managers.models import Manager
+from plans.models import PaymentRegistry, Plan, PlanWorkItem, WorkItem
+from rest_framework import filters, status
+from rest_framework.decorators import action
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet, ModelViewSet, ReadOnlyModelViewSet
+
+from .custom_filters import PaymentRegistryFilter, PlanFilter, TaskFilter
+from .custom_permissions import CanDeleteFuturePlans
+from .generate_compare_years import generate_compare_years
+from .generate_dispatch_list import generate_dispatch_list
+from .generate_dispatch_report import generate_dispatch_report
+from .generate_excelsheet import (
+    generate_excelsheet_by_manager,
+    generate_excelsheet_by_plan,
+)
 from .serializers import (
+    PaymentRegistrySerializer,
+    PaymentRegistryUpdateSerializer,
     PlanCreateSerializer,
     PlanSerializer,
     PlanUpdateSerializer,
     WorkItemSerializer,
-    PaymentRegistrySerializer,
-    PaymentRegistryUpdateSerializer,
 )
 from .work_items_serializers import TaskSerializer, TaskUpdatePolymorphicSerializer
-
-from .custom_permissions import CanDeleteFuturePlans
-
-from .custom_filters import PlanFilter, TaskFilter, PaymentRegistryFilter
-from .generate_compare_years import generate_compare_years
-from .generate_dispatch_report import generate_dispatch_report
-from .generate_dispatch_list import generate_dispatch_list
-from .generate_excelsheet import (
-    generate_excelsheet_by_plan,
-    generate_excelsheet_by_manager,
-)
-
 
 logger = logging.getLogger(__name__)
 

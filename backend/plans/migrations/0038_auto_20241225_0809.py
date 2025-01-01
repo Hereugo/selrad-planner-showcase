@@ -8,16 +8,16 @@ from django.utils import timezone
 class Migration(migrations.Migration):
 
     def alter_permanent_for_old_plans(apps, schema_editor):
-        plan_model = apps.get_model('plans', 'Plan')
+        plan_model = apps.get_model("plans", "Plan")
 
-        now = timezone.now() 
-        now = now + timedelta(days = 0 - now.weekday() - 1)
+        now = timezone.now()
+        now = now + timedelta(days=0 - now.weekday() - 1)
 
         plans = plan_model.objects.filter(assigned_date__lte=now)
-        plans.update(is_permanent=True)        
+        plans.update(is_permanent=True)
 
     dependencies = [
-        ('plans', '0037_plan_is_permanent'),
+        ("plans", "0037_plan_is_permanent"),
     ]
 
     operations = [

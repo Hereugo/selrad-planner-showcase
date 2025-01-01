@@ -24,6 +24,7 @@ def display_on_map(modeladmin, request, queryset):
         {"locations": AddressSerializer(addresses, many=True).data},
     )
 
+
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
@@ -75,7 +76,11 @@ class AddressAdmin(LeafletGeoAdmin, ExportCsvMixin):
         "twogis_link",
         "shop_count",
     )
-    search_fields = ("street", "lon", "lat",)
+    search_fields = (
+        "street",
+        "lon",
+        "lat",
+    )
     empty_value_display = "--пусто--"
 
     actions = [

@@ -6,12 +6,23 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('managers', '0015_alter_manager_options_manager_payment'),
+        ("managers", "0015_alter_manager_options_manager_payment"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='manager',
-            options={'ordering': ('-pk',), 'permissions': [('view_settings', 'Can view settings'), ('view_payments_section', 'Can view payments section (in settings)')], 'verbose_name': 'Менеджер', 'verbose_name_plural': 'Менеджеры'},
+            name="manager",
+            options={
+                "ordering": ("-pk",),
+                "permissions": [
+                    ("view_settings", "Can view settings"),
+                    (
+                        "view_payments_section",
+                        "Can view payments section (in settings)",
+                    ),
+                ],
+                "verbose_name": "Менеджер",
+                "verbose_name_plural": "Менеджеры",
+            },
         ),
     ]

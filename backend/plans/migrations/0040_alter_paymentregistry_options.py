@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('plans', '0039_alter_plan_is_permanent'),
+        ("plans", "0039_alter_plan_is_permanent"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='paymentregistry',
-            options={'ordering': ('-date', '-manager'), 'verbose_name': 'Данные о выплате', 'verbose_name_plural': 'Реестр выплаты'},
+            name="paymentregistry",
+            options={
+                "ordering": ("-date", "-manager"),
+                "verbose_name": "Данные о выплате",
+                "verbose_name_plural": "Реестр выплаты",
+            },
         ),
     ]

@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('plans', '0038_auto_20241225_0809'),
+        ("plans", "0038_auto_20241225_0809"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='plan',
-            name='is_permanent',
-            field=models.BooleanField(default=False, help_text='перманентный план', verbose_name='перманентный план'),
+            model_name="plan",
+            name="is_permanent",
+            field=models.BooleanField(
+                default=False,
+                help_text="перманентный план",
+                verbose_name="перманентный план",
+            ),
         ),
     ]

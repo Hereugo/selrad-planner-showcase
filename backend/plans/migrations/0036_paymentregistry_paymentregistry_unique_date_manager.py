@@ -7,30 +7,87 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('managers', '0016_alter_manager_options'),
-        ('plans', '0035_remove_plan_time_since_last_dispatch_and_more'),
+        ("managers", "0016_alter_manager_options"),
+        ("plans", "0035_remove_plan_time_since_last_dispatch_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PaymentRegistry',
+            name="PaymentRegistry",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField(help_text='Выберите совершенного плана', max_length=255, verbose_name='Дата совершенного плана')),
-                ('payment', models.IntegerField(blank=True, help_text='Введите выплату менеджеру в (₸)', null=True, verbose_name='Выплаты менеджеру в (₸)')),
-                ('bonus', models.IntegerField(blank=True, default=0, help_text='Введите бонус менеджеру в (₸)', null=True, verbose_name='Бонус менеджеру в (₸)')),
-                ('comment', models.TextField(blank=True, help_text='Ввидите комментарии', verbose_name='Комментарии')),
-                ('is_confirmed', models.BooleanField(default=False, help_text='Подтвержден ли план', verbose_name='Подтвержденно')),
-                ('manager', models.ForeignKey(help_text='Выберите менеджера', on_delete=django.db.models.deletion.CASCADE, related_name='payment_registries', to='managers.manager', verbose_name='Менеджер')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "date",
+                    models.DateField(
+                        help_text="Выберите совершенного плана",
+                        max_length=255,
+                        verbose_name="Дата совершенного плана",
+                    ),
+                ),
+                (
+                    "payment",
+                    models.IntegerField(
+                        blank=True,
+                        help_text="Введите выплату менеджеру в (₸)",
+                        null=True,
+                        verbose_name="Выплаты менеджеру в (₸)",
+                    ),
+                ),
+                (
+                    "bonus",
+                    models.IntegerField(
+                        blank=True,
+                        default=0,
+                        help_text="Введите бонус менеджеру в (₸)",
+                        null=True,
+                        verbose_name="Бонус менеджеру в (₸)",
+                    ),
+                ),
+                (
+                    "comment",
+                    models.TextField(
+                        blank=True,
+                        help_text="Ввидите комментарии",
+                        verbose_name="Комментарии",
+                    ),
+                ),
+                (
+                    "is_confirmed",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Подтвержден ли план",
+                        verbose_name="Подтвержденно",
+                    ),
+                ),
+                (
+                    "manager",
+                    models.ForeignKey(
+                        help_text="Выберите менеджера",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="payment_registries",
+                        to="managers.manager",
+                        verbose_name="Менеджер",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Данные о выплате',
-                'verbose_name_plural': 'Реестр выплаты',
-                'ordering': ('-date',),
+                "verbose_name": "Данные о выплате",
+                "verbose_name_plural": "Реестр выплаты",
+                "ordering": ("-date",),
             },
         ),
         migrations.AddConstraint(
-            model_name='paymentregistry',
-            constraint=models.UniqueConstraint(fields=('date', 'manager'), name='unique_date_manager'),
+            model_name="paymentregistry",
+            constraint=models.UniqueConstraint(
+                fields=("date", "manager"), name="unique_date_manager"
+            ),
         ),
     ]

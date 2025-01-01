@@ -7,18 +7,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('managers', '0002_alter_manager_options'),
+        ("managers", "0002_alter_manager_options"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='manager',
-            name='email',
+            model_name="manager",
+            name="email",
             field=models.EmailField(blank=True, max_length=254, null=True),
         ),
         migrations.AlterField(
-            model_name='manager',
-            name='phone_number',
-            field=models.CharField(blank=True, max_length=17, validators=[django.core.validators.RegexValidator(message='Номер телефона необходимо ввести в формате: "+9999999999". Допускается до 15 цифр', regex='^\\+?1?\\d{9,15}$')]),
+            model_name="manager",
+            name="phone_number",
+            field=models.CharField(
+                blank=True,
+                max_length=17,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        message='Номер телефона необходимо ввести в формате: "+9999999999". Допускается до 15 цифр',
+                        regex="^\\+?1?\\d{9,15}$",
+                    )
+                ],
+            ),
         ),
     ]

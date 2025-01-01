@@ -103,7 +103,11 @@ class PlanCreateSerializer(serializers.ModelSerializer):
             "invoice_date",
             "accountant_comment",
         )
-        read_only_fields = ("id", "created_at", "updated_at",)
+        read_only_fields = (
+            "id",
+            "created_at",
+            "updated_at",
+        )
 
     def validate_assigned_date(self, assigned_date):
         request: Request = self.context["request"]
@@ -216,14 +220,15 @@ class PlanUpdateSerializer(PlanCreateSerializer):
     class Meta(PlanCreateSerializer.Meta):
         pass
 
-
     def validate(self, attrs):
-        instance: Plan = self.instance # type: ignore
+        instance: Plan = self.instance  # type: ignore
         if instance and instance.is_permanent:
             request: Request = self.context["request"]
             if not request.user.is_superuser:
-                raise serializers.ValidationError("Вы не можете изменять план когда он перманентный")
-            
+                raise serializers.ValidationError(
+                    "Вы не можете изменять план когда он перманентный"
+                )
+
         return super().validate(attrs)
 
     def validate_assigned_date(self, assigned_date):

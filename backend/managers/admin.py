@@ -18,6 +18,7 @@ class GeoPointAdmin(admin.ModelAdmin):
     empty_value_display = "--пусто--"
     readonly_fields = ("created_at",)
 
+
 # Feature: View payment registries of a manager in a tabular form.
 @admin.register(Manager)
 class ManagerAdmin(admin.ModelAdmin):

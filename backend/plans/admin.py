@@ -12,6 +12,7 @@ from api.plans.views import PlanViewSet
 
 logger = logging.getLogger(__name__)
 
+
 @admin.action(description="Unfix plan")
 def unfix_plans(modeladmin, request, queryset):
     if queryset.count() < 1:
@@ -24,7 +25,7 @@ def unfix_plans(modeladmin, request, queryset):
     modeladmin.message_user(request, f"{count} план(ов) были изменины из перманентный")
     return
 
-    
+
 @admin.action(description="Скачать план")
 def export_plans(modeladmin, request, queryset):
     if queryset.count() < 1:
