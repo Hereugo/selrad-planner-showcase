@@ -1,18 +1,24 @@
 from django_filters import (
-    FilterSet,
-    DateFilter,
-    ModelMultipleChoiceFilter,
     BooleanFilter,
+    DateFilter,
+    FilterSet,
+    ModelMultipleChoiceFilter,
 )
-
-
 from managers.models import Manager
-from plans.models import Plan, WorkItem, PlanWorkItem, PaymentRegistry
+from plans.models import PaymentRegistry, Plan, PlanWorkItem, WorkItem
 
 
 class PaymentRegistryFilter(FilterSet):
-    start_date = DateFilter(field_name="date", lookup_expr=("gte"))
-    end_date = DateFilter(field_name="date", lookup_expr=("lte"))
+    start_date = DateFilter(
+        field_name="date",
+        lookup_expr=("gte"),
+        help_text="Enter start date in YYYY-MM-DD format",
+    )
+    end_date = DateFilter(
+        field_name="date",
+        lookup_expr=("lte"),
+        help_text="Enter end date in YYYY-MM-DD format",
+    )
     managers = ModelMultipleChoiceFilter(
         queryset=Manager.objects.all(),
         field_name="manager__id",
@@ -31,8 +37,16 @@ class PaymentRegistryFilter(FilterSet):
 
 
 class TaskFilter(FilterSet):
-    start_date = DateFilter(field_name="plan__assigned_date", lookup_expr=("gte"))
-    end_date = DateFilter(field_name="plan__assigned_date", lookup_expr=("lte"))
+    start_date = DateFilter(
+        field_name="plan__assigned_date",
+        lookup_expr=("gte"),
+        help_text="Enter end date in YYYY-MM-DD format",
+    )
+    end_date = DateFilter(
+        field_name="plan__assigned_date",
+        lookup_expr=("lte"),
+        help_text="Enter end date in YYYY-MM-DD format",
+    )
 
     class Meta:
         model = PlanWorkItem
@@ -43,8 +57,16 @@ class TaskFilter(FilterSet):
 
 
 class PlanFilter(FilterSet):
-    start_date = DateFilter(field_name="assigned_date", lookup_expr=("gte"))
-    end_date = DateFilter(field_name="assigned_date", lookup_expr=("lte"))
+    start_date = DateFilter(
+        field_name="assigned_date",
+        lookup_expr=("gte"),
+        help_text="Enter start date in YYYY-MM-DD format",
+    )
+    end_date = DateFilter(
+        field_name="assigned_date",
+        lookup_expr=("lte"),
+        help_text="Enter start date in YYYY-MM-DD format",
+    )
     only_shipment = BooleanFilter(method="filter_only_shipment")
     work_items = ModelMultipleChoiceFilter(
         queryset=WorkItem.objects.all(),

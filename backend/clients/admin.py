@@ -1,15 +1,10 @@
 import logging
 
-from django.contrib import admin
-from django.shortcuts import render, redirect
-from django.urls import path
-
-from leaflet.admin import LeafletGeoAdmin
-
-from clients.models import Client, Address, MetaClient
 from api.clients.serializers import AddressSerializer
-from utils.admin.mixins import ExportCsvMixin
-
+from clients.models import Address, Client, MetaClient
+from django.contrib import admin
+from django.shortcuts import render
+from leaflet.admin import LeafletGeoAdmin
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +62,7 @@ class MetaClientAdmin(admin.ModelAdmin):
 
 
 @admin.register(Address)
-class AddressAdmin(LeafletGeoAdmin, ExportCsvMixin):
+class AddressAdmin(LeafletGeoAdmin):
     list_display = (
         "id",
         "street",

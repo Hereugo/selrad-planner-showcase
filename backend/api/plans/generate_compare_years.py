@@ -1,19 +1,16 @@
 import io
 import logging
 
+import openpyxl
+from clients.models import Client
 from django.contrib.postgres.aggregates import StringAgg
 from django.db.models import Sum
-
-import openpyxl
-from openpyxl.styles import Border, Side, NamedStyle, Font, PatternFill
+from managers.models import Manager
+from openpyxl.styles import Border, Font, NamedStyle, PatternFill, Side
+from plans.models import Plan, WorkItem
 from rest_framework.request import Request
 
 from .custom_filters import PlanFilter
-from plans.models import Plan
-from clients.models import Client
-from plans.models import WorkItem
-from managers.models import Manager
-
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +104,6 @@ def generate_compare_years(period_1, period_2, request: Request):
 
     table = {}
     query_params = dict(request.query_params)
-    query_params.pop("diff_year")
 
     for client in Client.objects.all():
         meta_client_name = (
