@@ -9,77 +9,219 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('managers', '0005_alter_manager_first_name_alter_manager_last_name'),
-        ('clients', '0006_remove_client_addresses_client_address_and_more'),
+        ("managers", "0005_alter_manager_first_name_alter_manager_last_name"),
+        ("clients", "0006_remove_client_addresses_client_address_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Plan',
+            name="Plan",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('assigned_date', models.DateField(help_text='Выберите время назначения', max_length=255, verbose_name='Время назначения')),
-                ('shipment_cost', models.DecimalField(decimal_places=2, help_text='Ввидите сумму отгрузки', max_digits=10, verbose_name='Сумма отгрузки')),
-                ('comment', models.TextField(blank=True, help_text='Ввидите доп комментарии', verbose_name='Комментарии')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
-                ('updated_at', models.DateTimeField(editable=False, verbose_name='Дата обновления')),
-                ('client', models.ForeignKey(help_text='Выберите клиента', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='plans', to='clients.client', verbose_name='Клиент')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "assigned_date",
+                    models.DateField(
+                        help_text="Выберите время назначения",
+                        max_length=255,
+                        verbose_name="Время назначения",
+                    ),
+                ),
+                (
+                    "shipment_cost",
+                    models.DecimalField(
+                        decimal_places=2,
+                        help_text="Ввидите сумму отгрузки",
+                        max_digits=10,
+                        verbose_name="Сумма отгрузки",
+                    ),
+                ),
+                (
+                    "comment",
+                    models.TextField(
+                        blank=True,
+                        help_text="Ввидите доп комментарии",
+                        verbose_name="Комментарии",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Дата создания"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        editable=False, verbose_name="Дата обновления"
+                    ),
+                ),
+                (
+                    "client",
+                    models.ForeignKey(
+                        help_text="Выберите клиента",
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="plans",
+                        to="clients.client",
+                        verbose_name="Клиент",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'План',
-                'verbose_name_plural': 'Планы',
-                'ordering': ['assigned_date', '-created_at'],
+                "verbose_name": "План",
+                "verbose_name_plural": "Планы",
+                "ordering": ["assigned_date", "-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='Worklist',
+            name="Worklist",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='Введите название работы', max_length=255, verbose_name='Название работы')),
-                ('description', models.TextField(blank=True, help_text='Введите описание работы', verbose_name='Описание работы')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
-                ('updated_at', models.DateTimeField(editable=False, verbose_name='Дата обновления')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Введите название работы",
+                        max_length=255,
+                        verbose_name="Название работы",
+                    ),
+                ),
+                (
+                    "description",
+                    models.TextField(
+                        blank=True,
+                        help_text="Введите описание работы",
+                        verbose_name="Описание работы",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Дата создания"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        editable=False, verbose_name="Дата обновления"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Список задач для выполнения',
-                'verbose_name_plural': 'Списки задач для выполнения',
-                'ordering': ('-created_at',),
+                "verbose_name": "Список задач для выполнения",
+                "verbose_name_plural": "Списки задач для выполнения",
+                "ordering": ("-created_at",),
             },
         ),
         migrations.CreateModel(
-            name='PlanWorklist',
+            name="PlanWorklist",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('plan', models.ForeignKey(help_text='Выберите план', on_delete=django.db.models.deletion.CASCADE, to='plans.plan', verbose_name='План')),
-                ('worklist', models.ForeignKey(help_text='Выберите список задач для выполнения', on_delete=django.db.models.deletion.CASCADE, to='plans.worklist', verbose_name='Список задач для выполнения')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "plan",
+                    models.ForeignKey(
+                        help_text="Выберите план",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="plans.plan",
+                        verbose_name="План",
+                    ),
+                ),
+                (
+                    "worklist",
+                    models.ForeignKey(
+                        help_text="Выберите список задач для выполнения",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="plans.worklist",
+                        verbose_name="Список задач для выполнения",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Список задач для выполнения',
-                'verbose_name_plural': 'Списки задач для выполнения',
-                'ordering': ('plan', 'worklist'),
+                "verbose_name": "Список задач для выполнения",
+                "verbose_name_plural": "Списки задач для выполнения",
+                "ordering": ("plan", "worklist"),
             },
         ),
         migrations.CreateModel(
-            name='PlanManager',
+            name="PlanManager",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('manager', models.ForeignKey(help_text='Выберите менеджера', on_delete=django.db.models.deletion.CASCADE, to='managers.manager', verbose_name='Менеджер')),
-                ('plan', models.ForeignKey(help_text='Выберите план', on_delete=django.db.models.deletion.CASCADE, to='plans.plan', verbose_name='План')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "manager",
+                    models.ForeignKey(
+                        help_text="Выберите менеджера",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="managers.manager",
+                        verbose_name="Менеджер",
+                    ),
+                ),
+                (
+                    "plan",
+                    models.ForeignKey(
+                        help_text="Выберите план",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="plans.plan",
+                        verbose_name="План",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Менеджер плана',
-                'verbose_name_plural': 'Менеджеры плана',
-                'ordering': ('plan', 'manager'),
+                "verbose_name": "Менеджер плана",
+                "verbose_name_plural": "Менеджеры плана",
+                "ordering": ("plan", "manager"),
             },
         ),
         migrations.AddField(
-            model_name='plan',
-            name='managers',
-            field=models.ManyToManyField(help_text='Выберите менеджеров для плана', related_name='plans', through='plans.PlanManager', to='managers.manager', verbose_name='Менеджеры плана'),
+            model_name="plan",
+            name="managers",
+            field=models.ManyToManyField(
+                help_text="Выберите менеджеров для плана",
+                related_name="plans",
+                through="plans.PlanManager",
+                to="managers.manager",
+                verbose_name="Менеджеры плана",
+            ),
         ),
         migrations.AddField(
-            model_name='plan',
-            name='worklist',
-            field=models.ManyToManyField(help_text='Выберите список задач для выполнения', related_name='plans', through='plans.PlanWorklist', to='plans.worklist', verbose_name='Список задач для выполнения'),
+            model_name="plan",
+            name="worklist",
+            field=models.ManyToManyField(
+                help_text="Выберите список задач для выполнения",
+                related_name="plans",
+                through="plans.PlanWorklist",
+                to="plans.worklist",
+                verbose_name="Список задач для выполнения",
+            ),
         ),
     ]

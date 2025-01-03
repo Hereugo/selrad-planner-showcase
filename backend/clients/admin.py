@@ -1,15 +1,10 @@
 import logging
 
-from django.contrib import admin
-from django.shortcuts import render, redirect
-from django.urls import path
-
-from leaflet.admin import LeafletGeoAdmin
-
-from clients.models import Client, Address, MetaClient
 from api.clients.serializers import AddressSerializer
-from utils.admin.mixins import ExportCsvMixin
-
+from clients.models import Address, Client, MetaClient
+from django.contrib import admin
+from django.shortcuts import render
+from leaflet.admin import LeafletGeoAdmin
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +18,7 @@ def display_on_map(modeladmin, request, queryset):
         "display_on_map.html",
         {"locations": AddressSerializer(addresses, many=True).data},
     )
+
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
@@ -66,7 +62,7 @@ class MetaClientAdmin(admin.ModelAdmin):
 
 
 @admin.register(Address)
-class AddressAdmin(LeafletGeoAdmin, ExportCsvMixin):
+class AddressAdmin(LeafletGeoAdmin):
     list_display = (
         "id",
         "street",
@@ -75,7 +71,11 @@ class AddressAdmin(LeafletGeoAdmin, ExportCsvMixin):
         "twogis_link",
         "shop_count",
     )
-    search_fields = ("street", "lon", "lat",)
+    search_fields = (
+        "street",
+        "lon",
+        "lat",
+    )
     empty_value_display = "--пусто--"
 
     actions = [

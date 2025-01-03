@@ -7,13 +7,19 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clients', '0006_remove_client_addresses_client_address_and_more'),
+        ("clients", "0006_remove_client_addresses_client_address_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='address',
-            name='point',
-            field=django.contrib.gis.db.models.fields.PointField(blank=True, help_text='Точка адреса', null=True, srid=4326, verbose_name='Точка'),
+            model_name="address",
+            name="point",
+            field=django.contrib.gis.db.models.fields.PointField(
+                blank=True,
+                help_text="Точка адреса",
+                null=True,
+                srid=4326,
+                verbose_name="Точка",
+            ),
         ),
     ]

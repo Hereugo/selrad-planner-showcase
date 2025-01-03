@@ -1,19 +1,15 @@
 import logging
-from typing import Any, Optional, List
-
-
-from rest_framework import serializers
-from rest_framework.request import Request
-from drf_spectacular.utils import extend_schema_field
-from django.utils import timezone
+from typing import Any, List, Optional
 
 from api.clients.serializers import ClientSerializer
 from api.users.serializers import ManagerSerializer
-
 from clients.models import Client
+from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
 from managers.models import Manager
-from plans.models import Plan, WorkItem, PlanWorkItem, PlanManager, PaymentRegistry
-
+from plans.models import PaymentRegistry, Plan, PlanManager, PlanWorkItem, WorkItem
+from rest_framework import serializers
+from rest_framework.request import Request
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +99,11 @@ class PlanCreateSerializer(serializers.ModelSerializer):
             "invoice_date",
             "accountant_comment",
         )
-        read_only_fields = ("id", "created_at", "updated_at",)
+        read_only_fields = (
+            "id",
+            "created_at",
+            "updated_at",
+        )
 
     def validate_assigned_date(self, assigned_date):
         request: Request = self.context["request"]
@@ -140,13 +140,6 @@ class PlanCreateSerializer(serializers.ModelSerializer):
                     "При наличии отгрузки, должен быть назначен хотя бы один водитель"
                 )
 
-        # Only with work_items "shipment" or "return" you can update attributes "invoice_date" or "accountant_comment"
-        # if not ("shipment" in work_items_name or "return" in work_items_name):
-        #     if "invoice_date" in attrs or "accountant_comment" in attrs:
-        #         raise serializers.ValidationError(
-        #             f"Невозможно создать/изменить атрибуты бyхгалтера без работ: отгрузка или возврат"
-        #         )
-
         return super().validate(attrs)
 
     def create_work_items(self, plan: Plan, work_items: List[WorkItem]):
@@ -173,22 +166,6 @@ class PlanCreateSerializer(serializers.ModelSerializer):
 
         PlanManager.objects.bulk_create(plan_managers, ignore_conflicts=True)
 
-    # def create_payment_registries(
-    #     self, assigned_date: timezone.datetime, managers: List[Manager]
-    # ):
-    #     payment_registries: List[PaymentRegistry] = []
-    #     for manager in managers:
-    #         payment_registries.append(
-    #             PaymentRegistry(
-    #                 date=assigned_date,
-    #                 manager=manager,
-    #                 payment=manager.payment,
-    #                 bonus=0,
-    #             )
-    #         )
-
-    #     PaymentRegistry.objects.bulk_create(payment_registries, ignore_conflicts=True)
-
     def create(self, validated_data):
         work_items: List[WorkItem] = validated_data.pop("work_items", [])
         managers: List[Manager] = validated_data.pop("managers", [])
@@ -200,7 +177,6 @@ class PlanCreateSerializer(serializers.ModelSerializer):
 
         self.create_work_items(plan, work_items)
         self.create_managers(plan, managers)
-        # self.create_payment_registries(plan.assigned_date, managers)
 
         return plan
 
@@ -216,14 +192,15 @@ class PlanUpdateSerializer(PlanCreateSerializer):
     class Meta(PlanCreateSerializer.Meta):
         pass
 
-
     def validate(self, attrs):
-        instance: Plan = self.instance # type: ignore
+        instance: Plan = self.instance  # type: ignore
         if instance and instance.is_permanent:
             request: Request = self.context["request"]
             if not request.user.is_superuser:
-                raise serializers.ValidationError("Вы не можете изменять план когда он перманентный")
-            
+                raise serializers.ValidationError(
+                    "Вы не можете изменять план когда он перманентный"
+                )
+
         return super().validate(attrs)
 
     def validate_assigned_date(self, assigned_date):
@@ -259,40 +236,6 @@ class PlanUpdateSerializer(PlanCreateSerializer):
             # We leave existing work_items they will cause a conflict, but we ignore it
             # and this will only create new work_items
             self.create_managers(instance, managers)
-
-        # if "assigned_date" in validated_data:
-        #     # https://stackoverflow.com/a/53321241/12423120
-        #     # Difficult to ignore conflicts if IngerityError happens. can manually update row by row,
-        #     # but how do we determine which data is valid?
-        #     # PaymentRegistry.objects.filter(date=instance.assigned_date,).update(
-        #     #     date=validated_data.assigned_date,
-        #     # )
-
-        #     # NOTE: Not the best way, as updating the date is equivelant, except
-        #     # as we deleting set of date's and recreating them, we ignore all conflicts.
-        #     # NOTE 2: ask mansur to display a warning if assigned_date is changed:
-        #     # "WARNING: changing assigned_date results in overwriting existing payment registries, are you sure?"
-        #     for manager in managers:
-        #         qs1 = PaymentRegistry.objects.filter(
-        #             date=instance.assigned_date, manager=manager
-        #         )
-        #         qs2 = PaymentRegistry.objects.filter(
-        #             date=validated_data.get("assigned_date"), manager=manager
-        #         )
-        #         if len(qs1) == 1:
-        #             qs1.delete()
-        #         if not qs2.exists():
-        #             self.create_payment_registries(
-        #                 validated_data.get("assigned_date"), [manager]
-        #             )
-        # else:
-        #     # NOTE: ask mansur to display a warning if managers were changed:
-        #     # "WARNING: excluding managers results in deleting their existing payment registries, are you sure?"
-        #     managers: List[Manager] = validated_data.get("managers", [])
-        #     PaymentRegistry.objects.filter(date=instance.assigned_date).exclude(
-        #         manager__in=managers
-        #     ).delete()
-        #     self.create_payment_registries(instance.assigned_date, managers)
 
         return super().update(instance, validated_data)
 

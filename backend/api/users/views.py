@@ -31,7 +31,10 @@ class UserViewSet(GenericViewSet, ListModelMixin, UpdateModelMixin):
     queryset = Manager.objects.filter(is_hidden=False)
     serializer_class = ManagerSerializer
     pagination_class = None
-    permission_classes = (IsAuthenticated, HasCRUDPermission, )
+    permission_classes = (
+        IsAuthenticated,
+        HasCRUDPermission,
+    )
 
     @extend_schema(
         methods=["get"],

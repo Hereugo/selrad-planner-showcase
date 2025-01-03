@@ -13,7 +13,9 @@ logger = get_task_logger(__name__)
 @shared_task()
 def create_payment_registries_task():
     now = timezone.now()
-    old_plans = Plan.objects.filter(is_permanent=False, assigned_date__lte=now).prefetch_related("managers")
+    old_plans = Plan.objects.filter(
+        is_permanent=False, assigned_date__lte=now
+    ).prefetch_related("managers")
     count = len(old_plans)
 
     payment_registries: List[PaymentRegistry] = []
@@ -28,10 +30,12 @@ def create_payment_registries_task():
                 )
             )
 
-    payment_registries = PaymentRegistry.objects.bulk_create(payment_registries, ignore_conflicts=True)
+    payment_registries = PaymentRegistry.objects.bulk_create(
+        payment_registries, ignore_conflicts=True
+    )
     updated_count = old_plans.update(is_permanent=True)
 
     return {
-        'payments_created': len(payment_registries),
-        'permenant_plans': f"{updated_count} из {count}",
+        "payments_created": len(payment_registries),
+        "permenant_plans": f"{updated_count} из {count}",
     }

@@ -7,23 +7,52 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Client',
+            name="Client",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='Введите имя клиента', max_length=255, verbose_name='Имя клиента')),
-                ('address', models.TextField(help_text='Введите адрес клмента', verbose_name='Адрес клиента')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
-                ('updated_at', models.DateTimeField(editable=False, verbose_name='Дата обновления')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Введите имя клиента",
+                        max_length=255,
+                        verbose_name="Имя клиента",
+                    ),
+                ),
+                (
+                    "address",
+                    models.TextField(
+                        help_text="Введите адрес клмента", verbose_name="Адрес клиента"
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Дата создания"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        editable=False, verbose_name="Дата обновления"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Клиент',
-                'verbose_name_plural': 'Клиенты',
-                'ordering': ['-created_at'],
+                "verbose_name": "Клиент",
+                "verbose_name_plural": "Клиенты",
+                "ordering": ["-created_at"],
             },
         ),
     ]

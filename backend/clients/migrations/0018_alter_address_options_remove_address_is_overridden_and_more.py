@@ -6,21 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clients', '0017_alter_client_options'),
+        ("clients", "0017_alter_client_options"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='address',
-            options={'ordering': ['-created_at'], 'verbose_name': 'Адрес', 'verbose_name_plural': 'Адреса'},
+            name="address",
+            options={
+                "ordering": ["-created_at"],
+                "verbose_name": "Адрес",
+                "verbose_name_plural": "Адреса",
+            },
         ),
         migrations.RemoveField(
-            model_name='address',
-            name='is_overridden',
+            model_name="address",
+            name="is_overridden",
         ),
         migrations.AlterField(
-            model_name='client',
-            name='name',
-            field=models.CharField(help_text='Введите имя магазина', max_length=255, verbose_name='Имя магазина'),
+            model_name="client",
+            name="name",
+            field=models.CharField(
+                help_text="Введите имя магазина",
+                max_length=255,
+                verbose_name="Имя магазина",
+            ),
         ),
     ]
