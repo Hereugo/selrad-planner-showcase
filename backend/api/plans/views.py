@@ -1,27 +1,28 @@
 import logging
 from datetime import datetime
+from typing import Optional, cast
 
+from api.plans.custom_mixins import (
+    BaseFilterSerializer,
+    CompareYearsFilterSerializer,
+    DispatchListFilterSerializer,
+    ReportFilterSerializer,
+)
 from api.utils.custom_paginations import PageLimitPagination
 from api.utils.custom_permissions import (
     HasCRUDPermission,
     IsAuthenticated,
     permission_required,
 )
+from dateutil.relativedelta import relativedelta
 from django.db.models import QuerySet
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import (
-    OpenApiParameter,
-    OpenApiResponse,
-    extend_schema,
-    extend_schema_view,
-)
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from managers.models import Manager
 from plans.models import PaymentRegistry, Plan, PlanWorkItem, WorkItem
-from rest_framework import filters, status
+from rest_framework import filters
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.request import Request
@@ -30,6 +31,7 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet, ReadOnlyModelV
 
 from .custom_filters import PaymentRegistryFilter, PlanFilter, TaskFilter
 from .custom_permissions import CanDeleteFuturePlans
+from .custom_schemas import *
 from .generate_compare_years import generate_compare_years
 from .generate_dispatch_list import generate_dispatch_list
 from .generate_dispatch_report import generate_dispatch_report
@@ -85,18 +87,9 @@ class PlanViewSet(ModelViewSet):
 
         return super().get_serializer_class()
 
-    @extend_schema(
-        methods=["get"],
-        filters=True,
-        parameters=[
-            OpenApiParameter(
-                "to_year_diff",
-                int,
-                description="Сравнить с каким годом (differance)",
-                default=1,
-            ),
-        ],
-        description="Скачать сравнить по периодам",
+    @export_schema(
+        parameters=[CompareYearsFilterSerializer],
+        responses=DEFAULT_EXCEL_RESPONSE,
         summary="Скачать сравнить по периодам",
     )
     @action(
@@ -106,36 +99,28 @@ class PlanViewSet(ModelViewSet):
         url_path=r"export_compare_years",
     )
     @permission_required("clients.export_compare_years")
-    def export_compare_years(self, request):
+    def export_compare_years(self, request: Request) -> HttpResponse:
         """Скачать сравнить по периодам."""
 
-        start_date = request.query_params.get("start_date", None)
-        end_date = request.query_params.get("end_date", None)
-        to_year_diff = int(request.query_params.get("to_year_diff", 1))
+        filter_serializer = CompareYearsFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
 
-        if not start_date or not end_date:
-            return Response(
-                {"error": "Выберите период"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        logger.info(filter_serializer.validated_data)
 
-        if to_year_diff < 0:
-            return Response(
-                {"error": "Против год не может быть отрицательным"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        start_date: datetime = filter_serializer.validated_data["start_date"]
+        end_date: datetime = filter_serializer.validated_data["end_date"]
+        to_year_diff: int = filter_serializer.validated_data["to_year_diff"]
 
         period_2 = {
-            "start_date": datetime.strptime(start_date, "%Y-%m-%d"),
-            "end_date": datetime.strptime(end_date, "%Y-%m-%d"),
+            "start_date": start_date,
+            "end_date": end_date,
         }
         period_1 = period_2.copy()
-        period_1["start_date"] = period_1["start_date"].replace(
-            year=period_1["start_date"].year - to_year_diff
+
+        period_1["start_date"] = period_2["start_date"] - relativedelta(
+            years=to_year_diff
         )
-        period_1["end_date"] = period_1["end_date"].replace(
-            year=period_1["end_date"].year - to_year_diff
-        )
+        period_1["end_date"] = period_2["end_date"] - relativedelta(years=to_year_diff)
 
         buffer = generate_compare_years(period_1, period_2, request)
 
@@ -149,83 +134,42 @@ class PlanViewSet(ModelViewSet):
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 
-    @extend_schema(
-        methods=["get"],
-        description="Получить диспетчерский лист",
+    @export_schema(
+        parameters=[DispatchListFilterSerializer],
+        # responses=DEFAULT_IMG_RESPONSE,
         summary="Получить диспетчерский лист",
-        filters=True,
-        parameters=[
-            OpenApiParameter(
-                "comment",
-                str,
-                description="Комментарий",
-            ),
-            OpenApiParameter(
-                "manager_id",
-                str,
-                OpenApiParameter.PATH,
-                description="id менеджера",
-                required=True,
-            ),
-            OpenApiParameter(
-                "set_time_dispatch",
-                str,
-                description="Назначить время когда распичатали диспетчерский лист",
-                required=False,
-                default="true",
-            ),
-        ],
-        responses={
-            (200, "image/png"): OpenApiResponse(
-                response=OpenApiTypes.BYTE,
-                description="Диспетчерский лист",
-            )
-        },
     )
     @action(
         detail=False,
         methods=["get"],
         permission_classes=[IsAuthenticated],
-        url_path="dispatch_list/(?P<manager_id>\d+)",
+        url_path="dispatch_list",
     )
     @permission_required("plans.get_dispatch_list")
-    def dispatch_list(self, request, manager_id=None):
-        logger.info(request.query_params)
+    def dispatch_list(self, request):
+        filter_serializer = DispatchListFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
 
-        start_date = request.query_params.get("start_date", None)
-        end_date = request.query_params.get("end_date", None)
-        comment = request.query_params.get("comment", "")
-        set_time_dispatch = (
-            request.query_params.get("set_time_dispatch", "true").lower() == "true"
-        )
+        logger.info(filter_serializer.validated_data)
 
-        manager: Manager = get_object_or_404(Manager, id=manager_id)
-
-        # If manager is not a driver, then he can't get dispatch list.
-        if not manager.is_driver:
-            return Response(
-                {"error": "Менеджер не является водителем."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        start_date: Optional[datetime] = filter_serializer.validated_data["start_date"]
+        end_date: Optional[datetime] = filter_serializer.validated_data["end_date"]
+        comment: str = filter_serializer.validated_data["comment"]
+        manager: Manager = filter_serializer.validated_data["manager"]
 
         plans: QuerySet[Plan] = self.filter_queryset(self.get_queryset())
-        plans = plans.filter(managers__id=manager_id)
+        plans = plans.filter(managers=manager)
         plans = plans.order_by("assigned_date")
 
-        if set_time_dispatch:
+        if filter_serializer.validated_data["set_time_dispatch"]:
             plans.filter(time_since_first_dispatch__isnull=True).update(
                 time_since_first_dispatch=timezone.now()
             )
 
         if not start_date:
-            start_date = plans.earliest("assigned_date").assigned_date
-        else:
-            start_date = datetime.strptime(start_date, "%Y-%m-%d")
-
+            start_date = cast(datetime, plans.earliest("assigned_date").assigned_date)
         if not end_date:
-            end_date = plans.latest("assigned_date").assigned_date
-        else:
-            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = cast(datetime, plans.latest("assigned_date").assigned_date)
 
         buffer = generate_dispatch_list(plans, manager, comment, start_date, end_date)
         filename: str = (
@@ -240,10 +184,9 @@ class PlanViewSet(ModelViewSet):
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 
-    @extend_schema(
-        methods=["get"],
-        description="Cкачать диспетчерский отчет по периоду",
-        filters=True,
+    @export_schema(
+        parameters=[BaseFilterSerializer],
+        responses=DEFAULT_EXCEL_RESPONSE,
         summary="Cкачать диспетчерский отчет по периоду",
     )
     @action(
@@ -253,30 +196,22 @@ class PlanViewSet(ModelViewSet):
         url_path="dispatch_report",
     )
     @permission_required("plans.get_dispatch_report")
-    def dispatch_report(self, request, plans=None):
+    def dispatch_report(self, request):
         """Cкачать диспетчерский отчет по периоду"""
 
-        plans = self.filter_queryset(plans or self.get_queryset())
+        filter_serializer = BaseFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        start_date: Optional[datetime] = filter_serializer.validated_data["start_date"]
+        end_date: Optional[datetime] = filter_serializer.validated_data["end_date"]
+
+        plans = self.filter_queryset(self.get_queryset())
         plans = plans.order_by("assigned_date")
 
-        if plans.count() == 0:
-            return Response(
-                {"error": "Нет планов для выбранных фильтров."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        start_date = request.GET.get("start_date", None)
-        end_date = request.GET.get("end_date", None)
-
         if not start_date:
-            start_date = plans.earliest("assigned_date").assigned_date
-        else:
-            start_date = datetime.strptime(start_date, "%Y-%m-%d")
-
+            start_date = cast(datetime, plans.earliest("assigned_date").assigned_date)
         if not end_date:
-            end_date = plans.latest("assigned_date").assigned_date
-        else:
-            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = cast(datetime, plans.latest("assigned_date").assigned_date)
 
         work_items_shipments = (
             PlanWorkItem.objects.filter(plan__in=plans, content_type__model="shipment")
@@ -296,10 +231,9 @@ class PlanViewSet(ModelViewSet):
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 
-    @extend_schema(
-        methods=["get"],
-        description="Скачать план",
-        filters=True,
+    @export_schema(
+        parameters=[BaseFilterSerializer],
+        responses=DEFAULT_EXCEL_RESPONSE,
         summary="Скачать план",
     )
     @action(
@@ -309,30 +243,22 @@ class PlanViewSet(ModelViewSet):
         url_path="export",
     )
     @permission_required("plans.export_plans")
-    def export(self, request, plans=None):
+    def export(self, request):
         """Скачать план."""
 
-        plans = self.filter_queryset(plans or self.get_queryset())
+        filter_serializer = BaseFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        start_date: Optional[datetime] = filter_serializer.validated_data["start_date"]
+        end_date: Optional[datetime] = filter_serializer.validated_data["end_date"]
+
+        plans = self.filter_queryset(self.get_queryset())
         plans = plans.order_by("assigned_date")
 
-        if plans.count() == 0:
-            return Response(
-                {"error": "Нет планов для выбранных фильтров."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        start_date = request.GET.get("start_date", None)
-        end_date = request.GET.get("end_date", None)
-
         if not start_date:
-            start_date = plans.earliest("assigned_date").assigned_date
-        else:
-            start_date = datetime.strptime(start_date, "%Y-%m-%d")
-
+            start_date = cast(datetime, plans.earliest("assigned_date").assigned_date)
         if not end_date:
-            end_date = plans.latest("assigned_date").assigned_date
-        else:
-            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = cast(datetime, plans.latest("assigned_date").assigned_date)
 
         buffer = generate_excelsheet_by_plan(plans, start_date, end_date)
 
@@ -346,55 +272,37 @@ class PlanViewSet(ModelViewSet):
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 
-    @extend_schema(
-        methods=["get"],
-        description="Скачать отчет менеджера",
-        filters=True,
-        parameters=[
-            OpenApiParameter(
-                "manager_id",
-                str,
-                OpenApiParameter.PATH,
-                description="id менеджера",
-                required=True,
-            )
-        ],
+    @export_schema(
+        parameters=[ReportFilterSerializer],
+        responses=DEFAULT_EXCEL_RESPONSE,
         summary="Скачать отчет менеджера",
     )
     @action(
         detail=False,
         methods=["get"],
         permission_classes=[IsAuthenticated],
-        url_path=r"export_report/(?P<manager_id>\d+)",
+        url_path=r"export_report",
     )
     @permission_required("plans.export_report")
-    def export_report(self, request, manager_id=None, plans=None):
+    def export_report(self, request):
         """Скачать отчет."""
-        manager: Manager = get_object_or_404(Manager, pk=manager_id)
+
+        filter_serializer = ReportFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        start_date: Optional[datetime] = filter_serializer.validated_data["start_date"]
+        end_date: Optional[datetime] = filter_serializer.validated_data["end_date"]
+        manager: Manager = filter_serializer.validated_data["manager"]
 
         # Method export report is used here, because filters are applied here.
-        plans = self.filter_queryset(plans or self.get_queryset())
-        plans = plans.filter(managers__id=manager_id)
+        plans = self.filter_queryset(self.get_queryset())
+        plans = plans.filter(managers=manager)
         plans = plans.order_by("assigned_date")
 
-        if plans.count() == 0:
-            return Response(
-                {"error": "Нет планов для выбранных фильтров."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        start_date = request.GET.get("start_date", None)
-        end_date = request.GET.get("end_date", None)
-
         if not start_date:
-            start_date = plans.earliest("assigned_date").assigned_date
-        else:
-            start_date = datetime.strptime(start_date, "%Y-%m-%d")
-
+            start_date = cast(datetime, plans.earliest("assigned_date").assigned_date)
         if not end_date:
-            end_date = plans.latest("assigned_date").assigned_date
-        else:
-            end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = cast(datetime, plans.latest("assigned_date").assigned_date)
 
         buffer = generate_excelsheet_by_manager(plans, manager, start_date, end_date)
 

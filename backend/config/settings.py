@@ -270,6 +270,7 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_SETTINGS": {
         "persistAuthorization": True,
     },
+    "SORT_OPERATION_PARAMETERS": False,
 }
 
 # Leaflet settings
