@@ -53,7 +53,7 @@ class ManagerFilterSerializer(serializers.Serializer):
 
 
 class CompareYearsFilterSerializer(BaseFilterSerializer):
-    to_year_diff = serializers.IntegerField(required=True, default=1)
+    to_year_diff = serializers.IntegerField(default=1)
     start_date = serializers.DateField(
         required=True,
         help_text="Enter start date in YYYY-MM-DD format",
