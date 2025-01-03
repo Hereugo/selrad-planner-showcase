@@ -1,16 +1,26 @@
 import io
 import logging
-from enum import Enum
 from datetime import datetime, timedelta
+from enum import Enum
+from typing import Optional, cast
 
-from django.db.models import QuerySet
 import openpyxl
-from openpyxl.styles import Border, Font, Side, NamedStyle, Alignment
-from openpyxl.utils import get_column_letter
-
-from plans.models import Plan, PlanWorkItem
-from work_items.models import Shipment
+from api.plans.views import GenericPlanViewSet
+from api.utils.custom_permissions import IsAuthenticated, permission_required
+from django.db.models import QuerySet
+from django.http import FileResponse
+from drf_spectacular.utils import extend_schema
 from managers.models import Manager
+from openpyxl.styles import Alignment, Border, Font, NamedStyle, Side
+from openpyxl.utils import get_column_letter
+from plans.models import Plan, PlanWorkItem
+from rest_framework.decorators import action
+from rest_framework.request import Request
+from rest_framework.viewsets import GenericViewSet
+from work_items.models import Shipment
+
+from .custom_schemas import *
+from .serializers import BaseFilterSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +35,56 @@ class COL(Enum):
     STATUS = 7
     MANAGER = 8
     COMMENT = 9
+
+
+class ExportDispatchReport(GenericPlanViewSet, GenericViewSet):
+    @extend_schema(
+        summary="Cкачать диспетчерский отчет по периоду",
+        description="",
+        parameters=[BaseFilterSerializer],
+        responses=DEFAULT_FILE_RESPONSE,
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="dispatch_report",
+    )
+    @permission_required("plans.get_dispatch_report")
+    def dispatch_report(self, request: Request) -> FileResponse:
+        """Cкачать диспетчерский отчет по периоду"""
+
+        filter_serializer = BaseFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        start_date: Optional[datetime] = filter_serializer.validated_data["start_date"]
+        end_date: Optional[datetime] = filter_serializer.validated_data["end_date"]
+
+        plans = self.filter_queryset(self.get_queryset())
+        plans = plans.order_by("assigned_date")
+
+        if not start_date:
+            start_date = cast(datetime, plans.earliest("assigned_date").assigned_date)
+        if not end_date:
+            end_date = cast(datetime, plans.latest("assigned_date").assigned_date)
+
+        work_items_shipments = (
+            PlanWorkItem.objects.filter(plan__in=plans, content_type__model="shipment")
+            .prefetch_related("content_object")
+            .select_related("plan")
+        )
+
+        buffer = generate_dispatch_report(work_items_shipments, start_date, end_date)
+        buffer.seek(0)
+
+        response = FileResponse(
+            buffer,
+            as_attachment=True,
+            filename=f"ОТЧЕТ ПО ДИСПЕЧЕРСКОМУ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+        return response
 
 
 def generate_dispatch_report(

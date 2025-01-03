@@ -1,14 +1,77 @@
-from io import BytesIO
-from PIL import Image
-from tempfile import TemporaryFile
+import logging
 from datetime import datetime
+from io import BytesIO
+from tempfile import TemporaryFile
+from typing import Optional, cast
 
 import pandas as pd
-from html2image import Html2Image
-
+from api.plans.views import GenericPlanViewSet
+from api.utils.custom_permissions import IsAuthenticated, permission_required
 from django.db.models import QuerySet
-from plans.models import Plan
+from django.http import FileResponse
+from django.utils import timezone
+from drf_spectacular.utils import extend_schema
+from html2image import Html2Image
 from managers.models import Manager
+from PIL import Image
+from plans.models import Plan
+from rest_framework.decorators import action
+from rest_framework.request import Request
+from rest_framework.viewsets import GenericViewSet
+
+from .custom_schemas import *
+from .serializers import DispatchListFilterSerializer
+
+logger = logging.getLogger(__name__)
+
+
+class ExportDispatchList(GenericPlanViewSet, GenericViewSet):
+    @extend_schema(
+        parameters=[DispatchListFilterSerializer],
+        responses=DEFAULT_FILE_RESPONSE,
+        summary="Получить диспетчерский лист",
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="dispatch_list",
+    )
+    @permission_required("plans.get_dispatch_list")
+    def dispatch_list(self, request: Request) -> FileResponse:
+        filter_serializer = DispatchListFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        start_date: Optional[datetime] = filter_serializer.validated_data["start_date"]
+        end_date: Optional[datetime] = filter_serializer.validated_data["end_date"]
+        comment: str = filter_serializer.validated_data["comment"]
+        manager: Manager = filter_serializer.validated_data["manager"]
+
+        plans: QuerySet[Plan] = self.filter_queryset(self.get_queryset())
+        plans = plans.filter(managers=manager)
+        plans = plans.order_by("assigned_date")
+
+        if filter_serializer.validated_data["set_time_dispatch"]:
+            plans.filter(time_since_first_dispatch__isnull=True).update(
+                time_since_first_dispatch=timezone.now()
+            )
+
+        if not start_date:
+            start_date = cast(datetime, plans.earliest("assigned_date").assigned_date)
+        if not end_date:
+            end_date = cast(datetime, plans.latest("assigned_date").assigned_date)
+
+        buffer = generate_dispatch_list(plans, manager, comment, start_date, end_date)
+        buffer.seek(0)
+
+        response = FileResponse(
+            buffer,
+            as_attachment=True,
+            filename=f"ДИСПЕТЧЕРСКИЙ ЛИСТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.png",
+            content_type="image/png",
+        )
+
+        return response
 
 
 def generate_dispatch_list(

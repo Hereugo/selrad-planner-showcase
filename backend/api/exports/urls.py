@@ -1,5 +1,10 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework import routers
 
-from .plans import export
+from .views import Exports
 
-urlpatterns = [path("plans", export)]
+router = routers.DefaultRouter()
+
+router.register("exports", Exports)
+
+urlpatterns = [path("", include(router.urls))]

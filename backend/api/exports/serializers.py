@@ -1,4 +1,5 @@
 from managers.models import Manager
+from plans.models import WorkItem
 from rest_framework import serializers
 
 
@@ -14,6 +15,25 @@ class BaseFilterSerializer(serializers.Serializer):
         help_text="Enter start date in YYYY-MM-DD format",
     )
 
+    only_shipment = serializers.BooleanField(
+        required=False, help_text="Output plans only with shipment work_item"
+    )
+    ordering = serializers.CharField(
+        required=False, help_text="Which field to use when ordering the results."
+    )
+    search = serializers.CharField(required=False, help_text="A search term")
+
+    work_items = serializers.PrimaryKeyRelatedField(
+        queryset=WorkItem.objects.all(),
+        required=False,
+        help_text="Enter work_item ids that a plan must include (inclusively)",
+    )
+    managers = serializers.PrimaryKeyRelatedField(
+        queryset=Manager.objects.all(),
+        required=False,
+        help_text="Enter manager ids that a plan must include (inclusively)",
+    )
+
     def validate(self, attrs):
         start_date = attrs.get("start_date", None)
         end_date = attrs.get("end_date", None)
@@ -26,12 +46,14 @@ class BaseFilterSerializer(serializers.Serializer):
 
 class ManagerFilterSerializer(serializers.Serializer):
     manager = serializers.PrimaryKeyRelatedField(
-        queryset=Manager.objects.all(), required=True
+        queryset=Manager.objects.all(),
+        required=True,
+        help_text="Enter manager id (overrides managers parameter)",
     )
 
 
 class CompareYearsFilterSerializer(BaseFilterSerializer):
-    to_year_diff = serializers.IntegerField(default=1)
+    to_year_diff = serializers.IntegerField(required=True, default=1)
     start_date = serializers.DateField(
         required=True,
         help_text="Enter start date in YYYY-MM-DD format",
@@ -49,8 +71,14 @@ class CompareYearsFilterSerializer(BaseFilterSerializer):
 
 
 class DispatchListFilterSerializer(BaseFilterSerializer, ManagerFilterSerializer):
-    comment = serializers.CharField(required=False)
-    set_time_dispatch = serializers.BooleanField(required=False, default=True)
+    comment = serializers.CharField(
+        required=False,
+        help_text="Enter a comment that is displayed under dispatch list.",
+        default="",
+    )
+    set_time_dispatch = serializers.BooleanField(
+        required=False, default=True, help_text="Save the time when dispatch was done."
+    )
 
     def validate_manager_id(self, manager):
         if not manager.is_driver:
