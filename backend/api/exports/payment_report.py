@@ -110,40 +110,113 @@ class ExportPaymentReport(GenericPlanViewSet, GenericViewSet):
         return response
 
 
+def get_cols_by_letter(df):
+    return {
+        c: get_column_letter(cast(int, df.columns.get_loc(c)) + 1) for c in df.columns
+    }
+
+
 def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
     workbook = openpyxl.Workbook()
 
     df = pd.DataFrame(table)
 
-    # logger.debug(df.columns)
-    # for c in df.columns:
-    #     logger.debug(f"{c}: {df.columns.get_loc(c)} : {type(df.columns.get_loc(c))}")
+    total_visit_count = "SUMPRODUCT(({sheet}!{shop}:{shop}=INDEX({sheet}!{shop}:{shop}, {row}))*({sheet}!{manager}:{manager}=INDEX({sheet}!{manager}:{manager},{row})))"
+    total_box_count = "SUMIFS({sheet}!{box_count}:{box_count}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))"
+    total_payment_bonus = "SUMIFS({sheet}!{payment_bonus}:{payment_bonus}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))"
 
-    # get_column_letter starts from 1, so +1 is needed as first column index is 0.
-    cols_by_letter = {
-        c: get_column_letter(df.columns.get_loc(c) + 1) for c in df.columns
-    }
+    cols_by_letter = get_cols_by_letter(df)
 
-    logger.debug(cols_by_letter).
-
-    total_visit_count = "SUMPRODUCT(({shop}:{shop}={shop}1)*({manager}:{manager}={manager}1))".format_map(
-        cols_by_letter
-    )
-    total_box_count = "SUMIFS({box_count}:{box_count}, {shop}:{shop}, {shop}1, {manager}:{manager}, {manager}1)".format_map(
-        cols_by_letter
-    )
-    total_payment_bonus = "SUMIFS({payment_bonus}:{payment_bonus}, {shop}:{shop}, {shop}1, {manager}:{manager}, {manager}1)".format_map(
-        cols_by_letter
-    )
-
-    df["total_visit_count"] = "=" + total_visit_count
-    df["total_box_count"] = "=" + total_box_count
-    df["total_payment_bonus"] = "=" + total_payment_bonus
-    df["box_cost"] = "=" + total_payment_bonus + "/" + total_box_count
+    # Important to do it after cols_by_letter function, as it
+    # errors when formatting of formulas are done.
+    df["row"] = range(1, len(df) + 1)
 
     raw_data_ws = workbook.create_sheet("raw_data")
     for r in dataframe_to_rows(df, index=False, header=True):
         raw_data_ws.append(r)
+
+    for manager, manager_group in df.groupby(by="manager"):
+        manager = cast(str, manager)
+        manager_ws = workbook.create_sheet(manager)
+        # https://stackoverflow.com/questions/27133731/folding-multiple-rows-with-openpyxl
+        manager_ws.sheet_properties.outlinePr.summaryBelow = False
+
+        header = ["Клиент", "Коробки", "Кол-во выходов", "Выплаты", "Стоимость кор-ки"]
+        manager_ws.append(header)
+
+        group_rows_start = 2
+        for client, client_manager_group in manager_group.groupby(by="client"):
+            # Sub-header, that contains aggregated data.
+            client_manager_rows = client_manager_group["row"]
+            client_body_df = pd.DataFrame(
+                {
+                    "shop": client_manager_group["shop"],
+                    "total_box_count": client_manager_rows.apply(
+                        lambda x: "="
+                        + total_box_count.format(
+                            **cols_by_letter, sheet="raw_data", row=x + 1
+                        )
+                    ),
+                    "total_visit_count": client_manager_rows.apply(
+                        lambda x: "="
+                        + total_visit_count.format(
+                            **cols_by_letter, sheet="raw_data", row=x + 1
+                        )
+                    ),
+                    "total_payment_count": client_manager_rows.apply(
+                        lambda x: "="
+                        + total_payment_bonus.format(
+                            **cols_by_letter, sheet="raw_data", row=x + 1
+                        )
+                    ),
+                    "box_cost": client_manager_rows.apply(
+                        lambda x: "="
+                        + total_payment_bonus.format(
+                            **cols_by_letter, sheet="raw_data", row=x + 1
+                        )
+                        + "/"
+                        + total_box_count.format(
+                            **cols_by_letter, sheet="raw_data", row=x + 1
+                        )
+                    ),
+                }
+            )
+            body_size = len(client_body_df)
+            body_range = (group_rows_start + 1, group_rows_start + body_size)
+            client_header_df = pd.DataFrame(
+                {
+                    "shop": [client],
+                    "total_box_count": ["=SUM(B{}:B{})".format(*body_range)],
+                    "total_visit_count": ["=SUM(C{}:C{})".format(*body_range)],
+                    "total_payment_count": ["=SUM(D{}:D{})".format(*body_range)],
+                    "box_cost": ["=D{0}/B{0}".format(group_rows_start)],
+                }
+            )
+
+            client_table_df = pd.concat([client_header_df, client_body_df])
+
+            for r in dataframe_to_rows(client_table_df, index=False, header=False):
+                manager_ws.append(r)
+
+            manager_ws.row_dimensions.group(
+                group_rows_start + 1,
+                group_rows_start + len(client_body_df),
+                hidden=True,
+                outline_level=1,
+            )
+
+            # move to next sub-header row
+            group_rows_start += len(client_table_df)
+
+        footer_range = (2, group_rows_start - 1)
+        footer = [
+            "Итого",
+            "=SUM(B{}:B{})/2".format(*footer_range),
+            "=SUM(C{}:C{})/2".format(*footer_range),
+            "=SUM(D{}:D{})/2".format(*footer_range),
+            "=C{0}/D{0}".format(group_rows_start),
+        ]
+        manager_ws.append(footer)
 
     buffer = BytesIO()
     workbook.save(buffer)
