@@ -124,16 +124,39 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
         c: get_column_letter(df.columns.get_loc(c) + 1) for c in df.columns
     }
 
-    logger.debug(cols_by_letter).
+    logger.debug(cols_by_letter)    
 
-    total_visit_count = "SUMPRODUCT(({shop}:{shop}={shop}1)*({manager}:{manager}={manager}1))".format_map(
-        cols_by_letter
+    template_total_visit_count = """
+        SUMPRODUCT(
+            ({shop}:{shop}={shop}INDEX) *
+            ({manager}:{manager}={manager}INDEX)
+        )""".format_map(cols_by_letter)
+
+    template_total_box_count = """
+        SUMIFS(
+        {box_count}:{box_count}, 
+        {shop}:{shop}, {shop}INDEX, 
+        {manager}:{manager}, 
+        {manager}INDEX
+    )""".format_map(cols_by_letter)
+
+    template_total_payment_bonus = """
+        SUMIFS(
+            {payment_bonus}:{payment_bonus}, 
+            {shop}:{shop}, 
+            {shop}INDEX, 
+            {manager}:{manager}, 
+            {manager}INDEX
+    )""".format_map(cols_by_letter)
+
+    total_visit_count = df.index.map(
+        lambda i: template_total_visit_count.replace("INDEX", str(i + 2))
     )
-    total_box_count = "SUMIFS({box_count}:{box_count}, {shop}:{shop}, {shop}1, {manager}:{manager}, {manager}1)".format_map(
-        cols_by_letter
+    total_box_count = df.index.map(
+        lambda i: template_total_box_count.replace("INDEX", str(i + 2))
     )
-    total_payment_bonus = "SUMIFS({payment_bonus}:{payment_bonus}, {shop}:{shop}, {shop}1, {manager}:{manager}, {manager}1)".format_map(
-        cols_by_letter
+    total_payment_bonus = df.index.map(
+        lambda i: template_total_payment_bonus.replace("INDEX", str(i + 2))
     )
 
     df["total_visit_count"] = "=" + total_visit_count
