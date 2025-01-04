@@ -89,3 +89,7 @@ class DispatchListFilterSerializer(BaseFilterSerializer, ManagerFilterSerializer
 
 class ReportFilterSerializer(BaseFilterSerializer, ManagerFilterSerializer):
     pass
+
+
+class PaymentReportFilterSerializer(BaseFilterSerializer):
+    pass

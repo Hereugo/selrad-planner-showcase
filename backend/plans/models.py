@@ -1,15 +1,13 @@
-import re
 import logging
+import re
 from math import ceil
 
-from django.db import models
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.utils import timezone
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-
+from django.db import models
+from django.utils import timezone
 from work_items.models import BaseWorkItem
-
 
 logger = logging.getLogger(__name__)
 
@@ -225,6 +223,7 @@ class Plan(models.Model):
             ("export_report", "Can export report"),
             ("get_dispatch_list", "Can export dispatch list"),
             ("get_dispatch_report", "Can export dispatch report"),
+            ("export_payment_report", "Can export payment report"),
         ]
         verbose_name = "План"
         verbose_name_plural = "Планы"

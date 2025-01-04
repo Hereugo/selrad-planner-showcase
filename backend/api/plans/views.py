@@ -122,10 +122,10 @@ class TaskViewSet(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericV
         return Response(task_serializer.data)
 
 
-# Permission to view: read_payment_registries
-class PaymentRegistryViewSet(
-    ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet
-):
+# NOTE (Amir Nurmukhambetov 04/01/2024):
+#
+# Samething going on here but with payment registries instead.
+class GenericPaymentRegistryViewSet:
     queryset = PaymentRegistry.objects.all()
     serializer_class = PaymentRegistrySerializer
     # pagination_class = PageLimitPagination
@@ -140,6 +140,15 @@ class PaymentRegistryViewSet(
     )
     filterset_class = PaymentRegistryFilter
 
+
+# Permission to view: read_payment_registries
+class PaymentRegistryViewSet(
+    GenericPaymentRegistryViewSet,
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+    GenericViewSet,
+):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs | PaymentRegistry.objects.filter(is_confirmed=False)
