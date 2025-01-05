@@ -13,6 +13,7 @@ from django.http import FileResponse
 from managers.models import Manager
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.viewsets import GenericViewSet
@@ -113,7 +114,8 @@ class ExportPaymentReport(GenericPlanViewSet, GenericViewSet):
         response = FileResponse(
             buffer,
             as_attachment=True,
-            filename=f"ОТЧЕТ ПО ВЫПЛАТАМ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.png",
+            filename="ASD.xlsx",
+            # filename=f"ОТЧЕТ ПО ВЫПЛАТАМ {", ".join([m.name for m in managers_qs]) if "manager" in filter_serializer.validated_data else ""} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.png",
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 
@@ -134,8 +136,8 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
     total_visit_count = "SUMPRODUCT(({sheet}!{shop}:{shop}=INDEX({sheet}!{shop}:{shop}, {row}))*({sheet}!{manager}:{manager}=INDEX({sheet}!{manager}:{manager},{row})))"
     total_box_count = "SUMIFS({sheet}!{box_count}:{box_count}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))"
     total_payment_bonus = {
-        "driver": "SUMIFS({sheet}!{box_price}:{box_price}, {sheet}!{date}:{date}, INDEX({sheet}!{date}:{date}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))",
-        "manager": "SUMIFS({sheet}!{visit_price}:{visit_price}, {sheet}!{date}:{date}, INDEX({sheet}!{date}:{date}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))",
+        "driver": "SUMIFS({sheet}!{box_price}:{box_price}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))",
+        "manager": "SUMIFS({sheet}!{visit_price}:{visit_price}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))",
     }
 
     box_price = "INDEX({sheet}!{payment_bonus}:{payment_bonus}, {row}) * INDEX({sheet}!{box_count}:{box_count}, {row}) / SUMIFS({sheet}!{box_count}:{box_count}, {sheet}!{date}:{date}, INDEX({sheet}!{date}:{date}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))"
@@ -245,6 +247,31 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
             "=D{0}/B{0}".format(group_rows_start),
         ]
         manager_ws.append(footer)
+
+        # Formatting table
+        manager_ws.freeze_panes = "A1"
+
+        # Change column width
+        cols_width = [60, 25, 25, 25, 30]
+        dim_holder = DimensionHolder(worksheet=manager_ws)
+        for i, col in enumerate(
+            range(manager_ws.min_column, manager_ws.max_column + 1)
+        ):
+            try:
+                dim_holder[get_column_letter(col)] = ColumnDimension(
+                    manager_ws, min=col, max=col, width=cols_width[i]
+                )
+            except Exception as e:
+                continue
+        # Change row height
+        for i, _ in enumerate(
+            manager_ws.iter_rows(min_row=1, max_row=group_rows_start)
+        ):
+            manager_ws.row_dimensions[i].height = 12
+
+        # Add borders
+        # for row in ws.iter_rows():
+        #     §or cell in row:
 
     buffer = BytesIO()
     workbook.save(buffer)
