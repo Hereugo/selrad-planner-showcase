@@ -1,7 +1,9 @@
-from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
+from django.db import models
+from django.db.models import BooleanField, Case, Value, When
+from django.db.models.functions import Concat
 
 user = get_user_model()
 
@@ -139,3 +141,14 @@ class Manager(models.Model):
             ("view_settings", "Can view settings"),
             ("view_payments_section", "Can view payments section (in settings)"),
         ]
+
+
+def annotate_queryset_with_true_fields(queryset, name, query_exprs):
+    boolean_fields = [
+        field.name
+        for field in Manager._meta.get_fields()
+        if isinstance(query_exprs + "__" + field, BooleanField)
+        and field.name.startswith("is_")
+    ]
+    cases = [When(**{field: True, "then": Value(field)}) for field in boolean_fields]
+    return queryset.annotate(**{name: Concat(*cases, output_field=models.CharField())})

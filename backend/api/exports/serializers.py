@@ -24,11 +24,13 @@ class BaseFilterSerializer(serializers.Serializer):
     search = serializers.CharField(required=False, help_text="A search term")
 
     work_items = serializers.PrimaryKeyRelatedField(
+        many=True,
         queryset=WorkItem.objects.all(),
         required=False,
         help_text="Enter work_item ids that a plan must include (inclusively)",
     )
     managers = serializers.PrimaryKeyRelatedField(
+        many=True,
         queryset=Manager.objects.all(),
         required=False,
         help_text="Enter manager ids that a plan must include (inclusively)",
