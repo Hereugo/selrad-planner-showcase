@@ -11,6 +11,7 @@ from django.db.models import F, Prefetch, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.http import FileResponse
 from managers.models import Manager
+from openpyxl import styles
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
@@ -114,8 +115,7 @@ class ExportPaymentReport(GenericPlanViewSet, GenericViewSet):
         response = FileResponse(
             buffer,
             as_attachment=True,
-            filename="ASD.xlsx",
-            # filename=f"ОТЧЕТ ПО ВЫПЛАТАМ {", ".join([m.name for m in managers_qs]) if "manager" in filter_serializer.validated_data else ""} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.png",
+            filename=f"ОТЧЕТ ПО ВЫПЛАТАМ {', '.join([m.name for m in managers_qs]) if 'manager' in filter_serializer.validated_data else ''} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 
@@ -132,6 +132,66 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
     logger.debug(table)
 
     workbook = openpyxl.Workbook()
+    # Formatting table
+    # add styling
+    if "header_cell" not in workbook.style_names:
+        header_cell = styles.NamedStyle(name="header_cell")
+        header_cell.alignment = styles.Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
+        header_cell.border = styles.Border(
+            left=styles.Side(style="thin"),
+            right=styles.Side(style="thin"),
+            top=styles.Side(style="thin"),
+            bottom=styles.Side(style="thin"),
+        )
+        header_cell.font = styles.Font(name="Arial", size=12, bold=True)
+        header_cell.fill = styles.PatternFill(
+            start_color="efefef", end_color="efefef", fill_type="solid"
+        )
+
+        workbook.add_named_style(header_cell)
+    if "generic_cell" not in workbook.style_names:
+        generic_cell = styles.NamedStyle(name="generic_cell")
+        generic_cell.alignment = styles.Alignment(vertical="center")
+        generic_cell.border = styles.Border(
+            left=styles.Side(style="thin"),
+            right=styles.Side(style="thin"),
+            top=styles.Side(style="thin"),
+            bottom=styles.Side(style="thin"),
+        )
+        generic_cell.font = styles.Font(name="Tahoma", size=10)
+        workbook.add_named_style(generic_cell)
+    if "subgroup_header_cell" not in workbook.style_names:
+        subgroup_header_cell = styles.NamedStyle(name="subgroup_header_cell")
+        subgroup_header_cell.alignment = styles.Alignment(vertical="center")
+        subgroup_header_cell.border = styles.Border(
+            left=styles.Side(style="thin"),
+            right=styles.Side(style="thin"),
+            top=styles.Side(style="thin"),
+            bottom=styles.Side(style="thin"),
+        )
+        subgroup_header_cell.font = styles.Font(name="Tahoma", size=10, bold=True)
+        subgroup_header_cell.fill = styles.PatternFill(
+            start_color="efefef", end_color="efefef", fill_type="solid"
+        )
+
+        workbook.add_named_style(subgroup_header_cell)
+    if "footer_cell" not in workbook.style_names:
+        footer_cell = styles.NamedStyle(name="footer_cell")
+        footer_cell.alignment = styles.Alignment(vertical="center")
+        footer_cell.border = styles.Border(
+            left=styles.Side(style="thin"),
+            right=styles.Side(style="thin"),
+            top=styles.Side(style="thin"),
+            bottom=styles.Side(style="thin"),
+        )
+        footer_cell.font = styles.Font(name="Tahoma", size=10, bold=True)
+        footer_cell.fill = styles.PatternFill(
+            start_color="ffff00", end_color="ffff00", fill_type="solid"
+        )
+
+        workbook.add_named_style(footer_cell)
 
     total_visit_count = "SUMPRODUCT(({sheet}!{shop}:{shop}=INDEX({sheet}!{shop}:{shop}, {row}))*({sheet}!{manager}:{manager}=INDEX({sheet}!{manager}:{manager},{row})))"
     total_box_count = "SUMIFS({sheet}!{box_count}:{box_count}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))"
@@ -164,14 +224,19 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
     for manager, manager_group in df.groupby(by="manager"):
         manager = cast(str, manager)
         manager_ws = workbook.create_sheet(manager)
+
         # https://stackoverflow.com/questions/27133731/folding-multiple-rows-with-openpyxl
         manager_ws.sheet_properties.outlinePr.summaryBelow = False
 
         header = ["Клиент", "Коробки", "Кол-во выходов", "Выплаты", "Стоимость кор-ки"]
         manager_ws.append(header)
+        for cell in list(manager_ws)[-1]:
+            cell.style = "header_cell"
 
         group_rows_start = 2
         for client, client_manager_group in manager_group.groupby(by="client"):
+            client_manager_group.drop_duplicates(["shop"], inplace=True)
+
             # Sub-header, that contains aggregated data.
             client_manager_rows = client_manager_group["row"]
             client_body_df = pd.DataFrame(
@@ -190,23 +255,25 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
                         )
                     ),
                     "total_payment_count": client_manager_rows.apply(
-                        lambda x: "="
-                        + (
-                            total_payment_bonus["driver"]
-                            if df.at[x - 1, "is_driver"]
-                            else total_payment_bonus["manager"]
-                        ).format(**cols_by_letter, sheet="raw_data", row=x + 1)
+                        lambda x: "=ROUND({}, 2)".format(
+                            (
+                                total_payment_bonus["driver"]
+                                if df.at[x - 1, "is_driver"]
+                                else total_payment_bonus["manager"]
+                            ).format(**cols_by_letter, sheet="raw_data", row=x + 1)
+                        )
                     ),
                     "box_cost": client_manager_rows.apply(
-                        lambda x: "="
-                        + (
-                            total_payment_bonus["driver"]
-                            if df.at[x - 1, "is_driver"]
-                            else total_payment_bonus["manager"]
-                        ).format(**cols_by_letter, sheet="raw_data", row=x + 1)
-                        + "/"
-                        + total_box_count.format(
-                            **cols_by_letter, sheet="raw_data", row=x + 1
+                        lambda x: "=ROUND({}, 2)".format(
+                            (
+                                total_payment_bonus["driver"]
+                                if df.at[x - 1, "is_driver"]
+                                else total_payment_bonus["manager"]
+                            ).format(**cols_by_letter, sheet="raw_data", row=x + 1)
+                            + "/"
+                            + total_box_count.format(
+                                **cols_by_letter, sheet="raw_data", row=x + 1
+                            )
                         )
                     ),
                 }
@@ -218,15 +285,22 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
                     "shop": [client],
                     "total_box_count": ["=SUM(B{}:B{})".format(*body_range)],
                     "total_visit_count": ["=SUM(C{}:C{})".format(*body_range)],
-                    "total_payment_count": ["=SUM(D{}:D{})".format(*body_range)],
-                    "box_cost": ["=D{0}/B{0}".format(group_rows_start)],
+                    "total_payment_count": [
+                        "=ROUND(SUM(D{}:D{}), 2)".format(*body_range)
+                    ],
+                    "box_cost": ["=ROUND(D{0}/B{0}, 2)".format(group_rows_start)],
                 }
             )
 
-            client_table_df = pd.concat([client_header_df, client_body_df])
-
-            for r in dataframe_to_rows(client_table_df, index=False, header=False):
+            for r in dataframe_to_rows(client_header_df, index=False, header=False):
                 manager_ws.append(r)
+                for cell in list(manager_ws)[-1]:
+                    cell.style = "subgroup_header_cell"
+
+            for r in dataframe_to_rows(client_body_df, index=False, header=False):
+                manager_ws.append(r)
+                for cell in list(manager_ws)[-1]:
+                    cell.style = "generic_cell"
 
             manager_ws.row_dimensions.group(
                 group_rows_start + 1,
@@ -236,20 +310,21 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
             )
 
             # move to next sub-header row
-            group_rows_start += len(client_table_df)
+            group_rows_start += len(client_header_df) + len(client_body_df)
 
         footer_range = (2, group_rows_start - 1)
         footer = [
             "Итого",
             "=SUM(B{}:B{})/2".format(*footer_range),
             "=SUM(C{}:C{})/2".format(*footer_range),
-            "=SUM(D{}:D{})/2".format(*footer_range),
-            "=D{0}/B{0}".format(group_rows_start),
+            "=ROUND(SUM(D{}:D{})/2, 2)".format(*footer_range),
+            "=ROUND(D{0}/B{0}, 2)".format(group_rows_start),
         ]
         manager_ws.append(footer)
+        for cell in list(manager_ws)[-1]:
+            cell.style = "footer_cell"
 
-        # Formatting table
-        manager_ws.freeze_panes = "A1"
+        manager_ws.freeze_panes = "B2"
 
         # Change column width
         cols_width = [60, 25, 25, 25, 30]
@@ -261,17 +336,15 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
                 dim_holder[get_column_letter(col)] = ColumnDimension(
                     manager_ws, min=col, max=col, width=cols_width[i]
                 )
-            except Exception as e:
+            except Exception as _:
                 continue
+        manager_ws.column_dimensions = dim_holder
+
         # Change row height
         for i, _ in enumerate(
             manager_ws.iter_rows(min_row=1, max_row=group_rows_start)
         ):
-            manager_ws.row_dimensions[i].height = 12
-
-        # Add borders
-        # for row in ws.iter_rows():
-        #     §or cell in row:
+            manager_ws.row_dimensions[i].height = 25
 
     buffer = BytesIO()
     workbook.save(buffer)
