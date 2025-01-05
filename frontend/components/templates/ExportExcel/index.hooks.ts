@@ -1,10 +1,10 @@
-import { compareReportExportQuery } from "@/lib/backend/clients";
 import {
-  planExportQuery,
-  managerReportExportQuery,
+  compareReportExportQuery,
   dispatchExportQuery,
   dispatchListExportQuery,
-} from "@/lib/backend/plans";
+  managerReportExportQuery,
+  planExportQuery,
+} from "@/lib/backend/exports";
 import { decodeContentDisposition, formatDateBackend } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
@@ -137,10 +137,10 @@ export const handleReportDownload = ({
   setIsLoading(true);
 
   const data = managerReportExportQuery({
+    manager: managerId,
     start_date: formatDateBackend(calendarRange?.from),
     end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,
-    managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
   });
 
@@ -230,7 +230,8 @@ export const handleDispatchListDownload = ({
 
   if (!managerId) return;
 
-  const data = dispatchListExportQuery(managerId, {
+  const data = dispatchListExportQuery({
+    manager: managerId,
     start_date: formatDateBackend(calendarRange?.from),
     end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,

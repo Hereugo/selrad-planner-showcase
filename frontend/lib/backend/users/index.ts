@@ -3,7 +3,7 @@ import { fetchWithAuth } from "../httpCalls";
 import urls from "../urls";
 
 export const useMeQuery = () => {
-  const url = urls.base_backend.me;
+  const url = urls.base_backend.users.me;
 
   return useQuery({
     queryKey: ["useMeQuery"],
