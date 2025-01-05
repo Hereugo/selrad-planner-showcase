@@ -10,7 +10,7 @@ from clients.models import Client
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import StringAgg
 from django.db.models import Sum
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from drf_spectacular.utils import extend_schema
 from managers.models import Manager
 from openpyxl.styles import Border, Font, NamedStyle, PatternFill, Side
@@ -39,7 +39,7 @@ class ExportCompareYears(GenericPlanViewSet, GenericViewSet):
         url_path="compare_years",
     )
     @permission_required("clients.export_compare_years")
-    def export_compare_years(self, request: Request) -> FileResponse:
+    def export_compare_years(self, request: Request) -> HttpResponse:
         """Скачать сравнить по периодам."""
 
         filter_serializer = CompareYearsFilterSerializer(data=request.query_params)
@@ -63,11 +63,20 @@ class ExportCompareYears(GenericPlanViewSet, GenericViewSet):
         buffer = generate_compare_years(period_1, period_2, request)
         buffer.seek(0)
 
-        response = FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=f"СРАВНИТЬ {period_1['start_date'].strftime('%d-%m-%Y')} ПО {period_1['end_date'].strftime('%d-%m-%Y')} ПРОТИВ {period_2['start_date'].strftime('%d-%m-%Y')} ПО {period_2['end_date'].strftime('%d-%m-%Y')} ГОДА.xlsx",
+        # response = FileResponse(
+        #     buffer,
+        #     as_attachment=True,
+        #     filename=f"СРАВНИТЬ {period_1['start_date'].strftime('%d-%m-%Y')} ПО {period_1['end_date'].strftime('%d-%m-%Y')} ПРОТИВ {period_2['start_date'].strftime('%d-%m-%Y')} ПО {period_2['end_date'].strftime('%d-%m-%Y')} ГОДА.xlsx",
+        #     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        # )
+
+        response = HttpResponse(
+            buffer.getvalue(),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = (
+            f"attachment; filename=\"СРАВНИТЬ {period_1['start_date'].strftime('%d-%m-%Y')} ПО {period_1['end_date'].strftime('%d-%m-%Y')} ПРОТИВ {period_2['start_date'].strftime('%d-%m-%Y')} ПО {period_2['end_date'].strftime('%d-%m-%Y')} ГОДА.xlsx\""
         )
 
         return response

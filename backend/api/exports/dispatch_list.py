@@ -8,7 +8,7 @@ import pandas as pd
 from api.plans.views import GenericPlanViewSet
 from api.utils.custom_permissions import IsAuthenticated, permission_required
 from django.db.models import QuerySet
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from html2image import Html2Image
@@ -38,7 +38,7 @@ class ExportDispatchList(GenericPlanViewSet, GenericViewSet):
         url_path="dispatch_list",
     )
     @permission_required("plans.get_dispatch_list")
-    def dispatch_list(self, request: Request) -> FileResponse:
+    def dispatch_list(self, request: Request) -> HttpResponse:
         filter_serializer = DispatchListFilterSerializer(data=request.query_params)
         filter_serializer.is_valid(raise_exception=True)
 
@@ -64,11 +64,20 @@ class ExportDispatchList(GenericPlanViewSet, GenericViewSet):
         buffer = generate_dispatch_list(plans, manager, comment, start_date, end_date)
         buffer.seek(0)
 
-        response = FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=f"ДИСПЕТЧЕРСКИЙ ЛИСТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.png",
+        # response = FileResponse(
+        #     buffer,
+        #     as_attachment=True,
+        #     filename=f"ДИСПЕТЧЕРСКИЙ ЛИСТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.png",
+        #     content_type="image/png",
+        # )
+
+        response = HttpResponse(
+            buffer.getvalue(),
             content_type="image/png",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = (
+            f"attachment; filename=\"ДИСПЕТЧЕРСКИЙ ЛИСТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.png\""
         )
 
         return response

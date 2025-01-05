@@ -1,11 +1,9 @@
 from typing import List
 
-from django.utils import timezone
-
-from celery.utils.log import get_task_logger
 from celery import shared_task
+from celery.utils.log import get_task_logger
+from django.utils import timezone
 from plans.models import PaymentRegistry, Plan
-
 
 logger = get_task_logger(__name__)
 

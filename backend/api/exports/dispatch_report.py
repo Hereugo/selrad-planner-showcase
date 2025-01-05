@@ -8,7 +8,7 @@ import openpyxl
 from api.plans.views import GenericPlanViewSet
 from api.utils.custom_permissions import IsAuthenticated, permission_required
 from django.db.models import QuerySet
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from drf_spectacular.utils import extend_schema
 from managers.models import Manager
 from openpyxl.styles import Alignment, Border, Font, NamedStyle, Side
@@ -51,7 +51,7 @@ class ExportDispatchReport(GenericPlanViewSet, GenericViewSet):
         url_path="dispatch_report",
     )
     @permission_required("plans.get_dispatch_report")
-    def dispatch_report(self, request: Request) -> FileResponse:
+    def dispatch_report(self, request: Request) -> HttpResponse:
         """Cкачать диспетчерский отчет по периоду"""
 
         filter_serializer = BaseFilterSerializer(data=request.query_params)
@@ -77,11 +77,20 @@ class ExportDispatchReport(GenericPlanViewSet, GenericViewSet):
         buffer = generate_dispatch_report(work_items_shipments, start_date, end_date)
         buffer.seek(0)
 
-        response = FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=f"ОТЧЕТ ПО ДИСПЕЧЕРСКОМУ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+        # response = FileResponse(
+        #     buffer,
+        #     as_attachment=True,
+        #     filename=f"ОТЧЕТ ПО ДИСПЕЧЕРСКОМУ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+        #     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        # )
+
+        response = HttpResponse(
+            buffer.getvalue(),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = (
+            f"attachment; filename=\"ОТЧЕТ ПО ДИСПЕЧЕРСКОМУ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx\""
         )
 
         return response

@@ -7,7 +7,7 @@ from typing import Optional, cast
 import openpyxl
 from api.plans.views import GenericPlanViewSet
 from api.utils.custom_permissions import IsAuthenticated, permission_required
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from drf_spectacular.utils import extend_schema
 from managers.models import Manager
 from openpyxl.styles import Alignment, Border, Font, NamedStyle, PatternFill, Side
@@ -66,7 +66,7 @@ class ExportPlans(GenericPlanViewSet, GenericViewSet):
         url_path="plans",
     )
     @permission_required("plans.export_plans")
-    def plans(self, request: Request) -> FileResponse:
+    def plans(self, request: Request) -> HttpResponse:
         """Скачать план."""
 
         filter_serializer = BaseFilterSerializer(data=request.query_params)
@@ -86,11 +86,20 @@ class ExportPlans(GenericPlanViewSet, GenericViewSet):
         buffer = generate_excelsheet_by_plan(plans, start_date, end_date)
         buffer.seek(0)
 
-        response = FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=f"ПЛАНЫ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+        # response = FileResponse(
+        #     buffer,
+        #     as_attachment=True,
+        #     filename=f"ПЛАНЫ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+        #     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        # )
+
+        response = HttpResponse(
+            buffer.getvalue(),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = (
+            f"attachment; filename=\"ПЛАНЫ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx\""
         )
 
         return response
@@ -105,10 +114,10 @@ class ExportPlans(GenericPlanViewSet, GenericViewSet):
         detail=False,
         methods=["get"],
         permission_classes=[IsAuthenticated],
-        url_path=r"report",
+        url_path=r"manager_report",
     )
     @permission_required("plans.export_report")
-    def export_report(self, request):
+    def export_manager_report(self, request: Request) -> HttpResponse:
         """Скачать отчет."""
 
         filter_serializer = ReportFilterSerializer(data=request.query_params)
@@ -131,11 +140,20 @@ class ExportPlans(GenericPlanViewSet, GenericViewSet):
         buffer = generate_excelsheet_by_manager(plans, manager, start_date, end_date)
         buffer.seek(0)
 
-        response = FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=f"ОТЧЕТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+        # response = FileResponse(
+        #     buffer,
+        #     as_attachment=True,
+        #     filename=f"ОТЧЕТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+        #     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        # )
+
+        response = HttpResponse(
+            buffer.getvalue(),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = (
+            f"attachment; filename=\"ОТЧЕТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx\""
         )
 
         return response

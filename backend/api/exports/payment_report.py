@@ -9,7 +9,7 @@ from api.plans.views import GenericPlanViewSet
 from api.utils.custom_permissions import IsAuthenticated, permission_required
 from django.db.models import F, Prefetch, Q, Sum, Value
 from django.db.models.functions import Coalesce
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from managers.models import Manager
 from openpyxl import styles
 from openpyxl.utils import get_column_letter
@@ -39,7 +39,7 @@ class ExportPaymentReport(GenericPlanViewSet, GenericViewSet):
         url_path="payment_report",
     )
     @permission_required("plans.export_payment_report")
-    def payment_report(self, request: Request) -> FileResponse:
+    def payment_report(self, request: Request) -> HttpResponse:
         filter_serializer = PaymentReportFilterSerializer(data=request.query_params)
         filter_serializer.is_valid(raise_exception=True)
 
@@ -57,7 +57,7 @@ class ExportPaymentReport(GenericPlanViewSet, GenericViewSet):
             end_date = cast(datetime, plans.latest("assigned_date").assigned_date)
         if not managers:
             managers_qs = Manager.objects.all()
-            managers = Manager.objects.values_list("pk", flat=True)
+            managers = list(Manager.objects.all())
 
         plans = (
             plans.prefetch_related(
@@ -106,17 +106,23 @@ class ExportPaymentReport(GenericPlanViewSet, GenericViewSet):
             .distinct()
         )
 
-        for p in plans:
-            logger.debug(p)
-
         buffer = generate_payment_report(list(plans))
         buffer.seek(0)
 
-        response = FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=f"ОТЧЕТ ПО ВЫПЛАТАМ {', '.join([m.name for m in managers_qs]) if 'manager' in filter_serializer.validated_data else ''} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+        # response = FileResponse(
+        #     buffer,
+        #     as_attachment=True,
+        #     filename=f"ОТЧЕТ ПО ВЫПЛАТАМ {', '.join([m.name for m in managers_qs]) if 'manager' in filter_serializer.validated_data else ''} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+        #     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        # )
+
+        response = HttpResponse(
+            buffer.getvalue(),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = (
+            f"attachment; filename=\"ОТЧЕТ ПО ВЫПЛАТАМ {', '.join([m.name for m in managers_qs]) if 'manager' in filter_serializer.validated_data else ''} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx\""
         )
 
         return response
@@ -129,7 +135,11 @@ def get_cols_by_letter(df):
 
 
 def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
-    logger.debug(table)
+    # Empty table
+    if len(table) == 0:
+        raise ValueError(
+            "Нет данных чтобы создать таблицу. Используйте другие фильтры или подтвердите больше выплат, и попробуйте занаво."
+        )
 
     workbook = openpyxl.Workbook()
     # Formatting table
@@ -217,13 +227,14 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
     # errors when formatting of formulas are done.
     df["row"] = range(1, len(df) + 1)
 
-    raw_data_ws = workbook.create_sheet("raw_data")
+    raw_data_ws = workbook.active or workbook.create_sheet("raw_data")
+    raw_data_ws.title = "raw_data"
     for r in dataframe_to_rows(df, index=False, header=True):
         raw_data_ws.append(r)
 
     for manager, manager_group in df.groupby(by="manager"):
         manager = cast(str, manager)
-        manager_ws = workbook.create_sheet(manager)
+        manager_ws = workbook.create_sheet("_" + manager)
 
         # https://stackoverflow.com/questions/27133731/folding-multiple-rows-with-openpyxl
         manager_ws.sheet_properties.outlinePr.summaryBelow = False
@@ -345,6 +356,8 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
             manager_ws.iter_rows(min_row=1, max_row=group_rows_start)
         ):
             manager_ws.row_dimensions[i].height = 25
+
+    workbook._sheets.sort(key=lambda ws: ws.title)
 
     buffer = BytesIO()
     workbook.save(buffer)
