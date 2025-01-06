@@ -1,13 +1,11 @@
 import logging
-from typing import Optional, List
+from typing import List, Optional
 
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema_field
+from managers.models import GeoPoint, Manager
 from rest_framework import serializers
 from rest_framework.request import Request
-
-from managers.models import Manager, GeoPoint
-
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -49,7 +47,7 @@ class GeoPointCreateSerializer(serializers.ModelSerializer):
 class ManagerSerializer(serializers.ModelSerializer):
     id = serializers.StringRelatedField()
     geopoints = serializers.SerializerMethodField()
-    payment = serializers.SerializerMethodField()
+    # payment = serializers.SerializerMethodField()
 
     class Meta:
         model = Manager
@@ -69,14 +67,14 @@ class ManagerSerializer(serializers.ModelSerializer):
 
         return GeoPointSerializer(qs, many=True).data
 
-    @extend_schema_field(serializers.IntegerField())
-    def get_payment(self, obj):
-        """Hide manager payments if no user has no permission to view them"""
-        request: Optional[Request] = self.context.get("request")
-        if request and not request.user.has_perm("managers.view_payments_section"):
-            return -1
-
-        return obj.payment
+    # @extend_schema_field(serializers.IntegerField())
+    # def get_payment(self, obj):
+    #     """Hide manager payments if no user has no permission to view them"""
+    #     request: Optional[Request] = self.context.get("request")
+    #     if request and not request.user.has_perm("managers.view_payments_section"):
+    #         return -1
+    #
+    #     return obj.payment
 
 
 class MeSerializer(ManagerSerializer):
