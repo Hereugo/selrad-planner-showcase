@@ -12,13 +12,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv(
-    "DJANGO_SECRET_KEY", "ev%a^8m9l!36)p7zh3lvuey5u9v*z1lv2ews*f*^8-xs%9@xx+"
-)
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DJANGO_DEBUG", False)
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+DEBUG = os.getenv("DJANGO_DEBUG", False) == "True"
 
 ALLOWED_HOSTS = [
     "planner.example.com",
@@ -47,64 +42,67 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost",
 ]
 
+LOG_DIR = "/var/log/selrad_planner/"
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR, exist_ok=True)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {name} {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname} {message}",
+        "general": {
+            "()": "django.utils.log.ServerFormatter",
+            "format": "[{server_time}] [{levelname}] [{pathname}:{funcName}:{lineno}] {message}",
             "style": "{",
         },
     },
     "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
         "require_debug_true": {
             "()": "django.utils.log.RequireDebugTrue",
         },
     },
     "handlers": {
+        "simple_console": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
+            "filters": ["require_debug_false"],
+            "formatter": "general",
+        },
         "console": {
             "class": "logging.StreamHandler",
             "level": "DEBUG",
             "filters": ["require_debug_true"],
-            "formatter": "verbose",
+            "formatter": "general",
         },
-        "file": {
+        "errors": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "ERROR",
+            "filename": os.path.join(LOG_DIR, "django_errors.log"),
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 10,
+            "formatter": "general",
+        },
+        "debug": {
+            "class": "logging.handlers.RotatingFileHandler",
             "level": "DEBUG",
-            "formatter": "verbose",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.getenv(
-                "DJANGO_DEBUG_LOG", default="./logs/django_debug.log"
-            ),
+            "filename": os.path.join(LOG_DIR, "django_debug.log"),
             "maxBytes": 5 * 1024 * 1024,
             "backupCount": 10,
-        },
-        "django_requests": {
-            "level": "INFO",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.getenv(
-                "DJANGO_REQUESTS_LOG", default="./logs/django_requests.log"
-            ),
-            "maxBytes": 5 * 1024 * 1024,
-            "backupCount": 10,
+            "formatter": "general",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "file"],
+            "handlers": ["simple_console", "console", "debug"],
             "propagate": True,
         },
-        "django.api": {
-            "handlers": ["django_requests"],
-            "propagate": True,
+        "django.security": {
+            "handlers": ["errors"],
+            "propagate": False,
         },
-    },
-    "root": {
-        "handlers": ["console", "file"],
-        "level": "DEBUG",
     },
 }
 
@@ -174,8 +172,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.getenv("DB_NAME", str(BASE_DIR / "db.sqlite3")),
+        "ENGINE": os.getenv("DB_ENGINE"),
+        "NAME": os.getenv("DB_NAME"),
         "USER": os.getenv("POSTGRES_USER"),
         "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
@@ -285,7 +283,7 @@ LEAFLET_CONFIG = {
 
 # Celery / Redis settings
 
-REDIS_HOST = os.getenv("REDIS_HOST", "background_tasks")
+REDIS_HOST = os.getenv("REDIS_HOST")
 CELERY_BROKER_URL = f"redis://{REDIS_HOST}:6379/0"
 
 CELERY_ENABLE_UTC = False

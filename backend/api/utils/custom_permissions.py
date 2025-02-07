@@ -6,7 +6,7 @@ from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class IsReadOnly(permissions.BasePermission):
@@ -65,6 +65,7 @@ def permission_required(permission):
             else:
                 request = args[0].request
             if not request.user.has_perm(permission):
+                logger.info(f"{request.user} failed to access due to low permissions")
                 return Response(
                     {"error": "У вас нет прав на это действие."}, status=403
                 )

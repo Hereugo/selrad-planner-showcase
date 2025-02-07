@@ -4,7 +4,7 @@ from api.exports.custom_schemas import *
 from api.utils.custom_paginations import PageLimitPagination
 from api.utils.custom_permissions import HasCRUDPermission, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import extend_schema_view
 from plans.models import PaymentRegistry, Plan, PlanWorkItem, WorkItem
 from rest_framework import filters
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
@@ -23,7 +23,7 @@ from .serializers import (
 )
 from .work_items_serializers import TaskSerializer, TaskUpdatePolymorphicSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 # NOTE (Amir Nurmukhambetov 04/01/2025):

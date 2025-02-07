@@ -10,7 +10,7 @@ from clients.models import Client
 from dateutil.relativedelta import relativedelta
 from django.contrib.postgres.aggregates import StringAgg
 from django.db.models import Sum
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
 from managers.models import Manager
 from openpyxl.styles import Border, Font, NamedStyle, PatternFill, Side
@@ -22,7 +22,7 @@ from rest_framework.viewsets import GenericViewSet
 from .custom_schemas import *
 from .serializers import CompareYearsFilterSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class ExportCompareYears(GenericPlanViewSet, GenericViewSet):
@@ -78,6 +78,8 @@ class ExportCompareYears(GenericPlanViewSet, GenericViewSet):
         response["Content-Disposition"] = (
             f"attachment; filename=\"СРАВНИТЬ {period_1['start_date'].strftime('%d-%m-%Y')} ПО {period_1['end_date'].strftime('%d-%m-%Y')} ПРОТИВ {period_2['start_date'].strftime('%d-%m-%Y')} ПО {period_2['end_date'].strftime('%d-%m-%Y')} ГОДА.xlsx\""
         )
+
+        buffer.close()
 
         return response
 

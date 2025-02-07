@@ -1,16 +1,13 @@
 import logging
 
-from django.contrib import admin
-from django.shortcuts import render
-from django.db.models import QuerySet
-
-from plans.models import Plan, WorkItem, PaymentRegistry
-from managers.models import Manager
-
 from api.plans.views import PlanViewSet
+from django.contrib import admin
+from django.db.models import QuerySet
+from django.shortcuts import render
+from managers.models import Manager
+from plans.models import PaymentRegistry, Plan, WorkItem
 
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 @admin.action(description="Unfix plan")

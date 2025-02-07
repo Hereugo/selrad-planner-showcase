@@ -22,7 +22,7 @@ from rest_framework.viewsets import GenericViewSet
 from .custom_schemas import *
 from .serializers import PaymentReportFilterSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class ExportPaymentReport(GenericPlanViewSet, GenericViewSet):
@@ -125,6 +125,8 @@ class ExportPaymentReport(GenericPlanViewSet, GenericViewSet):
             f"attachment; filename=\"ОТЧЕТ ПО ВЫПЛАТАМ {', '.join([m.name for m in managers_qs]) if 'manager' in filter_serializer.validated_data else ''} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx\""
         )
 
+        buffer.close()
+
         return response
 
 
@@ -156,6 +158,7 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
             bottom=styles.Side(style="thin"),
         )
         header_cell.font = styles.Font(name="Arial", size=12, bold=True)
+        header_cell.number_format = "# ### ### ### ### ### ###"
         header_cell.fill = styles.PatternFill(
             start_color="efefef", end_color="efefef", fill_type="solid"
         )
@@ -171,6 +174,7 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
             bottom=styles.Side(style="thin"),
         )
         generic_cell.font = styles.Font(name="Tahoma", size=10)
+        generic_cell.number_format = "# ### ### ### ### ### ###"
         workbook.add_named_style(generic_cell)
     if "subgroup_header_cell" not in workbook.style_names:
         subgroup_header_cell = styles.NamedStyle(name="subgroup_header_cell")
@@ -182,6 +186,7 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
             bottom=styles.Side(style="thin"),
         )
         subgroup_header_cell.font = styles.Font(name="Tahoma", size=10, bold=True)
+        subgroup_header_cell.number_format = "# ### ### ### ### ### ###"
         subgroup_header_cell.fill = styles.PatternFill(
             start_color="efefef", end_color="efefef", fill_type="solid"
         )
@@ -197,6 +202,7 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
             bottom=styles.Side(style="thin"),
         )
         footer_cell.font = styles.Font(name="Tahoma", size=10, bold=True)
+        footer_cell.number_format = "# ### ### ### ### ### ###"
         footer_cell.fill = styles.PatternFill(
             start_color="ffff00", end_color="ffff00", fill_type="solid"
         )
@@ -247,6 +253,7 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
         group_rows_start = 2
         for client, client_manager_group in manager_group.groupby(by="client"):
             client_manager_group.drop_duplicates(["shop"], inplace=True)
+            client_manager_group.sort_values(by=["shop"], inplace=True)
 
             # Sub-header, that contains aggregated data.
             client_manager_rows = client_manager_group["row"]
@@ -266,7 +273,7 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
                         )
                     ),
                     "total_payment_count": client_manager_rows.apply(
-                        lambda x: "=ROUND({}, 2)".format(
+                        lambda x: "=ROUND({}, 0)".format(
                             (
                                 total_payment_bonus["driver"]
                                 if df.at[x - 1, "is_driver"]
@@ -275,7 +282,7 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
                         )
                     ),
                     "box_cost": client_manager_rows.apply(
-                        lambda x: "=ROUND({}, 2)".format(
+                        lambda x: "=ROUND({}, 0)".format(
                             (
                                 total_payment_bonus["driver"]
                                 if df.at[x - 1, "is_driver"]
@@ -297,9 +304,9 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
                     "total_box_count": ["=SUM(B{}:B{})".format(*body_range)],
                     "total_visit_count": ["=SUM(C{}:C{})".format(*body_range)],
                     "total_payment_count": [
-                        "=ROUND(SUM(D{}:D{}), 2)".format(*body_range)
+                        "=ROUND(SUM(D{}:D{}), 0)".format(*body_range)
                     ],
-                    "box_cost": ["=ROUND(D{0}/B{0}, 2)".format(group_rows_start)],
+                    "box_cost": ["=ROUND(D{0}/B{0}, 0)".format(group_rows_start)],
                 }
             )
 
@@ -328,8 +335,8 @@ def generate_payment_report(table: list[dict[str, Any]]) -> BytesIO:
             "Итого",
             "=SUM(B{}:B{})/2".format(*footer_range),
             "=SUM(C{}:C{})/2".format(*footer_range),
-            "=ROUND(SUM(D{}:D{})/2, 2)".format(*footer_range),
-            "=ROUND(D{0}/B{0}, 2)".format(group_rows_start),
+            "=ROUND(SUM(D{}:D{})/2, 0)".format(*footer_range),
+            "=ROUND(D{0}/B{0}, 0)".format(group_rows_start),
         ]
         manager_ws.append(footer)
         for cell in list(manager_ws)[-1]:

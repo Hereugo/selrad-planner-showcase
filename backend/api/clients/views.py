@@ -1,25 +1,19 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
-
-from django.shortcuts import get_object_or_404
-from datetime import timedelta
-from django.contrib.gis.measure import Distance
-from rest_framework.decorators import action
-from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-
-from api.utils.custom_permissions import IsAuthenticated
 from api.plans.serializers import NearbyClientSerializer
-from api.utils.custom_permissions import (
-    IsAuthenticated,
-)
-
+from api.utils.custom_permissions import IsAuthenticated
 from clients.models import Client
+from django.contrib.gis.measure import Distance
+from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet
+
 from .serializers import ClientSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class ClientViewSet(ReadOnlyModelViewSet):

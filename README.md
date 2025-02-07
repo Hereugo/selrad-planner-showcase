@@ -1,5 +1,10 @@
 # Selrad Planner
 
+## TODO:
+
+- [ ] add pytest
+- [ ] memory optimization 
+
 ### Описание
 
 Cпециальный веб-сайт для управления планированием
@@ -32,18 +37,6 @@ pip install -r ./backend/requirements.txt
 cd infra
 cp .env.example .env
 ```
-
-| VAR               | Description                                                                    |
-| ----------------- | ------------------------------------------------------------------------------ |
-| DJANGO_SECRET_KEY | Secret key every django project provides.                                      |
-| DJANGO_DEBUG      | True / False. (Optional) defaults to False. Setup project in Debug Mode        |
-| DB_ENGINE         | 'django.contrib.gis.db.backends.postgis'. PostGis, Postgres with geo extension |
-| DB_NAME           | 'postgres'                                                                     |
-| POSTGRES_USER     | 'postgres'                                                                     |
-| POSTGRES_PASSWORD | 'postgres'                                                                     |
-| DB_HOST           | 'db'. Same name as in docker-compose                                           |
-| DB_PORT           | 5432                                                                           |
-
 -   Запустить Docker
 
 #### Supa Fast Installation

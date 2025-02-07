@@ -11,7 +11,7 @@ from plans.models import PaymentRegistry, Plan, PlanManager, PlanWorkItem, WorkI
 from rest_framework import serializers
 from rest_framework.request import Request
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class WorkItemSerializer(serializers.ModelSerializer):

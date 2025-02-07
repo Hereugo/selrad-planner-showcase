@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework.request import Request
 
 User = get_user_model()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class GeoPointSerializer(serializers.ModelSerializer):

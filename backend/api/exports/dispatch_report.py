@@ -22,7 +22,7 @@ from work_items.models import Shipment
 from .custom_schemas import *
 from .serializers import BaseFilterSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class COL(Enum):
@@ -92,6 +92,8 @@ class ExportDispatchReport(GenericPlanViewSet, GenericViewSet):
         response["Content-Disposition"] = (
             f"attachment; filename=\"ОТЧЕТ ПО ДИСПЕЧЕРСКОМУ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx\""
         )
+
+        buffer.close()
 
         return response
 

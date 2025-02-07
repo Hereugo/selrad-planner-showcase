@@ -8,7 +8,7 @@ import pandas as pd
 from api.plans.views import GenericPlanViewSet
 from api.utils.custom_permissions import IsAuthenticated, permission_required
 from django.db.models import QuerySet
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from html2image import Html2Image
@@ -22,7 +22,7 @@ from rest_framework.viewsets import GenericViewSet
 from .custom_schemas import *
 from .serializers import DispatchListFilterSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class ExportDispatchList(GenericPlanViewSet, GenericViewSet):
@@ -79,6 +79,8 @@ class ExportDispatchList(GenericPlanViewSet, GenericViewSet):
         response["Content-Disposition"] = (
             f"attachment; filename=\"ДИСПЕТЧЕРСКИЙ ЛИСТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.png\""
         )
+
+        buffer.close()
 
         return response
 
@@ -143,6 +145,8 @@ def generate_dispatch_list(
             size=(1920, calc_height),
         )
 
+        logger.debug(img)
+
         image = Image.open(img[0])
 
         # rotate image clockwise 90
@@ -150,6 +154,8 @@ def generate_dispatch_list(
 
         rotated_image.save(buffer, format="png", optimize=True, quality=95)
         buffer.seek(0)
+
+        image.close()
 
     # delete html_table
 

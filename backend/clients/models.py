@@ -2,12 +2,10 @@ import logging
 
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
-
 from django.db import models
 from django.utils import timezone
 
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 # This is a client

@@ -38,6 +38,7 @@ gunicorn==21.2.0
 html2image==2.0.4.3
 idna==3.6
 inflection==0.5.1
+iniconfig==2.0.0
 jsonschema==4.21.1
 jsonschema-specifications==2023.12.1
 kombu==5.4.2
@@ -49,6 +50,7 @@ packaging==24.0
 pandas==2.2.2
 pandas-stubs==2.2.2.240807
 pillow==10.4.0
+pluggy==1.5.0
 prompt_toolkit==3.0.48
 psycopg2-binary==2.9.9
 pycparser==2.21

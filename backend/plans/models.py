@@ -9,7 +9,7 @@ from django.db import models
 from django.utils import timezone
 from work_items.models import BaseWorkItem
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 def validate_sum_string(value):

@@ -18,7 +18,7 @@ from rest_framework.viewsets import GenericViewSet
 from .custom_schemas import *
 from .serializers import BaseFilterSerializer, ReportFilterSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 COL_DICT = {

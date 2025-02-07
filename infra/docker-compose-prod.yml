@@ -1,6 +1,30 @@
-version: '3.3'
 name: selrad-planner-prod
 services:
+  celery:
+    build: ../backend
+    restart: always
+    command: bash -c "celery -A config beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler & celery -A config worker -l INFO"  
+    networks:
+      - backend
+    volumes:
+      - static_value:/app/static/
+      - media_value:/app/media/
+      - logs:/app/logs/
+    depends_on:
+      - db
+      - backend
+      - background_tasks
+    env_file:
+      - ./.env
+
+    background_tasks:
+      image: redis:6.0.9-alpine
+      restart: always
+      networks:
+        - backend
+      ports:
+        - "6380:6379"
+
   db:
     image: postgis/postgis:13-3.1
     restart: always
