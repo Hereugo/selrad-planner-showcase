@@ -7,7 +7,7 @@ from typing import Optional, cast
 import openpyxl
 from api.plans.views import GenericPlanViewSet
 from api.utils.custom_permissions import IsAuthenticated, permission_required
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
 from managers.models import Manager
 from openpyxl.styles import Alignment, Border, Font, NamedStyle, PatternFill, Side

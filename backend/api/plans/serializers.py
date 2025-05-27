@@ -1,15 +1,16 @@
 import logging
 from typing import Any, List, Optional
 
+from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
+from rest_framework.request import Request
+
 from api.clients.serializers import ClientSerializer
 from api.users.serializers import ManagerSerializer
 from clients.models import Client
-from django.utils import timezone
-from drf_spectacular.utils import extend_schema_field
 from managers.models import Manager
 from plans.models import PaymentRegistry, Plan, PlanManager, PlanWorkItem, WorkItem
-from rest_framework import serializers
-from rest_framework.request import Request
 
 logger = logging.getLogger()
 

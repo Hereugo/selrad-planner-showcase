@@ -9,7 +9,7 @@ from api.plans.views import GenericPlanViewSet
 from api.utils.custom_permissions import IsAuthenticated, permission_required
 from django.db.models import F, Prefetch, Q, Sum, Value
 from django.db.models.functions import Coalesce
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse
 from managers.models import Manager
 from openpyxl import styles
 from openpyxl.utils import get_column_letter

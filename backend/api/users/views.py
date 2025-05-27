@@ -18,7 +18,7 @@ from .serializers import (
 )
 
 User = get_user_model()
-logger = logging.getLogger("django")
+logger = logging.getLogger(__name__)
 
 
 class UserViewSet(GenericViewSet, ListModelMixin, UpdateModelMixin):
@@ -52,9 +52,6 @@ class UserViewSet(GenericViewSet, ListModelMixin, UpdateModelMixin):
     )
     def me(self, request):
         """Возвращает данные текущего пользователя."""
-        logger.info("Hello")
-        logger.error("this is an error")
-        logger.debug("this is a debug message")
 
         if request.user.manager == None:
             return Response(

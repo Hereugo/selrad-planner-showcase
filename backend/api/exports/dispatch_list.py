@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 from io import BytesIO
@@ -5,27 +6,79 @@ from tempfile import TemporaryFile
 from typing import Optional, cast
 
 import pandas as pd
-from api.plans.views import GenericPlanViewSet
-from api.utils.custom_permissions import IsAuthenticated, permission_required
 from django.db.models import QuerySet
 from django.http import HttpResponse
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from html2image import Html2Image
-from managers.models import Manager
 from PIL import Image
-from plans.models import Plan
 from rest_framework.decorators import action
 from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+
+from api.plans.serializers import PlanSerializer
+from api.plans.views import GenericPlanViewSet
+from api.utils.aws_lambda import get_lambda_client
+from api.utils.custom_permissions import IsAuthenticated, permission_required
+from managers.models import Manager
+from plans.models import Plan
 
 from .custom_schemas import *
 from .serializers import DispatchListFilterSerializer
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class ExportDispatchList(GenericPlanViewSet, GenericViewSet):
+    @extend_schema(
+        parameters=[DispatchListFilterSerializer],
+        responses=DEFAULT_FILE_RESPONSE,
+        summary="Получить диспетчерский лист",
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="aws_dispatch_list",
+    )
+    @permission_required("plans.get_dispatch_list")
+    def aws_dispatch_list(self, request: Request) -> HttpResponse:
+        filter_serializer = DispatchListFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        start_date: Optional[datetime] = filter_serializer.validated_data["start_date"]
+        end_date: Optional[datetime] = filter_serializer.validated_data["end_date"]
+        comment: str = filter_serializer.validated_data["comment"]
+        manager: Manager = filter_serializer.validated_data["manager"]
+
+        plans: QuerySet[Plan] = self.filter_queryset(self.get_queryset())
+        plans = plans.filter(managers=manager)
+        plans = plans.order_by("assigned_date")
+        if not start_date:
+            start_date = cast(datetime, plans.earliest("assigned_date").assigned_date)
+        if not end_date:
+            end_date = cast(datetime, plans.latest("assigned_date").assigned_date)
+
+        plans_serializer = PlanSerializer(plans, many=True)
+
+        lambda_client = get_lambda_client()
+        lambda_payload = {
+            "start_date": start_date.strftime("%d.%m.%Y"),
+            "end_date": end_date.strftime("%d.%m.%Y"),
+            "comment": comment,
+            "manager_name": manager.name,
+            "plans": plans_serializer.data,
+        }
+        response = lambda_client.invoke(
+            FunctionName="export-dispatch-list",
+            InvocationType="RequestResponse",
+            Payload=json.dumps(lambda_payload),
+        )
+        response = json.loads(response["Payload"].read().decode("utf-8"))
+
+        return Response(response)
+
     @extend_schema(
         parameters=[DispatchListFilterSerializer],
         responses=DEFAULT_FILE_RESPONSE,
@@ -134,7 +187,7 @@ def generate_dispatch_list(
         <h1>{comment}</h1>
         """
 
-        css_str = "table,th{border:1px solid #000,background-color:white;}*{box-sizing:border-box;font-family:Arial,sans-serif;background-color:white;}table{border-collapse:collapse;width:100%}th{background-color:#d3d3d3;font-size:14px;font-weight:700;text-align:left}td,th{padding:8px}tr th:first-child{width:24px;max-width:24px}tr th:nth-child(2),tr th:nth-child(4){width:300px;max-width:300px}tr th:nth-child(3){width:50px;max-width:50px}tr td:nth-child(3){font-size:20px;font-weight:700;text-align:center}tr th:nth-child(5){width:200px;max-width:200px}tr th:nth-child(6){width:100px;max-width:100px}tr th:nth-child(7){width:100px;max-width:100px}"
+        css_str = "table,th,tr,td{border:1px solid #000;background-color:white;}*{box-sizing:border-box;font-family:Arial,sans-serif;background-color:white;}table{border-collapse:collapse;width:100%}th{background-color:#d3d3d3;font-size:14px;font-weight:700;text-align:left}td,th{padding:8px}tr th:first-child{width:24px;max-width:24px}tr th:nth-child(2),tr th:nth-child(4){width:300px;max-width:300px}tr th:nth-child(3){width:50px;max-width:50px}tr td:nth-child(3){font-size:20px;font-weight:700;text-align:center}tr th:nth-child(5){width:200px;max-width:200px}tr th:nth-child(6){width:100px;max-width:100px}tr th:nth-child(7){width:100px;max-width:100px}"
 
         calc_height = 500 + len(df) * 55
 

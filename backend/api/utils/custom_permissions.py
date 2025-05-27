@@ -6,7 +6,7 @@ from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class IsReadOnly(permissions.BasePermission):

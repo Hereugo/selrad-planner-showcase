@@ -3,7 +3,7 @@ services:
   celery:
     build: ../backend
     restart: always
-    command: bash -c "celery -A config beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler & celery -A config worker -l INFO"  
+    command: bash -c "celery -A config beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler & celery -A config worker -l INFO"
     networks:
       - backend
     volumes:
@@ -30,6 +30,7 @@ services:
     restart: always
     networks:
       - backend
+      - shared
     volumes:
       - db_value:/var/lib/postgresql/data/
     env_file:
@@ -83,3 +84,6 @@ volumes:
 networks:
   backend:
     driver: bridge
+  shared:
+    name: shared_selrad_service_network
+    external: true
