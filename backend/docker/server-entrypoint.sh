@@ -15,9 +15,12 @@ if [ "$DJANGO_DEBUG" = "True" ]; then
 else
     GUNICORN_LOG_LEVEL="info"
 fi
+GUNICORN_LOG_CLASS="rich.logging.RichHandler"
 
 gunicorn config.wsgi:application \
          --bind 0.0:8000 \
-         --workers 4 --threads 4 --timeout 600 \
+         --workers 1 --threads 4 --timeout 600 \
          --log-level $GUNICORN_LOG_LEVEL \
+         --access-logfile - \
+         --error-logfile - \
          --capture-output

@@ -1,13 +1,14 @@
 import logging
 
-from api.plans.views import PlanViewSet
 from django.contrib import admin
 from django.db.models import QuerySet
 from django.shortcuts import render
+
+from api.v1.plans.views import PlanViewSet
 from managers.models import Manager
 from plans.models import PaymentRegistry, Plan, WorkItem
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 @admin.action(description="Unfix plan")
@@ -122,6 +123,7 @@ class WorkItemAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
+        "meta_name",
         "content_type",
         "created_at",
     )

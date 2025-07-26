@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -12,8 +13,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-DEBUG = os.getenv("DJANGO_DEBUG", False) == "True"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "secret")
+DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
 
 ALLOWED_HOSTS = [
     "planner.example.com",
@@ -21,7 +22,6 @@ ALLOWED_HOSTS = [
     "YOUR_SERVER_HOST",
     "localhost",
     "127.0.0.1",
-    "192.168.1.106",
     "backend",
 ]
 
@@ -40,11 +40,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://YOUR_SERVER_HOST",
     "http://127.0.0.1",
     "http://localhost",
+    "http://localhost:3001",
 ]
-
-LOG_DIR = "/var/log/selrad_planner/"
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR, exist_ok=True)
 
 LOGGING = {
     "version": 1,
@@ -56,56 +53,20 @@ LOGGING = {
             "style": "{",
         },
     },
-    "filters": {
-        "require_debug_false": {
-            "()": "django.utils.log.RequireDebugFalse",
-        },
-        "require_debug_true": {
-            "()": "django.utils.log.RequireDebugTrue",
-        },
-    },
     "handlers": {
-        "simple_console": {
-            "class": "logging.StreamHandler",
-            "level": "INFO",
-            "filters": ["require_debug_false"],
-            "formatter": "general",
-        },
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "general",
             "level": "DEBUG",
-            "filters": ["require_debug_true"],
-            "formatter": "general",
-        },
-        "errors": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "level": "ERROR",
-            "filename": os.path.join(LOG_DIR, "django_errors.log"),
-            "maxBytes": 5 * 1024 * 1024,
-            "backupCount": 10,
-            "formatter": "general",
-        },
-        "debug": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "level": "DEBUG",
-            "filename": os.path.join(LOG_DIR, "django_debug.log"),
-            "maxBytes": 5 * 1024 * 1024,
-            "backupCount": 10,
-            "formatter": "general",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["simple_console", "console", "debug"],
+            "handlers": ["console"],
             "propagate": True,
-        },
-        "django.security": {
-            "handlers": ["errors"],
-            "propagate": False,
         },
     },
 }
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -243,12 +204,12 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "api.utils.custom_permissions.IsAuthenticated",
+        "api.v1.utils.custom_permissions.IsAuthenticated",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",  # noqa
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "EXCEPTION_HANDLER": "api.utils.exception_handler.custom_exception_handler",
+    "EXCEPTION_HANDLER": "api.v1.utils.exception_handler.custom_exception_handler",
 }
 
 # SIMPLE_JWT settings

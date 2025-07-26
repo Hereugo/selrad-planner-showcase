@@ -1,12 +1,13 @@
 import logging
 
-from api.clients.serializers import AddressSerializer
-from clients.models import Address, Client, MetaClient
 from django.contrib import admin
 from django.shortcuts import render
 from leaflet.admin import LeafletGeoAdmin
 
-logger = logging.getLogger()
+from api.v1.clients.serializers import AddressSerializer
+from clients.models import Address, Client, MetaClient
+
+logger = logging.getLogger(__name__)
 
 
 @admin.action(description="Показать на карте")

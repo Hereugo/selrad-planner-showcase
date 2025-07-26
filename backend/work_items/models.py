@@ -8,8 +8,8 @@
 #
 # BaseWorkItem contains common fields for all work items, such as completed_by and created_at.
 
-from django.utils import timezone
 from django.db import models
+from django.utils import timezone
 from polymorphic.models import PolymorphicModel
 
 
@@ -94,4 +94,29 @@ class Return(BaseWorkItem):
     class Meta(BaseWorkItem.Meta):
         verbose_name = "Возврат"
         verbose_name_plural = "Возвраты"
+        ordering = ("-created_at",)
+
+
+def tg_photos_default():
+    return {}
+
+
+class Photo(BaseWorkItem):
+    tg_photo_batch_before_message_ids = models.JSONField(
+        verbose_name="Обьект id сообщении, где key это id группы альбомы или id фотки, а value это список message_id",
+        default=tg_photos_default,
+    )
+    tg_photo_batch_after_message_ids = models.JSONField(
+        verbose_name="Обьект id сообщении, где key это id группы альбомы или id фотки, а value это список message_id",
+        default=tg_photos_default,
+    )
+    tg_from_chat_id = models.IntegerField(
+        verbose_name="Чат из которого сообщение были полученны",
+        blank=True,
+        null=True,
+    )
+
+    class Meta(BaseWorkItem.Meta):
+        verbose_name = "Фото"
+        verbose_name_plural = "Фотки"
         ordering = ("-created_at",)
