@@ -1,5 +1,6 @@
 from django.contrib import admin
-from managers.models import Manager, GeoPoint
+
+from managers.models import GeoPoint, Manager
 
 
 @admin.register(GeoPoint)
@@ -32,6 +33,7 @@ class ManagerAdmin(admin.ModelAdmin):
         "is_driver",
         "is_warehouser",
         "is_accountant",
+        "tg_user_id",
     )
     search_fields = (
         "name",

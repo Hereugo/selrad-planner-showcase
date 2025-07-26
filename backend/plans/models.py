@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+
 from work_items.models import BaseWorkItem
 
 logger = logging.getLogger()
@@ -77,10 +78,18 @@ class WorkItem(models.Model):
     """Model WorkItem"""
 
     # https://www.reddit.com/r/django/comments/103uufa/can_you_limit_the_list_of_entities_to_associate/
-    target_limit = models.Q(app_label="work_items", model="shipment") | models.Q(
-        app_label="work_items", model="return"
+    target_limit = (
+        models.Q(app_label="work_items", model="shipment")
+        | models.Q(app_label="work_items", model="return")
+        | models.Q(app_label="work_items", model="photo")
     )
-
+    meta_name = models.CharField(
+        verbose_name="Название работы на англ",
+        help_text="Введите название работы на англ",
+        max_length=255,
+        blank=True,
+        null=True,
+    )
     name = models.CharField(
         verbose_name="Название работы",
         help_text="Введите название работы",

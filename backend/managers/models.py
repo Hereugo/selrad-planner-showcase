@@ -119,6 +119,12 @@ class Manager(models.Model):
         verbose_name="Менеджер",
         default=False,
     )
+    tg_user_id = models.IntegerField(
+        help_text="Телеграмм id пользователя",
+        verbose_name="Телеграмм id",
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         name = self.name
@@ -140,6 +146,8 @@ class Manager(models.Model):
         permissions = [
             ("view_settings", "Can view settings"),
             ("view_payments_section", "Can view payments section (in settings)"),
+            ("can_send_photos_telegram", "Can send photos in telegram"),
+            ("can_preview_photos_telegram", "Can preview photos in telegram"),
         ]
 
 

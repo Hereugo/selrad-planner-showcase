@@ -65,7 +65,7 @@ services:
     image: nginx:1.19.3
     restart: always
     ports:
-      - 80:80
+      - 3001:80
     networks:
       - backend
     volumes:
