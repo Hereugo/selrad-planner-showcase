@@ -1,12 +1,24 @@
 import io
 import logging
+from datetime import datetime
 from itertools import groupby
+from typing import Optional, cast
 
 import openpyxl
-from openpyxl.styles import Border, Side, NamedStyle, Font, PatternFill, Alignment
+from api.plans.views import GenericPlanViewSet
+from api.utils.custom_permissions import IsAuthenticated, permission_required
+from django.http import HttpResponse
+from drf_spectacular.utils import extend_schema
+from managers.models import Manager
+from openpyxl.styles import Alignment, Border, Font, NamedStyle, PatternFill, Side
+from rest_framework.decorators import action
+from rest_framework.request import Request
+from rest_framework.viewsets import GenericViewSet
 
+from .custom_schemas import *
+from .serializers import BaseFilterSerializer, ReportFilterSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 COL_DICT = {
@@ -38,6 +50,113 @@ def ru_week_name(date):
         return "ВОСКРЕСЕНЬЕ"
     else:
         return "Неверный день недели"
+
+
+class ExportPlans(GenericPlanViewSet, GenericViewSet):
+    @extend_schema(
+        summary="Скачать план",
+        description="",
+        parameters=[BaseFilterSerializer],
+        responses=DEFAULT_FILE_RESPONSE,
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="plans",
+    )
+    @permission_required("plans.export_plans")
+    def plans(self, request: Request) -> HttpResponse:
+        """Скачать план."""
+
+        filter_serializer = BaseFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        start_date: Optional[datetime] = filter_serializer.validated_data["start_date"]
+        end_date: Optional[datetime] = filter_serializer.validated_data["end_date"]
+
+        plans = self.filter_queryset(self.get_queryset())
+        plans = plans.order_by("assigned_date")
+
+        if not start_date:
+            start_date = cast(datetime, plans.earliest("assigned_date").assigned_date)
+        if not end_date:
+            end_date = cast(datetime, plans.latest("assigned_date").assigned_date)
+
+        buffer = generate_excelsheet_by_plan(plans, start_date, end_date)
+        buffer.seek(0)
+
+        # response = FileResponse(
+        #     buffer,
+        #     as_attachment=True,
+        #     filename=f"ПЛАНЫ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+        #     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        # )
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = (
+            f"attachment; filename=\"ПЛАНЫ С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx\""
+        )
+
+        return response
+
+    @extend_schema(
+        summary="Скачать отчет менеджера",
+        description="",
+        parameters=[ReportFilterSerializer],
+        responses=DEFAULT_FILE_RESPONSE,
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path=r"manager_report",
+    )
+    @permission_required("plans.export_report")
+    def export_manager_report(self, request: Request) -> HttpResponse:
+        """Скачать отчет."""
+
+        filter_serializer = ReportFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        start_date: Optional[datetime] = filter_serializer.validated_data["start_date"]
+        end_date: Optional[datetime] = filter_serializer.validated_data["end_date"]
+        manager: Manager = filter_serializer.validated_data["manager"]
+
+        # Method export report is used here, because filters are applied here.
+        plans = self.filter_queryset(self.get_queryset())
+        plans = plans.filter(managers=manager)
+        plans = plans.order_by("assigned_date")
+
+        if not start_date:
+            start_date = cast(datetime, plans.earliest("assigned_date").assigned_date)
+        if not end_date:
+            end_date = cast(datetime, plans.latest("assigned_date").assigned_date)
+
+        buffer = generate_excelsheet_by_manager(plans, manager, start_date, end_date)
+        buffer.seek(0)
+
+        # response = FileResponse(
+        #     buffer,
+        #     as_attachment=True,
+        #     filename=f"ОТЧЕТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx",
+        #     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        # )
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = (
+            f"attachment; filename=\"ОТЧЕТ {manager.name} С {start_date.strftime('%d-%m-%Y')} ПО {end_date.strftime('%d-%m-%Y')}.xlsx\""
+        )
+
+        return response
 
 
 def gen_header(ws, row, title, sc, ec):

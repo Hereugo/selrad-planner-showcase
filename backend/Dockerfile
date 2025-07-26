@@ -36,4 +36,6 @@ RUN pip3 install -r ./requirements.txt --no-cache-dir
 
 COPY . .
 
+ENV PYTHONUNBUFFERED 1
+
 RUN chmod +x /app/docker/server-entrypoint.sh

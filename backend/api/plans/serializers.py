@@ -1,21 +1,18 @@
 import logging
-from typing import Any, Optional, List
+from typing import Any, List, Optional
 
-from rest_framework.request import Request
-from rest_framework import serializers
-from drf_spectacular.utils import extend_schema_field
 from django.utils import timezone
-
+from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
+from rest_framework.request import Request
 
 from api.clients.serializers import ClientSerializer
 from api.users.serializers import ManagerSerializer
-
 from clients.models import Client
 from managers.models import Manager
-from plans.models import Plan, WorkItem, PlanWorkItem, PlanManager
+from plans.models import PaymentRegistry, Plan, PlanManager, PlanWorkItem, WorkItem
 
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class WorkItemSerializer(serializers.ModelSerializer):
@@ -61,6 +58,7 @@ class PlanSerializer(serializers.ModelSerializer):
             "updated_at",
             "invoice_date",
             "accountant_comment",
+            "is_permanent",
         )
 
 
@@ -102,7 +100,11 @@ class PlanCreateSerializer(serializers.ModelSerializer):
             "invoice_date",
             "accountant_comment",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = (
+            "id",
+            "created_at",
+            "updated_at",
+        )
 
     def validate_assigned_date(self, assigned_date):
         request: Request = self.context["request"]
@@ -139,13 +141,6 @@ class PlanCreateSerializer(serializers.ModelSerializer):
                     "При наличии отгрузки, должен быть назначен хотя бы один водитель"
                 )
 
-        # Only with work_items "shipment" or "return" you can update attributes "invoice_date" or "accountant_comment"
-        # if not ("shipment" in work_items_name or "return" in work_items_name):
-        #     if "invoice_date" in attrs or "accountant_comment" in attrs:
-        #         raise serializers.ValidationError(
-        #             f"Невозможно создать/изменить атрибуты бyхгалтера без работ: отгрузка или возврат"
-        #         )
-
         return super().validate(attrs)
 
     def create_work_items(self, plan: Plan, work_items: List[WorkItem]):
@@ -169,6 +164,7 @@ class PlanCreateSerializer(serializers.ModelSerializer):
         plan_managers: List[PlanManager] = []
         for manager in managers:
             plan_managers.append(PlanManager(plan=plan, manager=manager))
+
         PlanManager.objects.bulk_create(plan_managers, ignore_conflicts=True)
 
     def create(self, validated_data):
@@ -197,6 +193,17 @@ class PlanUpdateSerializer(PlanCreateSerializer):
     class Meta(PlanCreateSerializer.Meta):
         pass
 
+    def validate(self, attrs):
+        instance: Plan = self.instance  # type: ignore
+        if instance and instance.is_permanent:
+            request: Request = self.context["request"]
+            if not request.user.is_superuser:
+                raise serializers.ValidationError(
+                    "Вы не можете изменять план когда он перманентный"
+                )
+
+        return super().validate(attrs)
+
     def validate_assigned_date(self, assigned_date):
         request: Request = self.context["request"]
 
@@ -210,29 +217,7 @@ class PlanUpdateSerializer(PlanCreateSerializer):
 
         return assigned_date
 
-    # def validate_field_permission(self, validated_data):
-    #     request: Request = self.context["request"]
-    #     manager: Manager = request.user.manager
-    #
-    #     modified_attrs = set()
-    #     for field, value in validated_data.items():
-    #         if getattr(self.instance, field) != value:
-    #             logger.debug(f"{field}: {value} | {getattr(self.instance, field)}")
-    #             modified_attrs.add(field)
-    #
-    #     if manager.is_accountant:
-    #         # A set of attributes that an account is allowed to modify
-    #         allowed_attrs = set("shipment_cost")
-    #         if modified_attrs != allowed_attrs:
-    #             invalid_attrs = modified_attrs - allowed_attrs
-    #             raise serializers.ValidationError(
-    #                 f"Не разрешается изменять атрибуты: {invalid_attrs}"
-    #             )
-
     def update(self, instance: Plan, validated_data):
-        # This doesn't work?
-        # self.validate_field_permission(validated_data)
-
         if "work_items" in validated_data:
             work_items: List[WorkItem] = validated_data.pop("work_items", [])
             PlanWorkItem.objects.filter(plan=instance).exclude(
@@ -297,3 +282,45 @@ class NearbyClientSerializer(serializers.Serializer):
             data["last_shipment_plan"] = last_shipment_plan.data
 
         return data
+
+
+class PaymentRegistrySerializer(serializers.ModelSerializer):
+    """Serializer for Payment Registries"""
+
+    id = serializers.StringRelatedField()
+    manager = ManagerSerializer(many=False)
+    plans = PlanSerializer(many=True)
+
+    class Meta:
+        model = PaymentRegistry
+        fields = (
+            "id",
+            "date",
+            "manager",
+            "payment",
+            "bonus",
+            "comment",
+            "is_confirmed",
+            "plans",
+        )
+        read_only_fields = ("id",)
+
+
+class PaymentRegistryUpdateSerializer(serializers.ModelSerializer):
+    id = serializers.StringRelatedField()
+
+    class Meta:
+        model = PaymentRegistry
+        fields = (
+            "id",
+            "payment",
+            "bonus",
+            "comment",
+            "is_confirmed",
+        )
+        read_only_fields = ("id",)
+
+    def to_representation(self, instance: PaymentRegistry):
+        return PaymentRegistrySerializer(
+            instance, context={"request": self.context.get("request")}
+        ).data

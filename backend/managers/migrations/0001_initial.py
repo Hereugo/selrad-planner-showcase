@@ -8,25 +8,50 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Manager',
+            name="Manager",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('first_name', models.CharField(max_length=100)),
-                ('last_name', models.CharField(max_length=100)),
-                ('email', models.EmailField(blank=True, max_length=254, null=True, unique=True)),
-                ('phone_number', models.CharField(blank=True, max_length=17, unique=True, validators=[django.core.validators.RegexValidator(message='Номер телефона необходимо ввести в формате: "+9999999999". Допускается до 15 цифр', regex='^\\+?1?\\d{9,15}$')])),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("first_name", models.CharField(max_length=100)),
+                ("last_name", models.CharField(max_length=100)),
+                (
+                    "email",
+                    models.EmailField(
+                        blank=True, max_length=254, null=True, unique=True
+                    ),
+                ),
+                (
+                    "phone_number",
+                    models.CharField(
+                        blank=True,
+                        max_length=17,
+                        unique=True,
+                        validators=[
+                            django.core.validators.RegexValidator(
+                                message='Номер телефона необходимо ввести в формате: "+9999999999". Допускается до 15 цифр',
+                                regex="^\\+?1?\\d{9,15}$",
+                            )
+                        ],
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'verbose_name': 'Менеджер',
-                'verbose_name_plural': 'Менеджеры',
-                'ordering': (['-created_at'],),
+                "verbose_name": "Менеджер",
+                "verbose_name_plural": "Менеджеры",
+                "ordering": (["-created_at"],),
             },
         ),
     ]

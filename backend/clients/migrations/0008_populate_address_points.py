@@ -4,7 +4,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clients', '0007_address_point'),
+        ("clients", "0007_address_point"),
     ]
 
     operations = [

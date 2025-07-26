@@ -7,6 +7,7 @@ import {
   handleReportDownload,
   handleCompareReportDownload,
   handleDispatchListDownload,
+  handlePaymentReportDownload,
 } from "./index.hooks";
 import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -31,6 +32,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
   const [isDispatchListLoading, setIsDispatchListLoading] = useState(false);
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isCompareLoading, setIsCompareLoading] = useState(false);
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
 
   return (
     <>
@@ -126,6 +128,24 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
         >
           Сравнить с прошлым годом
           {isCompareLoading && (
+            <Loader2 className="w-6 h-6 ml-2 animate-spin" />
+          )}
+        </Button>
+        <Button
+          onClick={() =>
+            handlePaymentReportDownload({
+              setIsLoading: setIsPaymentLoading,
+              calendarRange,
+              toast,
+              managerId,
+              workId,
+            })
+          }
+          className={cn(viewFeature.canExportPaymentReport ? "" : "hidden")}
+          disabled={isPaymentLoading}
+        >
+          Скачать отчет по оплатам
+          {isPaymentLoading && (
             <Loader2 className="w-6 h-6 ml-2 animate-spin" />
           )}
         </Button>

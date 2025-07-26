@@ -1,25 +1,90 @@
 import io
 import logging
-
-from django.contrib.postgres.aggregates import StringAgg
-from django.db.models import Sum
+from datetime import datetime
 
 import openpyxl
-from openpyxl.styles import Border, Side, NamedStyle, Font, PatternFill
-from rest_framework.request import Request
-
-from .custom_filters import PlanFilter
-from plans.models import Plan
+from api.plans.custom_filters import PlanFilter
+from api.plans.views import GenericPlanViewSet
+from api.utils.custom_permissions import IsAuthenticated, permission_required
 from clients.models import Client
-from plans.models import WorkItem
+from dateutil.relativedelta import relativedelta
+from django.contrib.postgres.aggregates import StringAgg
+from django.db.models import Sum
+from django.http import HttpResponse
+from drf_spectacular.utils import extend_schema
 from managers.models import Manager
+from openpyxl.styles import Border, Font, NamedStyle, PatternFill, Side
+from plans.models import WorkItem
+from rest_framework.decorators import action
+from rest_framework.request import Request
+from rest_framework.viewsets import GenericViewSet
+
+from .custom_schemas import *
+from .serializers import CompareYearsFilterSerializer
+
+logger = logging.getLogger()
 
 
-logger = logging.getLogger(__name__)
+class ExportCompareYears(GenericPlanViewSet, GenericViewSet):
+    @extend_schema(
+        summary="Скачать сравнить по периодам",
+        description="",
+        parameters=[CompareYearsFilterSerializer],
+        responses=DEFAULT_FILE_RESPONSE,
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="compare_years",
+    )
+    @permission_required("clients.export_compare_years")
+    def export_compare_years(self, request: Request) -> HttpResponse:
+        """Скачать сравнить по периодам."""
+
+        filter_serializer = CompareYearsFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+
+        start_date: datetime = filter_serializer.validated_data["start_date"]
+        end_date: datetime = filter_serializer.validated_data["end_date"]
+        to_year_diff: int = filter_serializer.validated_data["to_year_diff"]
+
+        period_2 = {
+            "start_date": start_date,
+            "end_date": end_date,
+        }
+        period_1 = period_2.copy()
+
+        period_1["start_date"] = period_2["start_date"] - relativedelta(
+            years=to_year_diff
+        )
+        period_1["end_date"] = period_2["end_date"] - relativedelta(years=to_year_diff)
+
+        buffer = generate_compare_years(period_1, period_2, request)
+        buffer.seek(0)
+
+        # response = FileResponse(
+        #     buffer,
+        #     as_attachment=True,
+        #     filename=f"СРАВНИТЬ {period_1['start_date'].strftime('%d-%m-%Y')} ПО {period_1['end_date'].strftime('%d-%m-%Y')} ПРОТИВ {period_2['start_date'].strftime('%d-%m-%Y')} ПО {period_2['end_date'].strftime('%d-%m-%Y')} ГОДА.xlsx",
+        #     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        # )
+
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Access-Control-Expose-Headers"] = "Content-Disposition"
+        response["Content-Disposition"] = (
+            f"attachment; filename=\"СРАВНИТЬ {period_1['start_date'].strftime('%d-%m-%Y')} ПО {period_1['end_date'].strftime('%d-%m-%Y')} ПРОТИВ {period_2['start_date'].strftime('%d-%m-%Y')} ПО {period_2['end_date'].strftime('%d-%m-%Y')} ГОДА.xlsx\""
+        )
+
+        buffer.close()
+
+        return response
 
 
 def get_plans(filter_data, queryset):
-    logger.debug(filter_data)
     filterset = PlanFilter(filter_data, queryset=queryset)
     return filterset.qs
 
@@ -107,7 +172,6 @@ def generate_compare_years(period_1, period_2, request: Request):
 
     table = {}
     query_params = dict(request.query_params)
-    query_params.pop("diff_year")
 
     for client in Client.objects.all():
         meta_client_name = (

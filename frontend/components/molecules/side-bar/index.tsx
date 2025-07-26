@@ -15,7 +15,9 @@ interface SideBarProps {
 const SideBar: FC<SideBarProps> = ({ className }) => {
   const viewFeature = useViewFeature();
   return (
-    <div className={cn("border-r-2 z-50 px-4 py-6", className)}>
+    <div
+      className={cn("border-r-2 z-50 px-4 py-6 flex flex-col gap-4", className)}
+    >
       {viewFeature.canCreateNewPlan && (
         <>
           <NewPlanButton />
@@ -25,7 +27,7 @@ const SideBar: FC<SideBarProps> = ({ className }) => {
 
       <NavigationLinks />
 
-      <Separator orientation="horizontal" className="my-4" />
+      <Separator orientation="horizontal" />
 
       <Filters />
     </div>

@@ -1,10 +1,10 @@
 import logging
-
 from functools import wraps
+
 from rest_framework import permissions
 from rest_framework.permissions import BasePermission
+from rest_framework.request import Request
 from rest_framework.response import Response
-
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +60,12 @@ def permission_required(permission):
     def has_permission_decorator(func):
         @wraps(func)
         def has_permission_wrapper(*args, **kwargs):
-            request = args[0].request
+            if isinstance(args[0], Request):
+                request = args[0]
+            else:
+                request = args[0].request
             if not request.user.has_perm(permission):
+                logger.info(f"{request.user} failed to access due to low permissions")
                 return Response(
                     {"error": "У вас нет прав на это действие."}, status=403
                 )

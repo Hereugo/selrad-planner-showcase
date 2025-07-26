@@ -1,17 +1,15 @@
-import re
 import logging
+import re
 from math import ceil
 
-from django.db import models
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.utils import timezone
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-
+from django.db import models
+from django.utils import timezone
 from work_items.models import BaseWorkItem
 
-
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 def validate_sum_string(value):
@@ -20,6 +18,59 @@ def validate_sum_string(value):
     r = r"^[-+]?(\d+(\.\d*)?|\.\d+)(\s*[-+]\s*[-+]?(\d+(\.\d*)?|\.\d+))*$"
     if not re.match(r, value):
         raise ValidationError("Invalid sum string")
+
+
+class PaymentRegistry(models.Model):
+    """Payment registry"""
+
+    date = models.DateField(
+        max_length=255,
+        verbose_name="Дата совершенного плана",
+        help_text="Выберите совершенного плана",
+    )
+    manager = models.ForeignKey(
+        to="managers.Manager",
+        verbose_name="Менеджер",
+        help_text="Выберите менеджера",
+        related_name="payment_registries",
+        on_delete=models.CASCADE,
+    )
+    payment = models.IntegerField(
+        verbose_name="Выплаты менеджеру в (₸)",
+        help_text="Введите выплату менеджеру в (₸)",
+        blank=True,
+        null=True,
+    )
+    bonus = models.IntegerField(
+        verbose_name="Бонус менеджеру в (₸)",
+        help_text="Введите бонус менеджеру в (₸)",
+        blank=True,
+        null=True,
+        default=0,
+    )
+    comment = models.TextField(
+        verbose_name="Комментарии",
+        help_text="Ввидите комментарии",
+        blank=True,
+    )
+    is_confirmed = models.BooleanField(
+        verbose_name="Подтвержденно",
+        help_text="Подтвержден ли план",
+        default=False,
+    )
+
+    def plans(self):
+        return self.manager.plans.filter(assigned_date=self.date)
+
+    class Meta:
+        verbose_name = "Данные о выплате"
+        verbose_name_plural = "Реестр выплаты"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["date", "manager"], name="unique_date_manager"
+            )
+        ]
+        ordering = ("-date", "-manager")
 
 
 class WorkItem(models.Model):
@@ -121,6 +172,11 @@ class Plan(models.Model):
         blank=True,
         null=True,
     )
+    is_permanent = models.BooleanField(
+        verbose_name="перманентный план",
+        help_text="перманентный план",
+        default=False,
+    )
 
     invoice_date = models.DateField(
         max_length=255,
@@ -167,6 +223,7 @@ class Plan(models.Model):
             ("export_report", "Can export report"),
             ("get_dispatch_list", "Can export dispatch list"),
             ("get_dispatch_report", "Can export dispatch report"),
+            ("export_payment_report", "Can export payment report"),
         ]
         verbose_name = "План"
         verbose_name_plural = "Планы"

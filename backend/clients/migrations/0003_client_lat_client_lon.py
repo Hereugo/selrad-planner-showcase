@@ -6,18 +6,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clients', '0002_alter_client_address'),
+        ("clients", "0002_alter_client_address"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='client',
-            name='lat',
-            field=models.DecimalField(decimal_places=6, default=0, help_text='Введите широту адреса', max_digits=9, verbose_name='Широта'),
+            model_name="client",
+            name="lat",
+            field=models.DecimalField(
+                decimal_places=6,
+                default=0,
+                help_text="Введите широту адреса",
+                max_digits=9,
+                verbose_name="Широта",
+            ),
         ),
         migrations.AddField(
-            model_name='client',
-            name='lon',
-            field=models.DecimalField(decimal_places=6, default=0, help_text='Введите долгота адреса', max_digits=9, verbose_name='Долгота'),
+            model_name="client",
+            name="lon",
+            field=models.DecimalField(
+                decimal_places=6,
+                default=0,
+                help_text="Введите долгота адреса",
+                max_digits=9,
+                verbose_name="Долгота",
+            ),
         ),
     ]

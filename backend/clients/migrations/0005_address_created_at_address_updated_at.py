@@ -7,20 +7,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clients', '0004_address_remove_client_address_remove_client_lat_and_more'),
+        ("clients", "0004_address_remove_client_address_remove_client_lat_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='address',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=datetime.datetime(2024, 3, 19, 9, 36, 44, 812630, tzinfo=datetime.timezone.utc), verbose_name='Дата создания'),
+            model_name="address",
+            name="created_at",
+            field=models.DateTimeField(
+                auto_now_add=True,
+                default=datetime.datetime(
+                    2024, 3, 19, 9, 36, 44, 812630, tzinfo=datetime.timezone.utc
+                ),
+                verbose_name="Дата создания",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='address',
-            name='updated_at',
-            field=models.DateTimeField(default=datetime.datetime(2024, 3, 19, 9, 37, 4, 211564, tzinfo=datetime.timezone.utc), editable=False, verbose_name='Дата обновления'),
+            model_name="address",
+            name="updated_at",
+            field=models.DateTimeField(
+                default=datetime.datetime(
+                    2024, 3, 19, 9, 37, 4, 211564, tzinfo=datetime.timezone.utc
+                ),
+                editable=False,
+                verbose_name="Дата обновления",
+            ),
             preserve_default=False,
         ),
     ]

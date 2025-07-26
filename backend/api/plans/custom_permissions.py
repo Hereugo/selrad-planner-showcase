@@ -1,9 +1,9 @@
 import logging
-from django.utils import timezone
 
+from django.utils import timezone
 from rest_framework import permissions
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 # COMMENTED:

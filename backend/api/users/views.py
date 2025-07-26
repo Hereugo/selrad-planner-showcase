@@ -1,11 +1,14 @@
 import logging
 
+from api.utils.custom_permissions import HasCRUDPermission, IsAuthenticated
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from managers.models import Manager
+from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import status
 
 from .serializers import (
     GeoPointCreateSerializer,
@@ -14,22 +17,20 @@ from .serializers import (
     MeSerializer,
 )
 
-from api.utils.custom_permissions import IsAuthenticated
-
-from managers.models import Manager
-
-
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-class UserViewSet(GenericViewSet):
+class UserViewSet(GenericViewSet, ListModelMixin, UpdateModelMixin):
     """API для работы с пользователями."""
 
     queryset = Manager.objects.filter(is_hidden=False)
     serializer_class = ManagerSerializer
     pagination_class = None
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (
+        IsAuthenticated,
+        HasCRUDPermission,
+    )
 
     @extend_schema(
         methods=["get"],
@@ -51,6 +52,7 @@ class UserViewSet(GenericViewSet):
     )
     def me(self, request):
         """Возвращает данные текущего пользователя."""
+
         if request.user.manager == None:
             return Response(
                 {"error": "Пользователь не является менеджером"},

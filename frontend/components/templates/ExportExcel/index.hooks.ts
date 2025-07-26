@@ -1,10 +1,11 @@
-import { compareReportExportQuery } from "@/lib/backend/clients";
 import {
-  planExportQuery,
-  managerReportExportQuery,
+  compareReportExportQuery,
   dispatchExportQuery,
   dispatchListExportQuery,
-} from "@/lib/backend/plans";
+  managerReportExportQuery,
+  paymentReportExportQuery,
+  planExportQuery,
+} from "@/lib/backend/exports";
 import { decodeContentDisposition, formatDateBackend } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
@@ -137,10 +138,10 @@ export const handleReportDownload = ({
   setIsLoading(true);
 
   const data = managerReportExportQuery({
+    manager: managerId,
     start_date: formatDateBackend(calendarRange?.from),
     end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,
-    managers: managerId ? [managerId] : undefined,
     work_items: workId ? [workId] : undefined,
   });
 
@@ -230,7 +231,8 @@ export const handleDispatchListDownload = ({
 
   if (!managerId) return;
 
-  const data = dispatchListExportQuery(managerId, {
+  const data = dispatchListExportQuery({
+    manager: managerId,
     start_date: formatDateBackend(calendarRange?.from),
     end_date: formatDateBackend(calendarRange?.to),
     search: searchQuery,
@@ -261,6 +263,59 @@ export const handleDispatchListDownload = ({
       setIsLoading(false);
       toast({
         title: "Ошибка, не удалось скачать план",
+        description: e.message,
+      });
+    });
+};
+
+export const handlePaymentReportDownload = ({
+  setIsLoading,
+  toast,
+  calendarRange,
+  managerId,
+  workId,
+  onlyShipment,
+}: {
+  setIsLoading: Function;
+  toast: Function;
+  calendarRange?: DateRange;
+  managerId?: Manager["id"];
+  workId?: WorkItem["id"];
+  onlyShipment?: boolean;
+}) => {
+  setIsLoading(true);
+
+  const data = paymentReportExportQuery({
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
+    managers: managerId ? [managerId] : undefined,
+    work_items: workId ? [workId] : undefined,
+    only_shipment: onlyShipment || false,
+  });
+
+  data
+    .then((data) => {
+      if (data?.data) {
+        const filename = decodeContentDisposition(
+          data.headers["content-disposition"],
+        )
+          ?.split("filename=")[1]
+          .replace(/[^A-Za-zА-Яа-я\s0-9.-]/g, "");
+        const url = window.URL.createObjectURL(new Blob([data.data]));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename || "payment_report.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+      setIsLoading(false);
+    })
+    .catch((e) => {
+      console.error(e);
+      setIsLoading(false);
+      toast({
+        title: "Ошибка, не удалось скачать отчет",
         description: e.message,
       });
     });

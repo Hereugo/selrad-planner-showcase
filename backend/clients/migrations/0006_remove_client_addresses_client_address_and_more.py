@@ -7,20 +7,28 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clients', '0005_address_created_at_address_updated_at'),
+        ("clients", "0005_address_created_at_address_updated_at"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='client',
-            name='addresses',
+            model_name="client",
+            name="addresses",
         ),
         migrations.AddField(
-            model_name='client',
-            name='address',
-            field=models.ForeignKey(blank=True, help_text='Выберите адрес клиента', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='addresses', to='clients.address', verbose_name='Адрес клиента'),
+            model_name="client",
+            name="address",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Выберите адрес клиента",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="addresses",
+                to="clients.address",
+                verbose_name="Адрес клиента",
+            ),
         ),
         migrations.DeleteModel(
-            name='ClientAddress',
+            name="ClientAddress",
         ),
     ]
