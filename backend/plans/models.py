@@ -233,6 +233,7 @@ class Plan(models.Model):
             ("get_dispatch_list", "Can export dispatch list"),
             ("get_dispatch_report", "Can export dispatch report"),
             ("export_payment_report", "Can export payment report"),
+            ("export_distribution_cost_report", "Can export distribution cost report"),
         ]
         verbose_name = "План"
         verbose_name_plural = "Планы"
