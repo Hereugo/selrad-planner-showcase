@@ -110,7 +110,8 @@ class Photo(BaseWorkItem):
         verbose_name="Обьект id сообщении, где key это id группы альбомы или id фотки, а value это список message_id",
         default=tg_photos_default,
     )
-    tg_from_chat_id = models.IntegerField(
+    tg_from_chat_id = models.CharField(
+        max_length=255,
         verbose_name="Чат из которого сообщение были полученны",
         blank=True,
         null=True,

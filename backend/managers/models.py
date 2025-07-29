@@ -119,7 +119,8 @@ class Manager(models.Model):
         verbose_name="Менеджер",
         default=False,
     )
-    tg_user_id = models.IntegerField(
+    tg_user_id = models.CharField(
+        max_length=255,
         help_text="Телеграмм id пользователя",
         verbose_name="Телеграмм id",
         blank=True,
@@ -148,6 +149,12 @@ class Manager(models.Model):
             ("view_payments_section", "Can view payments section (in settings)"),
             ("can_send_photos_telegram", "Can send photos in telegram"),
             ("can_preview_photos_telegram", "Can preview photos in telegram"),
+            ("can_send_old_photos", "Can upload photos on old tasks"),
+            ("can_view_all_tasks", "Can view all tasks"),
+            (
+                "can_receive_photo_notification",
+                "Can receive notification on upload photo",
+            ),
         ]
 
 
