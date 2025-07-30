@@ -19,7 +19,8 @@ from rest_framework.viewsets import GenericViewSet
 from api.v1.exports.custom_schemas import *
 from api.v1.exports.serializers import DistributionCostReportFilterSerializer
 from api.v1.plans.views import GenericPlanViewSet
-from api.v1.utils.custom_permissions import IsAuthenticated, permission_required
+from api.v1.utils.custom_permissions import (IsAuthenticated,
+                                             permission_required)
 from clients.models import Client
 from managers.models import Manager
 
@@ -37,7 +38,7 @@ class ExportDistributionCostReport(GenericPlanViewSet, GenericViewSet):
         detail=False,
         methods=["get"],
         permission_classes=[IsAuthenticated],
-        url_path="payment_report",
+        url_path="distribution_cost_report",
     )
     @permission_required("plans.export_distribution_cost_report")
     def distribution_cost_report(self, request: Request) -> HttpResponse:
@@ -96,7 +97,7 @@ class ExportDistributionCostReport(GenericPlanViewSet, GenericViewSet):
                 shop=F("client__name"),
                 client=F("client__meta_client__name"),
                 date=F("assigned_date"),
-                shipment_cost_formula=Concat(Value("="), F("shipment_cost_formula")),
+                shipment_cost=Concat(Value("="), F("shipment_cost_formula")),
             )
             .values(
                 "payment_bonus",
@@ -107,7 +108,7 @@ class ExportDistributionCostReport(GenericPlanViewSet, GenericViewSet):
                 "client",
                 "date",
                 "box_count",
-                "shipment_cost_formula",
+                "shipment_cost",
             )
             .distinct()
         )
@@ -139,12 +140,12 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
     workbook = openpyxl.Workbook()
 
     # add raw table in separate spreadsheet
-    total_box_count = "SUM(MAP(UNIQUE(FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})), LAMBDA(h, XLOOKUP(h, FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row}), FILTER({sheet}!{box_count}:{box_count}, {sheet}!{date}:{date}={sheet}!{shop}{row})))))"
-    total_shipment_cost = "SUM(MAP(UNIQUE(FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})), LAMBDA(h, XLOOKUP(h, FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row}), FILTER({sheet}!{shipment_cost_formula}:{shipment_cost_formula}, {sheet}!{date}:{date}={sheet}!{shop}{row})))))"
+    total_box_count = "SUM(MAP(UNIQUE(FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})), LAMBDA(h, XLOOKUP(h, FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row}), FILTER({sheet}!{box_count}:{box_count}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})))))"
+    total_shipment_cost = "SUM(MAP(UNIQUE(FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})), LAMBDA(h, XLOOKUP(h, FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row}), FILTER({sheet}!{shipment_cost}:{shipment_cost}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})))))"
 
     total_payment_bonus = {
-        "driver": "SUMIFS({sheet}!{box_price}:{box_price}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))",
-        "manager": "SUMIFS({sheet}!{visit_price}:{visit_price}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))",
+        "driver": 'ROUND(SUMIFS({sheet}!{box_price}:{box_price}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, "{manager_name}"), 0)',
+        "manager": 'ROUND(SUMIFS({sheet}!{visit_price}:{visit_price}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, "{manager_name}"), 0)',
     }
 
     box_price = "INDEX({sheet}!{payment_bonus}:{payment_bonus}, {row}) * INDEX({sheet}!{box_count}:{box_count}, {row}) / SUMIFS({sheet}!{box_count}:{box_count}, {sheet}!{date}:{date}, INDEX({sheet}!{date}:{date}, {row}), {sheet}!{manager}:{manager}, INDEX({sheet}!{manager}:{manager}, {row}))"
@@ -157,6 +158,9 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
     df["visit_price"] = "=" + visit_price.format(
         **get_cols_by_letter(df), sheet="raw_data", row="ROW()"
     )
+
+    managers = df["manager"].unique()
+    drivers = df[df["is_driver"]]["manager"].unique()
 
     cols_by_letter = get_cols_by_letter(df)
 
@@ -172,12 +176,34 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
     # create and fillout main worksheet
     ws = workbook.create_sheet()
 
+    # setup header cells for table1
+    ws.cell(row=1, column=1).value = "магазины / клиенты"
     ws.cell(row=1, column=2).value = "Кол-во коробок (кор)"
     ws.cell(row=1, column=3).value = "Сумма отгрузки (₸)"
-    ws.cell(row=3, column=1).value = "магазины / клиенты"
 
-    group_rows_start = 0
+    table2_offset = 4
+    for i, driver in enumerate(drivers, start=1):
+        ws.cell(row=1, column=table2_offset + i).value = driver
+    ws.cell(row=1, column=table2_offset + len(drivers) + 1).value = "ВОДИТЕЛИ"
+    ws.cell(row=1, column=table2_offset + len(drivers) + 2).value = "СТОИМОСТЬ КОРОБКИ"
+    ws.cell(row=1, column=table2_offset + len(drivers) + 3).value = "ПРОЦЕНТ"
+
+    table3_offset = table2_offset + len(drivers) + 3 + 1
+    for i, manager in enumerate(managers, start=1):
+        ws.cell(row=1, column=table3_offset + i).value = manager
+    ws.cell(row=1, column=table3_offset + len(managers) + 1).value = "ДЕВОЧКИ"
+    ws.cell(row=1, column=table3_offset + len(managers) + 2).value = "СТОИМОСТЬ КОРОБКИ"
+    ws.cell(row=1, column=table3_offset + len(managers) + 3).value = "ПРОЦЕНТ"
+
+    # https://stackoverflow.com/questions/27133731/folding-multiple-rows-with-openpyxl
+    ws.sheet_properties.outlinePr.summaryBelow = False
+
+    group_rows_start = 2
     for client, shop_group in df.groupby(by="client"):
+
+        shop_group.drop_duplicates(["shop"], inplace=True)
+        shop_group.sort_values(by=["shop"], inplace=True)
+
         # TABLE 1 CREATION
         table1_df = pd.DataFrame(
             {
@@ -202,139 +228,197 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
             {
                 "shop": [client],
                 "total_box_count": [
-                    "=SUM({box_count_col}{}:{box_count_col}{}".format(
+                    "=SUM({box_count_col}{}:{box_count_col}{})".format(
                         *table1_range,
                         box_count_col="B",
                     )
                 ],
                 "total_shipment_cost": [
-                    "=SUM({shipment_cost_col}{}:{shipment_cost_col}{}".format(
+                    "=SUM({shipment_cost_col}{}:{shipment_cost_col}{})".format(
                         *table1_range,
                         shipment_cost_col="C",
                     )
                 ],
             }
         )
-
-        for r in dataframe_to_rows(table1_header_df, index=False, header=False):
-            ws.append(r)
-            for cell in list(ws)[-1]:
-                cell.style = "subgroup_header_cell"
-
-        for r in dataframe_to_rows(table1_df, index=False, header=False):
-            ws.append(r)
-            for cell in list(ws)[-1]:
-                cell.style = "generic_cell"
-
-        # TABLE 2 CREATION (DRIVERS WITH PAYMENTS)
+        series_range = pd.Series(range(*table1_range))
 
         table2_df = pd.DataFrame(
             {
-                manager: client_manager_group["row"].apply(
-                    lambda x: "=ROUND({}, 0)".format(
-                        total_payment_bonus["driver"].format(
-                            **cols_by_letter,
-                            sheet="raw_data",
-                            row=x + 1,
-                        )
+                driver: shop_group["row"].apply(
+                    lambda x: "="
+                    + total_payment_bonus["driver"].format(
+                        **cols_by_letter,
+                        sheet="raw_data",
+                        manager_name=driver,
+                        row=x + 1,
                     )
                 )
-                for manager, client_manager_group in shop_group.groupby(by="manager")
-                if df.at(
-                    client_manager_group["row"][0] - 1, "is_driver"
-                )  # I'm not sure but it could be empty
+                for driver in drivers
             }
         )
-
-        table2_offset = 4  # absolute offset from spreadsheet
-        table2_size = len(table2_df)
-        table2_range = (group_rows_start + 1, group_rows_start + table2_size)
-        table2_header_df = pd.DataFrame(
+        stat_table2_df = pd.DataFrame(
             {
-                manager: "=SUM({payment_bonus_col}{}:{payment_bonus_col}{})".format(
-                    *table2_range,
-                    payment_bonus_col=get_column_letter(i),
-                )
-                for i, (manager, client_manager_group) in enumerate(
-                    shop_group.groupby(by="manager"),
-                    start=1 + table2_offset,
-                )
-                if df.at(
-                    client_manager_group["row"][0] - 1, "is_driver"
-                )  # I'm not sure but it could be empty
+                "total_payment": series_range.apply(
+                    lambda x: "=SUM({}{row}:{}{row})".format(
+                        get_column_letter(table2_offset + 1),
+                        get_column_letter(table2_offset + len(drivers)),
+                        row=x,
+                    )
+                ),
+                "box_cost": series_range.apply(
+                    lambda x: "={}{row}/{box_count_col}{row}".format(
+                        get_column_letter(table2_offset + len(drivers) + 1),
+                        box_count_col="B",
+                        row=x,
+                    )
+                ),
+                "percent": series_range.apply(
+                    lambda x: "={}{row}/{shipment_cost_col}{row}".format(
+                        get_column_letter(table2_offset + len(drivers) + 1),
+                        shipment_cost_col="C",
+                        row=x,
+                    )
+                ),
             }
         )
 
-        for r in dataframe_to_rows(table2_header_df, index=False, header=False):
-            ws.append(r)
-            for cell in list(ws)[-1]:
-                cell.style = "subgroup_header_cell"
-
-        for r in dataframe_to_rows(table2_df, index=False, header=False):
-            ws.append(r)
-            for cell in list(ws)[-1]:
-                cell.style = "generic_cell"
-
-        # TABLE 3 CREATION (MANAGERS WITH PAYMENTS)
+        table2_df = pd.concat(
+            [table2_df.reset_index(drop=True), stat_table2_df.reset_index(drop=True)],
+            axis=1,
+        )
 
         table3_df = pd.DataFrame(
             {
-                manager: client_manager_group["row"].apply(
-                    lambda x: "=ROUND({}, 0)".format(
-                        total_payment_bonus["manager"].format(
+                **{
+                    manager: shop_group["row"].apply(
+                        lambda x: "="
+                        + total_payment_bonus["manager"].format(
                             **cols_by_letter,
                             sheet="raw_data",
+                            manager_name=manager,
                             row=x + 1,
                         )
                     )
-                )
-                for manager, client_manager_group in shop_group.groupby(by="manager")
-                if not df.at(
-                    client_manager_group["row"][0] - 1, "is_driver"
-                )  # I'm not sure but it could be empty
+                    for manager in managers
+                },
             }
         )
 
-        table3_offset = (
-            table2_offset + len(table2_df.columns) + 2 + 1
-        )  # absolute offset from spreadsheet
-        table3_size = len(table3_df)
-        table3_range = (group_rows_start + 1, group_rows_start + table3_size)
+        stat_table3_df = pd.DataFrame(
+            {
+                "total_payment": series_range.apply(
+                    lambda x: "=SUM({}{row}:{}{row})".format(
+                        get_column_letter(table3_offset + 1),
+                        get_column_letter(table3_offset + len(managers)),
+                        row=x,
+                    )
+                ),
+                "box_cost": series_range.apply(
+                    lambda x: "={}{row}/{box_count_col}{row}".format(
+                        get_column_letter(table3_offset + len(managers) + 1),
+                        box_count_col="B",
+                        row=x,
+                    )
+                ),
+                "percent": series_range.apply(
+                    lambda x: "={}{row}/{shipment_cost_col}{row}".format(
+                        get_column_letter(table3_offset + len(managers) + 1),
+                        shipment_cost_col="C",
+                        row=x,
+                    )
+                ),
+            }
+        )
+
+        table3_df = pd.concat(
+            [table3_df.reset_index(drop=True), stat_table3_df.reset_index(drop=True)],
+            axis=1,
+        )
+
+        table2_header_df = pd.DataFrame(
+            {
+                **{
+                    driver: [
+                        "=SUM({manager_col}{}:{manager_col}{})".format(
+                            *table1_range,
+                            manager_col=get_column_letter(i),
+                        )
+                    ]
+                    for i, driver in enumerate(drivers, start=table2_offset + 1)
+                },
+                "total_payment": [
+                    "=SUM({}{row}:{}{row})".format(
+                        get_column_letter(table2_offset + 1),
+                        get_column_letter(table2_offset + len(drivers)),
+                        row=group_rows_start,
+                    )
+                ],
+                "box_cost": [
+                    "={}{row}/{box_count_col}{row}".format(
+                        get_column_letter(table2_offset + len(drivers) + 1),
+                        box_count_col="B",
+                        row=group_rows_start,
+                    )
+                ],
+                "percent": [
+                    "={}{row}/{shipment_cost_col}{row}".format(
+                        get_column_letter(table2_offset + len(drivers) + 1),
+                        shipment_cost_col="C",
+                        row=group_rows_start,
+                    )
+                ],
+            }
+        )
+
         table3_header_df = pd.DataFrame(
             {
-                manager: "=SUM({payment_bonus_col}{}:{payment_bonus_col}{})".format(
-                    *table3_range,
-                    payment_bonus_col=get_column_letter(i),
-                )
-                for i, (manager, client_manager_group) in enumerate(
-                    shop_group.groupby(by="manager"),
-                    start=1 + table3_offset,
-                )
-                if not df.at(
-                    client_manager_group["row"][0] - 1, "is_driver"
-                )  # I'm not sure but it could be empty
+                **{
+                    manager: [
+                        "=SUM({manager_col}{}:{manager_col}{})".format(
+                            *table1_range,
+                            manager_col=get_column_letter(i),
+                        )
+                    ]
+                    for i, manager in enumerate(managers, start=table3_offset)
+                },
+                "total_payment": [
+                    "=SUM({}{row}:{}{row})".format(
+                        get_column_letter(table3_offset + 1),
+                        get_column_letter(table3_offset + len(managers)),
+                        row=group_rows_start,
+                    )
+                ],
+                "box_cost": [
+                    "={}{row}/{box_count_col}{row}".format(
+                        get_column_letter(table3_offset + len(managers) + 1),
+                        box_count_col="B",
+                        row=group_rows_start,
+                    )
+                ],
+                "percent": [
+                    "={}{row}/{shipment_cost_col}{row}".format(
+                        get_column_letter(table3_offset + len(managers) + 1),
+                        shipment_cost_col="C",
+                        row=group_rows_start,
+                    )
+                ],
             }
         )
 
-        for r in dataframe_to_rows(table3_header_df, index=False, header=False):
-            ws.append(r)
-            for cell in list(ws)[-1]:
-                cell.style = "subgroup_header_cell"
+        for r1, r2, r3 in zip(
+            dataframe_to_rows(table1_header_df, index=False, header=False),
+            dataframe_to_rows(table2_header_df, index=False, header=False),
+            dataframe_to_rows(table3_header_df, index=False, header=False),
+        ):
+            ws.append(r1 + [None] + r2 + [None] + r3)
 
-        for r in dataframe_to_rows(table3_df, index=False, header=False):
-            ws.append(r)
-            for cell in list(ws)[-1]:
-                cell.style = "generic_cell"
-
-        assert (
-            table1_size == table2_size
-        ), f"table 1 and table 2 are different: {table1_size} and {table2_size} respectively"
-        assert (
-            table1_size == table3_size
-        ), f"table 1 and table 3 are different: {table1_size} and {table3_size} respectively"
-        assert (
-            table2_size == table3_size
-        ), f"table 2 and table 3 are different: {table2_size} and {table3_size} respectively"
+        for r1, r2, r3 in zip(
+            dataframe_to_rows(table1_df, index=False, header=False),
+            dataframe_to_rows(table2_df, index=False, header=False),
+            dataframe_to_rows(table3_df, index=False, header=False),
+        ):
+            ws.append(r1 + [None] + r2 + [None] + r3)
 
         ws.row_dimensions.group(
             group_rows_start + 1,
@@ -345,3 +429,8 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
 
         # move to next sub-header row
         group_rows_start += len(table1_header_df) + len(table1_df)
+
+    buffer = BytesIO()
+    workbook.save(buffer)
+
+    return buffer
