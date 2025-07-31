@@ -9,9 +9,10 @@ from django.db.models import F, Prefetch, Q, Sum, Value
 from django.db.models.functions import Coalesce, Concat
 from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
-from openpyxl.styles import Border, Font, NamedStyle, PatternFill, Side
+from openpyxl.styles import Alignment, Border, Font, NamedStyle, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.viewsets import GenericViewSet
@@ -19,8 +20,7 @@ from rest_framework.viewsets import GenericViewSet
 from api.v1.exports.custom_schemas import *
 from api.v1.exports.serializers import DistributionCostReportFilterSerializer
 from api.v1.plans.views import GenericPlanViewSet
-from api.v1.utils.custom_permissions import (IsAuthenticated,
-                                             permission_required)
+from api.v1.utils.custom_permissions import IsAuthenticated, permission_required
 from clients.models import Client
 from managers.models import Manager
 
@@ -139,6 +139,54 @@ def get_cols_by_letter(df):
 def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
     workbook = openpyxl.Workbook()
 
+    if "headers_style" not in workbook.style_names:
+        headers_style = NamedStyle(name="headers_style")
+        headers_style.font = Font(color="000000", bold=True, name="Arial")
+        headers_style.alignment = Alignment(
+            horizontal="center",
+            vertical="center",
+            wrap_text=True,
+        )
+
+        headers_style.border = Border(
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="thin"),
+        )
+        workbook.add_named_style(headers_style)
+
+    if "subheaders_style" not in workbook.style_names:
+        subheaders_style = NamedStyle(name="subheaders_style")
+        subheaders_style.alignment.wrap_text = True
+        subheaders_style.number_format = "### ### ### ### ### ### ### ### ### ### ##0;-### ### ### ### ### ### ### ### ### ### ##0;"
+        subheaders_style.font = Font(color="000000", bold=True, name="Arial")
+        subheaders_style.fill = PatternFill(
+            start_color="FFFF00", end_color="FFFF00", fill_type="solid"
+        )
+
+        subheaders_style.border = Border(
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="thin"),
+        )
+        workbook.add_named_style(subheaders_style)
+
+    if "general_style" not in workbook.style_names:
+        general_style = NamedStyle(name="general_style")
+        general_style.alignment.wrap_text = True
+        general_style.number_format = "### ### ### ### ### ### ### ### ### ### ##0"
+        general_style.font = Font(color="000000", name="Arial")
+
+        general_style.border = Border(
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="thin"),
+        )
+        workbook.add_named_style(general_style)
+
     # add raw table in separate spreadsheet
     total_box_count = "SUM(MAP(UNIQUE(FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})), LAMBDA(h, XLOOKUP(h, FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row}), FILTER({sheet}!{box_count}:{box_count}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})))))"
     total_shipment_cost = "SUM(MAP(UNIQUE(FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})), LAMBDA(h, XLOOKUP(h, FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row}), FILTER({sheet}!{shipment_cost}:{shipment_cost}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})))))"
@@ -159,8 +207,8 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
         **get_cols_by_letter(df), sheet="raw_data", row="ROW()"
     )
 
-    managers = df["manager"].unique()
     drivers = df[df["is_driver"]]["manager"].unique()
+    managers = df[~df["is_driver"]]["manager"].unique()
 
     cols_by_letter = get_cols_by_letter(df)
 
@@ -168,32 +216,35 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
     # errors when formatting of formulas are done.
     df["row"] = range(1, len(df) + 1)
 
+    # create and fillout main worksheet
+    ws = workbook.active or workbook.create_sheet()
+
     raw_data_ws = workbook.create_sheet("raw_data")
     raw_data_ws.title = "raw_data"
     for r in dataframe_to_rows(df, index=False, header=True):
         raw_data_ws.append(r)
-
-    # create and fillout main worksheet
-    ws = workbook.create_sheet()
+    raw_data_ws.sheet_state = "hidden"
 
     # setup header cells for table1
     ws.cell(row=1, column=1).value = "магазины / клиенты"
     ws.cell(row=1, column=2).value = "Кол-во коробок (кор)"
     ws.cell(row=1, column=3).value = "Сумма отгрузки (₸)"
+    for i in range(1, 3 + 1):
+        ws.cell(row=1, column=i).style = "headers_style"
 
     table2_offset = 4
-    for i, driver in enumerate(drivers, start=1):
+    for i, driver in enumerate(
+        list(drivers) + ["ВОДИТЕЛИ", "СТОИМОСТЬ КОРОБКИ", "ПРОЦЕНТ"], start=1
+    ):
         ws.cell(row=1, column=table2_offset + i).value = driver
-    ws.cell(row=1, column=table2_offset + len(drivers) + 1).value = "ВОДИТЕЛИ"
-    ws.cell(row=1, column=table2_offset + len(drivers) + 2).value = "СТОИМОСТЬ КОРОБКИ"
-    ws.cell(row=1, column=table2_offset + len(drivers) + 3).value = "ПРОЦЕНТ"
+        ws.cell(row=1, column=table2_offset + i).style = "headers_style"
 
     table3_offset = table2_offset + len(drivers) + 3 + 1
-    for i, manager in enumerate(managers, start=1):
+    for i, manager in enumerate(
+        list(managers) + ["ДЕВОЧКИ", "СТОИМОСТЬ КОРОБКИ", "ПРОЦЕНТ"], start=1
+    ):
         ws.cell(row=1, column=table3_offset + i).value = manager
-    ws.cell(row=1, column=table3_offset + len(managers) + 1).value = "ДЕВОЧКИ"
-    ws.cell(row=1, column=table3_offset + len(managers) + 2).value = "СТОИМОСТЬ КОРОБКИ"
-    ws.cell(row=1, column=table3_offset + len(managers) + 3).value = "ПРОЦЕНТ"
+        ws.cell(row=1, column=table3_offset + i).style = "headers_style"
 
     # https://stackoverflow.com/questions/27133731/folding-multiple-rows-with-openpyxl
     ws.sheet_properties.outlinePr.summaryBelow = False
@@ -380,7 +431,7 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
                             manager_col=get_column_letter(i),
                         )
                     ]
-                    for i, manager in enumerate(managers, start=table3_offset)
+                    for i, manager in enumerate(managers, start=table3_offset + 1)
                 },
                 "total_payment": [
                     "=SUM({}{row}:{}{row})".format(
@@ -412,6 +463,8 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
             dataframe_to_rows(table3_header_df, index=False, header=False),
         ):
             ws.append(r1 + [None] + r2 + [None] + r3)
+            for cell in list(ws)[-1]:
+                cell.style = "subheaders_style"
 
         for r1, r2, r3 in zip(
             dataframe_to_rows(table1_df, index=False, header=False),
@@ -419,6 +472,8 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
             dataframe_to_rows(table3_df, index=False, header=False),
         ):
             ws.append(r1 + [None] + r2 + [None] + r3)
+            for cell in list(ws)[-1]:
+                cell.style = "general_style"
 
         ws.row_dimensions.group(
             group_rows_start + 1,
@@ -429,6 +484,45 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
 
         # move to next sub-header row
         group_rows_start += len(table1_header_df) + len(table1_df)
+
+    # last styling before save
+    for cell in ws[get_column_letter(table2_offset)]:
+        cell.fill = PatternFill(
+            start_color="FFFFFF", end_color="FFFFFF", fill_type="solid"
+        )
+    for cell in ws[get_column_letter(table3_offset)]:
+        cell.fill = PatternFill(
+            start_color="FFFFFF", end_color="FFFFFF", fill_type="solid"
+        )
+
+    for cell in ws[get_column_letter(table2_offset + len(drivers) + 3)]:
+        cell.number_format = "0.00%"
+    for cell in ws[get_column_letter(table3_offset + len(managers) + 3)]:
+        cell.number_format = "0.00%"
+
+    ws.freeze_panes = "B2"
+
+    # Change column width
+    cols_width = (
+        [60, 25, 25]  # table 1
+        + [10]  # Seperator
+        + [15] * (len(drivers) + 3)  # table 2
+        + [10]  # Seperator
+        + [15] * (len(managers) + 3)  # table 3
+    )
+    dim_holder = DimensionHolder(worksheet=ws)
+    for i, col in enumerate(range(ws.min_column, ws.max_column + 1)):
+        try:
+            dim_holder[get_column_letter(col)] = ColumnDimension(
+                ws, min=col, max=col, width=cols_width[i]
+            )
+        except Exception as _:
+            continue
+    ws.column_dimensions = dim_holder
+
+    # Change row height
+    for i, _ in enumerate(ws.iter_rows(min_row=1, max_row=group_rows_start)):
+        ws.row_dimensions[i].height = 25
 
     buffer = BytesIO()
     workbook.save(buffer)
