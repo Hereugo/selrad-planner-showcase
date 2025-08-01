@@ -9,8 +9,7 @@ from django.db.models import F, Prefetch, Q, Sum, Value
 from django.db.models.functions import Coalesce, Concat
 from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
-from openpyxl.styles import (Alignment, Border, Font, NamedStyle, PatternFill,
-                             Side)
+from openpyxl.styles import Alignment, Border, Font, NamedStyle, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
@@ -21,8 +20,7 @@ from rest_framework.viewsets import GenericViewSet
 from api.v1.exports.custom_schemas import *
 from api.v1.exports.serializers import DistributionCostReportFilterSerializer
 from api.v1.plans.views import GenericPlanViewSet
-from api.v1.utils.custom_permissions import (IsAuthenticated,
-                                             permission_required)
+from api.v1.utils.custom_permissions import IsAuthenticated, permission_required
 from clients.models import Client
 from managers.models import Manager
 
