@@ -2,6 +2,7 @@ import {
   compareReportExportQuery,
   dispatchExportQuery,
   dispatchListExportQuery,
+  distributionCostReportExportQuery,
   managerReportExportQuery,
   paymentReportExportQuery,
   planExportQuery,
@@ -305,6 +306,59 @@ export const handlePaymentReportDownload = ({
         const a = document.createElement("a");
         a.href = url;
         a.download = filename || "payment_report.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+      setIsLoading(false);
+    })
+    .catch((e) => {
+      console.error(e);
+      setIsLoading(false);
+      toast({
+        title: "Ошибка, не удалось скачать отчет",
+        description: e.message,
+      });
+    });
+};
+
+export const handleDistributionCostReportDownload = ({
+  setIsLoading,
+  toast,
+  calendarRange,
+  managerId,
+  workId,
+  onlyShipment,
+}: {
+  setIsLoading: Function;
+  toast: Function;
+  calendarRange?: DateRange;
+  managerId?: Manager["id"];
+  workId?: WorkItem["id"];
+  onlyShipment?: boolean;
+}) => {
+  setIsLoading(true);
+
+  const data = distributionCostReportExportQuery({
+    start_date: formatDateBackend(calendarRange?.from),
+    end_date: formatDateBackend(calendarRange?.to),
+    managers: managerId ? [managerId] : undefined,
+    work_items: workId ? [workId] : undefined,
+    only_shipment: onlyShipment || false,
+  });
+
+  data
+    .then((data) => {
+      if (data?.data) {
+        const filename = decodeContentDisposition(
+          data.headers["content-disposition"],
+        )
+          ?.split("filename=")[1]
+          .replace(/[^A-Za-zА-Яа-я\s0-9.-]/g, "");
+        const url = window.URL.createObjectURL(new Blob([data.data]));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename || "distribution_cost_report.xlsx";
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);

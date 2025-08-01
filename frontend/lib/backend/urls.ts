@@ -25,6 +25,7 @@ const urls = {
       dispatch_list: `${BASE_BACKEND_V1}/exports/dispatch_list`,
       dispatch_report: `${BASE_BACKEND_V1}/exports/dispatch_report`,
       payment_report: `${BASE_BACKEND_V1}/exports/payment_report`,
+      distribution_cost_report: `${BASE_BACKEND_V1}/exports/distribution_cost_report`,
       plans: `${BASE_BACKEND_V1}/exports/plans`,
       report: `${BASE_BACKEND_V1}/exports/manager_report`,
     },
