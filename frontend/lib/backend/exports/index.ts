@@ -173,3 +173,24 @@ export const paymentReportExportQuery = (
     responseType: "blob",
   });
 };
+
+export const distributionCostReportExportQuery = (
+  props: paymentReportExportQueryProps,
+) => {
+  const url = urls.base_backend.exports.distribution_cost_report;
+  const queryParams = [];
+
+  if (props.start_date) queryParams.push(`start_date=${props.start_date}`);
+  if (props.end_date) queryParams.push(`end_date=${props.end_date}`);
+  if (props.only_shipment)
+    queryParams.push(`only_shipment=${props.only_shipment}`);
+  if (props.managers) queryParams.push(`managers=${props.managers.join(",")}`);
+  if (props.work_items)
+    queryParams.push(`work_items=${props.work_items.join(",")}`);
+
+  const urlWithParams = `${url}${queryParams.length > 0 ? "?" : ""}${queryParams.join("&")}`;
+
+  return fetchWithAuth<Blob>(urlWithParams, {
+    responseType: "blob",
+  });
+};

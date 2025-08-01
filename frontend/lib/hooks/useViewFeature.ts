@@ -21,6 +21,9 @@ export const useViewFeature = () => {
     canExportPaymentReport: me?.permissions.includes(
       "plans.export_payment_report",
     ),
+    canExportDistributionCostReport: me?.permissions.includes(
+      "plans.export_distribution_cost_report",
+    ),
     canDeletePlan: me?.permissions.includes("plans.delete_plans"),
     canDeleteOldPlan: me?.permissions.includes("plans.delete_old_plan"),
     canUpdateOldPlan: me?.permissions.includes("plans.change_old_plan"),

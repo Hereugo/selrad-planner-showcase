@@ -8,6 +8,7 @@ import {
   handleCompareReportDownload,
   handleDispatchListDownload,
   handlePaymentReportDownload,
+  handleDistributionCostReportDownload,
 } from "./index.hooks";
 import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -33,6 +34,8 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isCompareLoading, setIsCompareLoading] = useState(false);
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [isDistributionCostLoading, setIsDistributionCostLoading] =
+    useState(false);
 
   return (
     <>
@@ -146,6 +149,26 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
         >
           Скачать отчет по оплатам
           {isPaymentLoading && (
+            <Loader2 className="w-6 h-6 ml-2 animate-spin" />
+          )}
+        </Button>
+        <Button
+          onClick={() =>
+            handleDistributionCostReportDownload({
+              setIsLoading: setIsDistributionCostLoading,
+              calendarRange,
+              toast,
+              managerId,
+              workId,
+            })
+          }
+          className={cn(
+            viewFeature.canExportDistributionCostReport ? "" : "hidden",
+          )}
+          disabled={isDistributionCostLoading}
+        >
+          Скачать отчет по распределению затрат
+          {isDistributionCostLoading && (
             <Loader2 className="w-6 h-6 ml-2 animate-spin" />
           )}
         </Button>
