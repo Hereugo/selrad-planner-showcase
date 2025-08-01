@@ -292,7 +292,9 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
                 ],
             }
         )
-        series_range = pd.Series(range(*table1_range))
+        series_range = pd.Series(
+            range(group_rows_start + 1, group_rows_start + table1_size + 1)
+        )
 
         table2_df = pd.DataFrame(
             {
@@ -500,7 +502,7 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
     for cell in ws[get_column_letter(table3_offset + len(managers) + 3)]:
         cell.number_format = "0.00%"
 
-    ws.freeze_panes = "B2"
+    ws.freeze_panes = "D2"
 
     # Change column width
     cols_width = (
