@@ -167,7 +167,7 @@ const ExportExcelTemplate: FC<ExportExcelTemplateProps> = () => {
           )}
           disabled={isDistributionCostLoading}
         >
-          Скачать отчет по распределению затрат
+          Скачать отчет по стоимости дистрибуции
           {isDistributionCostLoading && (
             <Loader2 className="w-6 h-6 ml-2 animate-spin" />
           )}
