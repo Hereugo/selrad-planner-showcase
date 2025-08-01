@@ -9,7 +9,8 @@ from django.db.models import F, Prefetch, Q, Sum, Value
 from django.db.models.functions import Coalesce, Concat
 from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
-from openpyxl.styles import Alignment, Border, Font, NamedStyle, PatternFill, Side
+from openpyxl.styles import (Alignment, Border, Font, NamedStyle, PatternFill,
+                             Side)
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
@@ -20,7 +21,8 @@ from rest_framework.viewsets import GenericViewSet
 from api.v1.exports.custom_schemas import *
 from api.v1.exports.serializers import DistributionCostReportFilterSerializer
 from api.v1.plans.views import GenericPlanViewSet
-from api.v1.utils.custom_permissions import IsAuthenticated, permission_required
+from api.v1.utils.custom_permissions import (IsAuthenticated,
+                                             permission_required)
 from clients.models import Client
 from managers.models import Manager
 
@@ -176,7 +178,7 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
     if "general_style" not in workbook.style_names:
         general_style = NamedStyle(name="general_style")
         general_style.alignment.wrap_text = True
-        general_style.number_format = "### ### ### ### ### ### ### ### ### ### ##0"
+        general_style.number_format = "### ### ### ### ### ### ### ### ### ### ##0;-### ### ### ### ### ### ### ### ### ### ##0;"
         general_style.font = Font(color="000000", name="Arial")
 
         general_style.border = Border(
@@ -186,6 +188,19 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
             bottom=Side(style="thin"),
         )
         workbook.add_named_style(general_style)
+
+    if "footer_style" not in workbook.style_names:
+        footer_style = NamedStyle(name="footer_style")
+        footer_style.font = Font(color="000000", bold=True, name="Arial")
+        footer_style.alignment.wrap_text = True
+        footer_style.number_format = "### ### ### ### ### ### ### ### ### ### ##0;-### ### ### ### ### ### ### ### ### ### ##0;"
+        footer_style.border = Border(
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="thin"),
+        )
+        workbook.add_named_style(footer_style)
 
     # add raw table in separate spreadsheet
     total_box_count = "SUM(MAP(UNIQUE(FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})), LAMBDA(h, XLOOKUP(h, FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row}), FILTER({sheet}!{box_count}:{box_count}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})))))"
@@ -486,6 +501,83 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
 
         # move to next sub-header row
         group_rows_start += len(table1_header_df) + len(table1_df)
+
+    # setup footer cells for tables
+    ws.cell(row=group_rows_start, column=1).value = "ИТОГО:"
+    ws.cell(row=group_rows_start, column=2).value = (
+        "=SUM({box_count_col}{}:{box_count_col}{}) / 2".format(
+            2, group_rows_start - 1, box_count_col="B"
+        )
+    )
+    ws.cell(row=group_rows_start, column=3).value = (
+        "=SUM({box_count_col}{}:{box_count_col}{}) / 2".format(
+            2, group_rows_start - 1, box_count_col="C"
+        )
+    )
+    for i in range(1, 3 + 1):
+        ws.cell(row=group_rows_start, column=i).style = "footer_style"
+
+    table2_offset = 4
+    for i, driver in enumerate(
+        list(drivers) + ["ВОДИТЕЛИ", "СТОИМОСТЬ КОРОБКИ", "ПРОЦЕНТ"], start=1
+    ):
+        ws.cell(row=group_rows_start, column=table2_offset + i).value = (
+            "=SUM({driver_col}{}:{driver_col}{}) / 2".format(
+                2,
+                group_rows_start - 1,
+                driver_col=get_column_letter(table2_offset + i),
+            )
+        )
+        ws.cell(row=group_rows_start, column=table2_offset + i).style = "footer_style"
+    ws.cell(row=group_rows_start, column=table2_offset + len(drivers) + 2).value = (
+        "={total_payment_col}{row}/{total_box_count_col}{row}".format(
+            row=group_rows_start,
+            total_box_count_col="B",
+            total_payment_col=get_column_letter(table2_offset + len(drivers) + 1),
+        )
+    )
+    ws.cell(row=group_rows_start, column=table2_offset + len(drivers) + 3).value = (
+        "={total_payment_col}{row}/{total_shipment_cost_col}{row}".format(
+            row=group_rows_start,
+            total_shipment_cost_col="C",
+            total_payment_col=get_column_letter(table2_offset + len(drivers) + 1),
+        )
+    )
+
+    table3_offset = table2_offset + len(drivers) + 3 + 1
+    for i, manager in enumerate(
+        list(managers) + ["ДЕВОЧКИ", "СТОИМОСТЬ КОРОБКИ", "ПРОЦЕНТ"], start=1
+    ):
+        ws.cell(row=group_rows_start, column=table3_offset + i).value = (
+            "=SUM({manager_col}{}:{manager_col}{}) / 2".format(
+                2,
+                group_rows_start - 1,
+                manager_col=get_column_letter(table3_offset + i),
+            )
+        )
+        ws.cell(row=group_rows_start, column=table3_offset + i).style = "footer_style"
+
+        ws.cell(row=group_rows_start, column=table3_offset + i).value = (
+            "=SUM({manager_col}{}:{manager_col}{}) / 2".format(
+                2,
+                group_rows_start - 1,
+                manager_col=get_column_letter(table3_offset + i),
+            )
+        )
+    ws.cell(row=group_rows_start, column=table3_offset + len(managers) + 2).value = (
+        "={total_payment_col}{row}/{total_box_count_col}{row}".format(
+            row=group_rows_start,
+            total_box_count_col="B",
+            total_payment_col=get_column_letter(table3_offset + len(managers) + 1),
+        )
+    )
+    ws.cell(row=group_rows_start, column=table3_offset + len(managers) + 3).value = (
+        "={total_payment_col}{row}/{total_shipment_cost_col}{row}".format(
+            row=group_rows_start,
+            total_shipment_cost_col="C",
+            total_payment_col=get_column_letter(table3_offset + len(managers) + 1),
+        )
+    )
 
     # last styling before save
     for cell in ws[get_column_letter(table2_offset)]:
