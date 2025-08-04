@@ -201,8 +201,8 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
         workbook.add_named_style(footer_style)
 
     # add raw table in separate spreadsheet
-    total_box_count = "SUM(MAP(UNIQUE(FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})), LAMBDA(h, XLOOKUP(h, FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row}), FILTER({sheet}!{box_count}:{box_count}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})))))"
-    total_shipment_cost = "SUM(MAP(UNIQUE(FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})), LAMBDA(h, XLOOKUP(h, FILTER({sheet}!{date}:{date}, {sheet}!{shop}:{shop}={sheet}!{shop}{row}), FILTER({sheet}!{shipment_cost}:{shipment_cost}, {sheet}!{shop}:{shop}={sheet}!{shop}{row})))))"
+    total_box_count = "SUMIFS({sheet}!{helper_col_unique_box_count}:{helper_col_unique_box_count}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}))"
+    total_shipment_cost = "SUMIFS({sheet}!{helper_col_unique_shipment_cost}:{helper_col_unique_shipment_cost}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}))"
 
     total_payment_bonus = {
         "driver": 'ROUND(SUMIFS({sheet}!{box_price}:{box_price}, {sheet}!{shop}:{shop}, INDEX({sheet}!{shop}:{shop}, {row}), {sheet}!{manager}:{manager}, "{manager_name}"), 0)',
@@ -219,6 +219,17 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
     df["visit_price"] = "=" + visit_price.format(
         **get_cols_by_letter(df), sheet="raw_data", row="ROW()"
     )
+    df["helper_col_id"] = (
+        '=INDEX({shop}:{shop}, {row}) & "|" & TEXT(INDEX({date}:{date}, {row}), "yyyy-mm-dd")'.format(
+            **get_cols_by_letter(df), sheet="raw_data", row="ROW()"
+        )
+    )
+    df["helper_col_unique_box_count"] = (
+        '=IF(COUNTIFS(INDIRECT("{shop}$2:{shop}"&{row}), INDEX({shop}:{shop}, {row}), INDIRECT("{date}$2:{date}"&{row}), INDEX({date}:{date}, {row}))=1, INDEX({box_count}:{box_count}, {row}), 0)'
+    ).format(**get_cols_by_letter(df), sheet="raw_data", row="ROW()")
+    df["helper_col_unique_shipment_cost"] = (
+        '=IF(COUNTIFS(INDIRECT("{shop}$2:{shop}"&{row}), INDEX({shop}:{shop}, {row}), INDIRECT("{date}$2:{date}"&{row}), INDEX({date}:{date}, {row}))=1, INDEX({shipment_cost}:{shipment_cost}, {row}), 0)'
+    ).format(**get_cols_by_letter(df), sheet="raw_data", row="ROW()")
 
     drivers = df[df["is_driver"]]["manager"].unique()
     managers = df[~df["is_driver"]]["manager"].unique()
@@ -228,7 +239,6 @@ def generate_distribution_cost_report(table: list[dict[str, Any]]) -> BytesIO:
     # Important to do it after cols_by_letter function, as it
     # errors when formatting of formulas are done.
     df["row"] = range(1, len(df) + 1)
-
     # create and fillout main worksheet
     ws = workbook.active or workbook.create_sheet()
 
