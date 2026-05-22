@@ -11,6 +11,7 @@ const urls = {
   base_backend: {
     plans: `${BASE_BACKEND_V1}/plans`,
     clients: `${BASE_BACKEND_V1}/clients`,
+    meta_clients: `${BASE_BACKEND_V1}/meta_clients`,
     work_items: `${BASE_BACKEND_V1}/work_items`,
     users: {
       users: `${BASE_BACKEND_V1}/users`,

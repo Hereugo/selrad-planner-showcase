@@ -2,7 +2,14 @@
 
 import { cn } from "@/lib/utils";
 import { useViewFeature } from "@/lib/hooks/useViewFeature";
-import { FileDown, List, MapPinnedIcon, Settings, Wallet } from "lucide-react";
+import {
+  FileDown,
+  List,
+  MapPinnedIcon,
+  Settings,
+  Store,
+  Wallet,
+} from "lucide-react";
 import Link from "next/link";
 
 const NavigationLinks = () => {
@@ -26,6 +33,15 @@ const NavigationLinks = () => {
         )}
       >
         <MapPinnedIcon className="w-6 h-6" /> Карта
+      </Link>
+      <Link
+        href="/shops/new"
+        className={cn(
+          "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+          viewFeature.canCreateShop ? "" : "hidden",
+        )}
+      >
+        <Store className="w-6 h-6" /> Новый магазин
       </Link>
       <Link
         href="/export_excel"

@@ -5,23 +5,48 @@ from django.contrib.gis.measure import Distance
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.decorators import action
+from rest_framework.mixins import CreateModelMixin
+from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from api.v1.clients.serializers import ClientSerializer
+from api.v1.clients.serializers import (
+    ClientCreateSerializer,
+    ClientSerializer,
+    MetaClientSerializer,
+)
 from api.v1.plans.serializers import NearbyClientSerializer
 from api.v1.utils.custom_permissions import IsAuthenticated
-from clients.models import Client
+from clients.models import Client, MetaClient
 
 logger = logging.getLogger(__name__)
 
 
-class ClientViewSet(ReadOnlyModelViewSet):
+class CanAddClient(BasePermission):
+    """Allow creating shops only with Django add permission."""
+
+    def has_permission(self, request, view):
+        return request.user.has_perm("clients.add_client")
+
+
+class ClientViewSet(CreateModelMixin, ReadOnlyModelViewSet):
     """API для работы с клиентами."""
 
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
     pagination_class = None
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [IsAuthenticated(), CanAddClient()]
+
+        return super().get_permissions()
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return ClientCreateSerializer
+
+        return super().get_serializer_class()
 
     @extend_schema(
         methods=["get"],
@@ -95,3 +120,11 @@ class ClientViewSet(ReadOnlyModelViewSet):
         serializer = NearbyClientSerializer(nearby_clients, many=True)
 
         return Response(serializer.data)
+
+
+class MetaClientViewSet(ReadOnlyModelViewSet):
+    """API для работы с клиентами компаний."""
+
+    queryset = MetaClient.objects.all()
+    serializer_class = MetaClientSerializer
+    pagination_class = None

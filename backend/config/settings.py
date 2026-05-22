@@ -18,6 +18,7 @@ DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
 
 ALLOWED_HOSTS = [
     "planner.example.com",
+    "planner.example.com",
     "site1.localhost",
     "YOUR_SERVER_HOST",
     "localhost",

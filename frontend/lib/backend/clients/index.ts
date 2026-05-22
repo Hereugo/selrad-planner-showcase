@@ -19,20 +19,39 @@ export const useClientQuery = (id: string) => {
   );
 };
 
-interface clientCreateMutationProps extends Omit<Client, "id"> {}
+export const useMetaClientsQuery = () => {
+  const url = urls.base_backend.meta_clients;
+
+  return useQuery(["useMetaClientsQuery"], async () =>
+    fetchWithAuth<MetaClient[]>(url),
+  );
+};
+
+export interface ClientCreateMutationProps {
+  name: string;
+  meta_client_id?: string;
+  meta_client_name?: string;
+  address: {
+    street: string;
+    twogis_link?: string;
+    lat: number;
+    lon: number;
+  };
+}
 
 export const useClientCreateMutation = () => {
   const queryClient = useQueryClient();
 
   const url = urls.base_backend.clients + "/";
 
-  const call = (client: clientCreateMutationProps) => {
-    return postWithAuth(url, client);
+  const call = (client: ClientCreateMutationProps) => {
+    return postWithAuth<Client>(url, client);
   };
 
   return useMutation(call, {
     onSuccess: () => {
       queryClient.invalidateQueries(["useClientsQuery"]);
+      queryClient.invalidateQueries(["useMetaClientsQuery"]);
     },
   });
 };

@@ -1,4 +1,4 @@
-import { usePlans } from "../Plans/index.hooks";
+import { usePlans } from "../plans/index.hooks";
 import _ from "lodash";
 import { useEffect, useRef, useState } from "react";
 import { useYMaps } from "@pbe/react-yandex-maps";

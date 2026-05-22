@@ -5,10 +5,12 @@ export const useViewFeature = () => {
   const me = data?.data;
 
   return {
+    isLoading: !me,
     canUseWorkFilter: !me?.is_accountant,
     canViewMaps: !me?.is_accountant,
     canViewAccountant: me?.is_accountant,
     canCreateNewPlan: !me?.is_accountant,
+    canCreateShop: me?.permissions.includes("clients.add_client"),
     canExportPlans: me?.permissions.includes("plans.export_plans"),
     canExportReport: me?.permissions.includes("plans.export_report"),
     canExportDispatchList: me?.permissions.includes("plans.get_dispatch_list"),

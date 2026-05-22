@@ -1,3 +1,3 @@
-import PlansTemplate from "@/components/templates/Plans";
+import PlansTemplate from "@/components/templates/plans";
 
 export default PlansTemplate;
