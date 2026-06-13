@@ -32,7 +32,7 @@ const SideBar: FC<SideBarProps> = ({ className }) => {
 
       <Filters />
 
-      <div className="mt-auto">
+      <div>
         <StagingIndicator />
       </div>
     </div>
