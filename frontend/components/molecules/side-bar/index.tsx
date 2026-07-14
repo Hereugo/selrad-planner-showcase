@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import NavigationLinks from "./navigation-links";
 import NewPlanButton from "./new-plan-button";
 import Filters from "./filters";
+import StagingIndicator from "./staging-indicator";
 import { useViewFeature } from "@/lib/hooks/useViewFeature";
 
 interface SideBarProps {
@@ -30,6 +31,10 @@ const SideBar: FC<SideBarProps> = ({ className }) => {
       <Separator orientation="horizontal" />
 
       <Filters />
+
+      <div>
+        <StagingIndicator />
+      </div>
     </div>
   );
 };
