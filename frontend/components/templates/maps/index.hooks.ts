@@ -5,8 +5,9 @@ import { useYMaps } from "@pbe/react-yandex-maps";
 import Color from "color";
 import { useFindNearbyClientsQuery } from "@/lib/backend/clients";
 import { formatDate } from "@/lib/utils";
+import { CITIES, CityKey } from "./constants";
 
-export const useMaps = (mapsEnabled: boolean) => {
+export const useMaps = (mapsEnabled: boolean, selectedCity: CityKey) => {
   const { plans, isLoading: isPlansLoading } = usePlans();
   const mapElementRef = useRef(null);
   const ymaps = useYMaps([
@@ -24,7 +25,6 @@ export const useMaps = (mapsEnabled: boolean) => {
   >();
   const selectedPlan =
     plans.filter((p) => p.id === selectedPlanId)[0] || undefined;
-  const mapCenter = [43.238949, 76.889709];
 
   const [isShowingClientsNearby, setIsShowingClientsNearby] = useState(false);
   const handleShowingClientsNearby = () => {
@@ -101,18 +101,33 @@ export const useMaps = (mapsEnabled: boolean) => {
     );
   }
 
+  const cityConfig = CITIES[selectedCity];
+
   // setup
   useEffect(() => {
     if (!ymaps || !mapElementRef.current) return;
 
     const map = new ymaps.Map(mapElementRef.current, {
-      center: mapCenter,
-      zoom: 12,
+      center: cityConfig.center,
+      zoom: cityConfig.zoom,
       controls: ["zoomControl"],
     });
 
     if (!mapInstance) setMapInstance(map);
   }, [ymaps, mapInstance, mapElementRef.current]);
+
+  const isInitialRender = useRef(true);
+
+  // re-center and re-zoom when city changes (skip initial render)
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+    if (!mapInstance) return;
+    mapInstance.setCenter(cityConfig.center);
+    mapInstance.setZoom(cityConfig.zoom);
+  }, [selectedCity]);
 
   // drawing with data
   useEffect(() => {

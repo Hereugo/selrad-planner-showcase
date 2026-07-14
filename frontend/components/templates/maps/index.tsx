@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { useMaps } from "./index.hooks";
 import PlanDialogEdit from "@/components/molecules/plan-dialog-edit";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,8 @@ import PlanDialogNew from "@/components/molecules/plan-dialog-new";
 import useFiltersContext from "@/components/molecules/side-bar/index.providers";
 import MaxDaysAlert from "./max-days-alert";
 import { isUndefined } from "lodash";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CityKey, DEFAULT_CITY } from "./constants";
 
 interface MapsTemplateProps {}
 
@@ -33,6 +35,8 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
   const isTooManyDays =
     calendarRangeDuration(calendarRange) >= 31 ||
     isUndefined(calendarRange?.to);
+
+  const [selectedCity, setSelectedCity] = useState<CityKey>(DEFAULT_CITY);
 
   const {
     mapElementRef,
@@ -47,7 +51,7 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
     setMinDaysSincePlan,
     selectedNearbyClient,
     setSelectedNearbyClient,
-  } = useMaps(!isTooManyDays);
+  } = useMaps(!isTooManyDays, selectedCity);
 
   return (
     <>
@@ -63,12 +67,24 @@ const MapsTemplate: FC<MapsTemplateProps> = () => {
         )}
         <div
           className={cn(
-            "flex-1 h-full rounded-lg overflow-clip duration-300",
+            "relative flex-1 h-full rounded-lg overflow-clip duration-300",
             selectedPlan ? "w-[calc(100%-24rem)]" : "w-full",
           )}
           style={{ minHeight: "500px" }}
-          ref={mapElementRef}
-        />
+        >
+          <div className="absolute top-2 left-2 z-10">
+            <Tabs
+              value={selectedCity}
+              onValueChange={(v: string) => setSelectedCity(v as CityKey)}
+            >
+              <TabsList>
+                <TabsTrigger value="almaty">Алматы</TabsTrigger>
+                <TabsTrigger value="astana">Астана</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <div className="w-full h-full" ref={mapElementRef} />
+        </div>
         <div
           className={cn(
             "h-full overflow-y-auto duration-300",
