@@ -60,6 +60,10 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
     isLoading,
     selectedManagers,
     selectedWorkItems,
+    scores,
+    managerDisplayMode,
+    setManagerDisplayMode,
+    scoresLoading,
   } = useCreatePlan({ defaultClientId, defaultAssignedDate, defaultIsOpen });
 
   useEffect(() => {
@@ -120,11 +124,14 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
             <Separator orientation="vertical" />
             <div className="flex flex-col gap-4 flex-1 w-[calc((48rem-8rem)/2)]">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="managers">Менеджеры</Label>
                 <SelectManagers
                   id="managers"
                   switchManager={switchManager}
                   selectedManagers={selectedManagers}
+                  scores={scores}
+                  scoresLoading={scoresLoading}
+                  displayMode={managerDisplayMode}
+                  onDisplayModeChange={setManagerDisplayMode}
                 />
               </div>
 

@@ -12,6 +12,8 @@ interface User {
 
 interface Manager extends User {
   geopoints: ManagerGeoPoint[];
+  depot_lat: string | null;
+  depot_lon: string | null;
 }
 
 interface Me extends Manager {

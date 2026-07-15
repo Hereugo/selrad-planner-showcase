@@ -9,6 +9,7 @@ import { useWorkItemsQuery } from "@/lib/backend/work_items";
 import { formatClientName, generateAccountantComment } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useManagersQuery } from "@/lib/backend/users/managers";
+import { useManagerScoresQuery } from "@/lib/backend/manager_scores";
 
 export const useClients = () => {
   const { data, error, isLoading } = useClientsQuery();
@@ -95,6 +96,13 @@ export const useUpdatePlan = (initialPlan: Plan) => {
   });
 
   const planUpdateMutation = usePlanUpdateMutation(initialPlan.id);
+
+  const { data: scoresData, isLoading: scoresLoading } = useManagerScoresQuery(
+    plan.assignedDate,
+    plan.client,
+    String(initialPlan.id),
+  );
+  const scores: ManagerScore[] = scoresData?.data ?? [];
 
   const isReturn = plan.workItems.some((id) => {
     return allWorkItems?.data.some(
@@ -296,6 +304,8 @@ export const useUpdatePlan = (initialPlan: Plan) => {
     isOpen,
     setIsOpen,
     isLoading: planUpdateMutation.isLoading,
+    scores,
+    scoresLoading,
   };
 };
 

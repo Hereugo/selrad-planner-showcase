@@ -4,9 +4,11 @@ import { useClientsQuery } from "@/lib/backend/clients";
 import { usePlanCreateMutation } from "@/lib/backend/plans";
 import { useWorkItemsQuery } from "@/lib/backend/work_items";
 import { formatClientName, generateAccountantComment } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ManagerDisplayMode } from "../shared/select-managers";
 import { highlightPlanRow } from "../plan-dialog-edit/index.hooks";
 import { useManagersQuery } from "@/lib/backend/users/managers";
+import { useManagerScoresQuery } from "@/lib/backend/manager_scores";
 
 export const useClients = () => {
   const { data, error, isLoading } = useClientsQuery();
@@ -83,6 +85,27 @@ export const useCreatePlan = ({
     defaultAssignedDate,
   );
   const [accountantComment, setAccountantComment] = useState<string>();
+
+  const { data: scoresData, isLoading: scoresLoading } = useManagerScoresQuery(
+    assignedDate,
+    client,
+  );
+  const scores: ManagerScore[] = scoresData?.data ?? [];
+
+  const [managerDisplayMode, setManagerDisplayMode] =
+    useState<ManagerDisplayMode>("compact");
+  const hasAutoOpened = useRef(false);
+
+  useEffect(() => {
+    if (assignedDate && client) {
+      if (!hasAutoOpened.current) {
+        setManagerDisplayMode("detailed");
+        hasAutoOpened.current = true;
+      }
+    } else {
+      setManagerDisplayMode("compact");
+    }
+  }, [assignedDate, client]);
 
   const planCreateMutation = usePlanCreateMutation();
   const [isOpen, setIsOpen] = useState(defaultIsOpen || false);
@@ -174,6 +197,8 @@ export const useCreatePlan = ({
       setComment(undefined);
       setInvoiceDate(undefined);
       setAccountantComment(undefined);
+      setManagerDisplayMode("compact");
+      hasAutoOpened.current = false;
     }
   }, [planCreateMutation.isSuccess, toast, setIsOpen]);
 
@@ -244,5 +269,9 @@ export const useCreatePlan = ({
     isAccountant: isAccountant,
     isSuccess: planCreateMutation.isSuccess,
     isLoading: planCreateMutation.isLoading,
+    scores,
+    managerDisplayMode,
+    setManagerDisplayMode,
+    scoresLoading,
   };
 };

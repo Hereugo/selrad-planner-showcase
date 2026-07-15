@@ -21,6 +21,7 @@ const urls = {
       warehousers: `${BASE_BACKEND_V1}/users/warehousers`,
     },
     payment_registries: `${BASE_BACKEND_V1}/payment_registries`,
+    manager_scores: `${BASE_BACKEND_V1}/manager_scores`,
     exports: {
       compare_years: `${BASE_BACKEND_V1}/exports/compare_years`,
       dispatch_list: `${BASE_BACKEND_V1}/exports/dispatch_list`,

@@ -1,44 +1,17 @@
 "use client";
 
-import { Checkbox } from "@/components/ui/checkbox";
-import { useManagers } from "./index.hooks";
-import { Label } from "@/components/ui/label";
 import { FC } from "react";
-import { managerFullName, managerShortName } from "@/lib/utils";
+import { useManagers } from "./index.hooks";
+import SharedSelectManagers, {
+  SelectManagersProps,
+} from "../shared/select-managers";
 
-interface SelectManagersProps {
-  id?: string;
-  switchManager: (id: string) => void;
-  selectedManagers: string[];
-}
-
-const SelectManagers: FC<SelectManagersProps> = ({
-  id,
-  switchManager,
-  selectedManagers,
-}) => {
+const SelectManagers: FC<Omit<SelectManagersProps, "allManagers">> = (
+  props,
+) => {
   const { managers } = useManagers();
 
-  return (
-    <div className="grid gap-4 grid-cols-3" id={id}>
-      {managers.map((manager) => (
-        <div className="flex items-center gap-2" key={manager.id}>
-          <Checkbox
-            id={`manager-${manager.id}`}
-            onClick={() => switchManager(manager.id)}
-            checked={selectedManagers.includes(manager.id)}
-          />
-          <Label
-            className="font-normal hover:cursor-pointer"
-            htmlFor={`manager-${manager.id}`}
-            title={managerFullName(manager)}
-          >
-            {managerShortName(manager)}
-          </Label>
-        </div>
-      ))}
-    </div>
-  );
+  return <SharedSelectManagers {...props} allManagers={managers} />;
 };
 
 export default SelectManagers;

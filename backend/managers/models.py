@@ -95,6 +95,22 @@ class Manager(models.Model):
         help_text="Введите выплату менеджеру в (₸)",
         default=0,
     )
+    depot_lat = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        verbose_name="Широта (Lat)",
+        help_text="Широта домашней точки менеджера. Пример: Алматы 43.25, Астана 51.18.",
+    )
+    depot_lon = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        verbose_name="Долгота (Lon)",
+        help_text="Долгота домашней точки менеджера. Пример: Алматы 76.91, Астана 71.40.",
+    )
     # -============ MANAGER ATTRIBUTES ==============-
     is_hidden = models.BooleanField(
         help_text="Скрыть менеджера", verbose_name="Скрыть", default=False

@@ -74,6 +74,7 @@ export const usePlanCreateMutation = () => {
   return useMutation(call, {
     onSuccess: () => {
       queryClient.invalidateQueries(["usePlansQuery"]);
+      queryClient.invalidateQueries(["useManagerScoresQuery"]);
     },
   });
 };
@@ -104,6 +105,7 @@ export const usePlanUpdateMutation = (id: string) => {
   return useMutation(call, {
     onSuccess: () => {
       queryClient.invalidateQueries(["usePlansQuery"]);
+      queryClient.invalidateQueries(["useManagerScoresQuery"]);
     },
   });
 };
@@ -121,6 +123,7 @@ export const usePlanDeleteMutation = (id: string) => {
   return useMutation(call, {
     onSuccess: () => {
       queryClient.invalidateQueries(["usePlansQuery"]);
+      queryClient.invalidateQueries(["useManagerScoresQuery"]);
     },
   });
 };

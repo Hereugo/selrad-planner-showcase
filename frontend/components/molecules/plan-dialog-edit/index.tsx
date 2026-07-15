@@ -55,6 +55,8 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
     isOpen,
     setIsOpen,
     isLoading,
+    scores,
+    scoresLoading,
   } = useUpdatePlan(plan);
 
   const { handleDeletePlan } = useDeletePlan(plan);
@@ -114,11 +116,12 @@ const PlanDialogEdit: FC<PlanDialogEditProps> = ({ children, plan }) => {
             <Separator orientation="vertical" />
             <div className="flex flex-col gap-4 flex-1  w-[calc((48rem-8rem)/2)]">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="managers">Менеджеры</Label>
                 <SelectManagers
                   id="managers"
-                  managers={managers}
+                  selectedManagers={managers}
                   switchManager={switchManager}
+                  scores={scores}
+                  scoresLoading={scoresLoading}
                 />
               </div>
               <div className="flex flex-col gap-2">
