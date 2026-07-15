@@ -96,7 +96,9 @@ const NewShopTemplate = () => {
       meta_client_id:
         metaClientChoice.type === "existing" ? metaClientChoice.id : undefined,
       meta_client_name:
-        metaClientChoice.type === "new" ? metaClientChoice.name.trim() : undefined,
+        metaClientChoice.type === "new"
+          ? metaClientChoice.name.trim()
+          : undefined,
       address: {
         street: address.trim(),
         twogis_link: twogisLink.trim() || undefined,

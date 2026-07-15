@@ -139,7 +139,7 @@ const PlanDialogNew: FC<PlanDialogNewProps> = ({
               <div
                 className={cn(
                   "flex flex-col gap-4 h-0 overflow-hidden duration-1000",
-                  isAccountant && "h-60",
+                  isAccountant && "h-auto",
                 )}
               >
                 <Separator />

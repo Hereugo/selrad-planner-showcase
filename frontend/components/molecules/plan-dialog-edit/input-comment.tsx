@@ -3,7 +3,7 @@ import { FC } from "react";
 
 interface CommentInputProps {
   id?: string;
-  comment: string;
+  comment?: string;
   setComment: (comment: string) => void;
 }
 
@@ -13,7 +13,7 @@ const CommentInput: FC<CommentInputProps> = ({ id, comment, setComment }) => {
       id={id}
       value={comment}
       onChange={(e) => setComment(e.target.value)}
-      className="focus-visible:ring-0 hover:bg-accent hover:text-accent-foreground"
+      className="focus-visible:ring-0 hover:bg-accent hover:text-accent-foreground resize-none min-h-10 h-10 "
     />
   );
 };
