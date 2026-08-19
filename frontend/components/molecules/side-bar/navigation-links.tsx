@@ -6,6 +6,7 @@ import {
   FileDown,
   List,
   MapPinnedIcon,
+  Route,
   Settings,
   Store,
   Wallet,
@@ -33,6 +34,15 @@ const NavigationLinks = () => {
         )}
       >
         <MapPinnedIcon className="w-6 h-6" /> Карта
+      </Link>
+      <Link
+        href="/daily_tracking"
+        className={cn(
+          "flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md duration-100",
+          viewFeature.canViewDailyTracking ? "" : "hidden",
+        )}
+      >
+        <Route className="w-6 h-6" /> Daily Tracking
       </Link>
       <Link
         href="/shops/new"

@@ -4,6 +4,7 @@ from django.contrib.gis.geos import Point
 from django.db import models
 from django.db.models import BooleanField, Case, Value, When
 from django.db.models.functions import Concat
+from django.utils import timezone
 
 user = get_user_model()
 
@@ -57,7 +58,7 @@ class GeoPoint(models.Model):
     )
     created_at = models.DateTimeField(
         verbose_name="Дата создания",
-        auto_now_add=True,
+        default=timezone.now,
         editable=False,
     )
 
@@ -74,6 +75,9 @@ class GeoPoint(models.Model):
         verbose_name = "Геоточка"
         verbose_name_plural = "Геоточки"
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["manager", "created_at"], name="geo_mgr_created_idx"),
+        ]
 
 
 # This Model extends User model
@@ -171,6 +175,7 @@ class Manager(models.Model):
                 "can_receive_photo_notification",
                 "Can receive notification on upload photo",
             ),
+            ("view_daily_tracking", "Can view daily tracking"),
         ]
 
 

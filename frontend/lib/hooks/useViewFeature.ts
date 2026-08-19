@@ -8,6 +8,9 @@ export const useViewFeature = () => {
     isLoading: !me,
     canUseWorkFilter: !me?.is_accountant,
     canViewMaps: !me?.is_accountant,
+    canViewDailyTracking: me?.permissions.includes(
+      "managers.view_daily_tracking",
+    ),
     canViewAccountant: me?.is_accountant,
     canCreateNewPlan: !me?.is_accountant,
     canCreateShop: me?.permissions.includes("clients.add_client"),
