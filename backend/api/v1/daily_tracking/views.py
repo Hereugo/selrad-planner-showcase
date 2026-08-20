@@ -216,7 +216,7 @@ def build_first_travel_row(visit: Dict, geopoints: List[GeoPoint]):
         row_id=f"travel-depot-{visit['plan'].id}-{start_index}-{end_index}",
         row_type="travel",
         type_label="В пути",
-        route=f"Депо → {visit['plan'].client.name}",
+        route=f"Дом → {visit['plan'].client.name}",
         start_geopoint=geopoints[start_index],
         end_geopoint=geopoints[end_index],
         geopoints=geopoints[start_index : end_index + 1],
