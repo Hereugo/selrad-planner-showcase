@@ -45,8 +45,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CITIES, CityKey, DEFAULT_CITY } from "../maps/constants";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const APP_TIME_ZONE = "Asia/Almaty";
-
 const DailyTrackingTemplate = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedPersonId, setSelectedPersonId] = useState<string>();
@@ -607,18 +605,12 @@ const geopointHint = (geopoint: ManagerGeoPoint) => {
   `;
 };
 
-const parseBackendUtcDate = (date: string) => {
-  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(date);
-  return new Date(hasTimezone ? date : `${date}Z`);
-};
-
 const formatTime = (date: string) => {
-  return new Intl.DateTimeFormat("ru-RU", {
+  return new Date(date).toLocaleTimeString("ru-RU", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-    timeZone: APP_TIME_ZONE,
-  }).format(parseBackendUtcDate(date));
+  });
 };
 
 const formatDuration = (seconds: number) => {
