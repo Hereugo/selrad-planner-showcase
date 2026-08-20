@@ -362,6 +362,23 @@ const DailyTrackingMap = ({
     });
 
     if (currentGeopoint) {
+      if (currentGeopoint.accuracy && currentGeopoint.accuracy > 0) {
+        const accuracyCircle = new ymaps.Circle(
+          [
+            [currentGeopoint.latitude, currentGeopoint.longitude],
+            currentGeopoint.accuracy,
+          ],
+          {},
+          {
+            fillColor: "#dc26261f",
+            strokeColor: "#dc2626",
+            strokeOpacity: 0.45,
+            strokeWidth: 2,
+          },
+        );
+        mapInstance.geoObjects.add(accuracyCircle);
+      }
+
       const placemark = new ymaps.Placemark(
         [currentGeopoint.latitude, currentGeopoint.longitude],
         { hintContent: geopointHint(currentGeopoint) },
@@ -599,12 +616,24 @@ const getHouseIcon = (color: string) => {
 const geopointHint = (geopoint: ManagerGeoPoint) => {
   return `
     <div>
-      <div>${formatTime(geopoint.created_at)}</div>
-      <div>heading: ${geopoint.heading ?? "-"}</div>
-      <div>accuracy: ${geopoint.accuracy ?? "-"}</div>
-      <div>speed: ${geopoint.speed ?? "-"}</div>
+      <div>Время: ${formatTime(geopoint.created_at)}</div>
+      <div>Точность: ${formatMeters(geopoint.accuracy)}</div>
+      <div>Скорость: ${formatSpeed(geopoint.speed)}</div>
+      <div>Направление: ${formatDegrees(geopoint.heading)}</div>
     </div>
   `;
+};
+
+const formatMeters = (value: number | null) => {
+  return value === null ? "-" : `${Math.round(value)} м`;
+};
+
+const formatSpeed = (value: number | null) => {
+  return value === null ? "-" : `${value.toFixed(1)} м/с`;
+};
+
+const formatDegrees = (value: number | null) => {
+  return value === null ? "-" : `${Math.round(value)}°`;
 };
 
 const parseBackendUtcDate = (date: string) => {
