@@ -16,7 +16,7 @@ from api.v1.utils.custom_permissions import IsAuthenticated
 from managers.models import GeoPoint, Manager
 from plans.models import Plan
 
-GEOFENCE_RADIUS_METERS = 100
+GEOFENCE_RADIUS_METERS = 200
 
 
 class CanViewDailyTracking(BasePermission):
