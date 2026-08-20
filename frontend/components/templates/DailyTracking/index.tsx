@@ -579,7 +579,7 @@ const drawDepotMarker = (
 
   const placemark = new ymaps.Placemark(
     [manager.depot_lat, manager.depot_lon],
-    { hintContent: "Дом" },
+    { hintContent: "Депо" },
     {
       iconLayout: "default#image",
       iconImageHref: getHouseIcon("#16a34a"),
