@@ -18,7 +18,7 @@ export default function RootLayout({
       <body>
         <Providers>
           <TopBar className="w-screen h-16 fixed top-0 left-0" />
-          <SideBar className="w-64 h-full fixed top-16 left-0" />
+          <SideBar className="w-64 h-[calc(100vh-4rem)] fixed top-16 left-0" />
           <div className="ml-64 mt-16 py-6 px-4 h-[calc(100vh-4rem)] overflow-y-auto relative">
             {children}
           </div>

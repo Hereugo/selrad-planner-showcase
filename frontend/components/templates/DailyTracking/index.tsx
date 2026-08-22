@@ -40,10 +40,14 @@ import {
 } from "@/lib/utils";
 import { useYMaps } from "@pbe/react-yandex-maps";
 import Color from "color";
+import { ru } from "date-fns/locale";
 import { CalendarIcon, Loader2, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CITIES, CityKey, DEFAULT_CITY } from "../maps/constants";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const APP_TIME_ZONE = "Asia/Almaty";
+const PLAN_GEOFENCE_RADIUS_METERS = 200;
 
 const DailyTrackingTemplate = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -264,6 +268,7 @@ const DateSelect = ({
         <PopoverContent align="start" className="w-auto p-0">
           <Calendar
             mode="single"
+            locale={ru}
             selected={date}
             onSelect={(newDate) => newDate && setDate(newDate)}
           />
@@ -360,6 +365,23 @@ const DailyTrackingMap = ({
     });
 
     if (currentGeopoint) {
+      if (currentGeopoint.accuracy && currentGeopoint.accuracy > 0) {
+        const accuracyCircle = new ymaps.Circle(
+          [
+            [currentGeopoint.latitude, currentGeopoint.longitude],
+            currentGeopoint.accuracy,
+          ],
+          {},
+          {
+            fillColor: "#dc26261f",
+            strokeColor: "#dc2626",
+            strokeOpacity: 0.45,
+            strokeWidth: 2,
+          },
+        );
+        mapInstance.geoObjects.add(accuracyCircle);
+      }
+
       const placemark = new ymaps.Placemark(
         [currentGeopoint.latitude, currentGeopoint.longitude],
         { hintContent: geopointHint(currentGeopoint) },
@@ -556,7 +578,10 @@ const drawActivePlanCircle = (
   if (!plan) return;
 
   const circle = new ymaps.Circle(
-    [[Number(plan.client.address.lat), Number(plan.client.address.lon)], 100],
+    [
+      [Number(plan.client.address.lat), Number(plan.client.address.lon)],
+      PLAN_GEOFENCE_RADIUS_METERS,
+    ],
     {},
     {
       fillColor: "#2563eb22",
@@ -577,7 +602,7 @@ const drawDepotMarker = (
 
   const placemark = new ymaps.Placemark(
     [manager.depot_lat, manager.depot_lon],
-    { hintContent: "Депо" },
+    { hintContent: "Дом" },
     {
       iconLayout: "default#image",
       iconImageHref: getHouseIcon("#16a34a"),
@@ -596,21 +621,53 @@ const getHouseIcon = (color: string) => {
 
 const geopointHint = (geopoint: ManagerGeoPoint) => {
   return `
-    <div>
-      <div>${formatTime(geopoint.created_at)}</div>
-      <div>heading: ${geopoint.heading ?? "-"}</div>
-      <div>accuracy: ${geopoint.accuracy ?? "-"}</div>
-      <div>speed: ${geopoint.speed ?? "-"}</div>
+    <div style="min-width: 170px; font-family: system-ui, sans-serif; line-height: 1.45; color: #111827;">
+      <div style="margin-bottom: 6px; font-weight: 600;">${formatDateTime(geopoint.created_at)}</div>
+      <div style="display: grid; grid-template-columns: auto 1fr; gap: 2px 10px;">
+        <span style="color: #6b7280;">Точность</span><span>${formatMeters(geopoint.accuracy)}</span>
+        <span style="color: #6b7280;">Скорость</span><span>${formatSpeed(geopoint.speed)}</span>
+        <span style="color: #6b7280;">Направление</span><span>${formatDegrees(geopoint.heading)}</span>
+      </div>
     </div>
   `;
 };
 
+const formatMeters = (value: number | null) => {
+  return value === null ? "-" : `${Math.round(value)} м`;
+};
+
+const formatSpeed = (value: number | null) => {
+  return value === null ? "-" : `${value.toFixed(1)} м/с`;
+};
+
+const formatDegrees = (value: number | null) => {
+  return value === null ? "-" : `${Math.round(value)}°`;
+};
+
+const parseBackendUtcDate = (date: string) => {
+  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(date);
+  return new Date(hasTimezone ? date : `${date}Z`);
+};
+
 const formatTime = (date: string) => {
-  return new Date(date).toLocaleTimeString("ru-RU", {
+  return new Intl.DateTimeFormat("ru-RU", {
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
-  });
+    hourCycle: "h23",
+    timeZone: APP_TIME_ZONE,
+  }).format(parseBackendUtcDate(date));
+};
+
+const formatDateTime = (date: string) => {
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: APP_TIME_ZONE,
+  }).format(parseBackendUtcDate(date));
 };
 
 const formatDuration = (seconds: number) => {
