@@ -1,5 +1,9 @@
 # Selrad Planner
 
+> This is a **showcase copy** of a private planning-management system. It was
+> sanitized for public display (secrets, credentials, hostnames, and database
+> backups were removed). It is not the production source of truth.
+
 ## TODO:
 
 - [ ] add pytest
@@ -65,11 +69,13 @@ docker-compose -f docker-compose-dev.yml up -d --build
 
 -   Добавьте базу данных:
 
+> Note: the original repo shipped sample data fixtures (`./data/*.json`) that were
+> removed from this showcase copy because they contained real business data.
+> Create your own fixtures, or start with an empty database.
+
 ```
 python3 manage.py flush
-python3 manage.py loaddata ./data/worklist.json
-python3 manage.py loaddata ./data/clients_w_address.json
-python3 manage.py import_managers_csv
+python3 manage.py migrate
 ```
 
 -   Создайте административного пользователя:
